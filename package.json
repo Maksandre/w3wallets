@@ -1,0 +1,15 @@
+{
+  "name": "dapptap",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "Max Andreev <maxick20@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.5"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.49.1"
+  },
+  "scripts": {}
+}

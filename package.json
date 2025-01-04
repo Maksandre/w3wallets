@@ -1,5 +1,5 @@
 {
-  "name": "dapptap",
+  "name": "w3wallets",
   "version": "0.0.1",
   "main": "index.js",
   "author": "Max Andreev <maxick20@gmail.com>",
@@ -7,10 +7,14 @@
   "devDependencies": {
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.5",
-    "prettier": "^3.4.2"
+    "prettier": "^3.4.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
   },
   "peerDependencies": {
     "@playwright/test": "^1.49.1"
   },
-  "scripts": {}
+  "scripts": {
+    "build": "tsup"
+  }
 }

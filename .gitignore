@@ -8,4 +8,5 @@ node_modules/
 
 # package's data
 /extensions
+/dist
 .tmp-user-data

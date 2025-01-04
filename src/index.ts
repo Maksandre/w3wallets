@@ -1,0 +1,1 @@
+export { withExtensions } from "./withExtension";

@@ -3,3 +3,9 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+.codegpt
+
+# package's data
+/extensions
+.tmp-user-data

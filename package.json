@@ -6,7 +6,8 @@
   "license": "MIT",
   "devDependencies": {
     "@playwright/test": "^1.49.1",
-    "@types/node": "^22.10.5"
+    "@types/node": "^22.10.5",
+    "prettier": "^3.4.2"
   },
   "peerDependencies": {
     "@playwright/test": "^1.49.1"

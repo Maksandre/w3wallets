@@ -13,14 +13,6 @@
     "typescript",
     "typescriptreact"
   ],
-  "eslint.workingDirectories": [
-    { "mode": "auto" }
-  ],
-  "cSpell.words": [
-    "nilfoundation",
-    "niljs",
-    "Nole",
-    "seqno",
-    "XWALLET"
-  ]
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "cSpell.words": ["nilfoundation", "niljs", "Nole", "seqno", "XWALLET"]
 }

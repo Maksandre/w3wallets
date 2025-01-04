@@ -6,6 +6,8 @@ node_modules/
 
 .codegpt
 
+package-lock.json
+
 # package's data
 /extensions
 /dist

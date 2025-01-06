@@ -1,7 +1,7 @@
 {
   "name": "w3wallets",
   "description": "browser wallets for playwright",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Max Andreev <maxick20@gmail.com>",
@@ -33,8 +33,10 @@
     "clean": "rm -rf dist",
     "check-format": "prettier --check .",
     "check-exports": "attw --pack .",
+    "format": "prettier --write .",
     "lint": "tsc",
     "ci": "yarn lint && yarn clean && yarn build && yarn check-format && yarn check-exports",
+    "changeset": "npx changeset",
     "local-release": "changeset version && changeset publish"
   },
   "dependencies": {

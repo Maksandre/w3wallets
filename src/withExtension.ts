@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs";
 import { test as base, type BrowserContext } from "@playwright/test";
 import { chromium } from "@playwright/test";
 
@@ -16,6 +17,12 @@ export function withExtensions(test: typeof base, config: Config) {
     context: async ({}, use) => {
       const userDataDir = path.join(process.cwd(), ".tmp-user-data");
       // const extensions = TODO combine specified in `config` extensions
+
+      const backpackDownloaded = fs.existsSync(
+        path.join(backpack, "manifest.json"),
+      );
+      if (!backpackDownloaded)
+        throw Error("Cannot find Backpack. download it `npx w3wallets`");
 
       const context = await chromium.launchPersistentContext(userDataDir, {
         headless: false,

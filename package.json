@@ -12,6 +12,9 @@
   "files": [
     "dist"
   ],
+  "bin": {
+    "w3wallets": "./src/scripts/download.js"
+  },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.2",
     "@changesets/cli": "^2.27.11",
@@ -33,5 +36,9 @@
     "lint": "tsc",
     "ci": "yarn lint && yarn clean && yarn build && yarn check-format && yarn check-exports",
     "local-release": "changeset version && changeset publish"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "follow-redirects": "^1.15.9"
   }
 }

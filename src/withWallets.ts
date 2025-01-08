@@ -21,7 +21,7 @@ export function withWallets(test: typeof base, config: Config) {
       const page = context.pages()[0];
       if (!page) throw Error("No pages in context");
 
-      const backpack = new Backpack(page);
+      const backpack = new Backpack(page, extensionId);
 
       await page.goto(
         `chrome-extension://${extensionId}/options.html?onboarding=true`,
@@ -29,8 +29,14 @@ export function withWallets(test: typeof base, config: Config) {
 
       await use(backpack);
     },
-    context: async ({}, use) => {
-      const userDataDir = path.join(process.cwd(), ".tmp-user-data");
+    context: async ({}, use, testInfo) => {
+      const userDataDir = path.join(
+        process.cwd(),
+        ".w3wallets",
+        testInfo.testId,
+      );
+      if (fs.existsSync(userDataDir))
+        fs.rmSync(userDataDir, { recursive: true });
       // const extensions = TODO combine specified in `config` extensions
 
       const backpackDownloaded = fs.existsSync(

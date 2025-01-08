@@ -11,4 +11,7 @@ package-lock.json
 # package's data
 /extensions
 /dist
-.tmp-user-data
+.w3wallets
+
+# testing
+test.spec.ts

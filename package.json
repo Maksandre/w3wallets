@@ -4,7 +4,15 @@
   "version": "0.0.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "author": "Max Andreev <maxick20@gmail.com>",
+  "homepage": "https://github.com/Maksandre/w3wallets",
+  "bugs": {
+    "url": "https://github.com/Maksandre/w3wallets/issues"
+  },
+  "author": "Max Andreev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Maksandre/w3wallets.git"
+  },
   "license": "MIT",
   "publishConfig": {
     "access": "public"

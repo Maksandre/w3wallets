@@ -1,17 +1,9 @@
-node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-
+node_modules
+.vscode
 .codegpt
-
-package-lock.json
-
-# package's data
-/extensions
-/dist
 .w3wallets
 
-# testing
-test.spec.ts
+/dist
+/extensions
+/playwright-report
+/tests

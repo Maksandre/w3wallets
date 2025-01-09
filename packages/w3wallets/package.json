@@ -1,0 +1,54 @@
+{
+  "name": "w3wallets",
+  "description": "browser wallets for playwright",
+  "version": "0.0.4",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "homepage": "https://github.com/Maksandre/w3wallets",
+  "bugs": {
+    "url": "https://github.com/Maksandre/w3wallets/issues"
+  },
+  "author": "Max Andreev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Maksandre/w3wallets.git"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "w3wallets": "./src/scripts/download.js"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.2",
+    "@changesets/cli": "^2.27.11",
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.5",
+    "prettier": "^3.4.2",
+    "standard-version": "^9.5.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.49.1"
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "check-format": "prettier --check .",
+    "check-exports": "attw --pack .",
+    "format": "prettier --write .",
+    "lint": "tsc",
+    "ci": "yarn lint && yarn clean && yarn build && yarn check-format && yarn check-exports",
+    "changeset": "npx changeset",
+    "local-release": "changeset version && changeset publish"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "follow-redirects": "^1.15.9"
+  }
+}

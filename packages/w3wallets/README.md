@@ -1,7 +1,7 @@
 # w3wallets
 
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-[![npm version](https://img.shields.io/npm/v/w3wallets.svg)](https://img.shields.io/npm/v/w3wallets.svg)
+[![npm version](https://img.shields.io/npm/v/w3wallets.svg)](https://www.npmjs.com/package/w3wallets)
 
 Web3 wallets for Playwright.
 
@@ -39,8 +39,9 @@ const test = withWallets(base, { backpack: true });
 test("has title", async ({ page, backpack }) => {
   await page.goto("https://playwright.dev/");
 
-  await backpack.onboard(
-    "4wDJd9Ds5ueTdS95ReAZGSBVkjMcNKbgZk47xcmqzpUJjCt7VoB2Cs7hqwXWRnopzXqE4mCP6BEDHCYrFttEcBw2",
-  );
+  const privateKey =
+    "4wDJd9Ds5ueTdS95ReAZGSBVkjMcNKbgZk47xcmqzpUJjCt7VoB2Cs7hqwXWRnopzXqE4mCP6BEDHCYrFttEcBw2";
+
+  await backpack.onboard("Eclipse", privateKey);
 });
 ```

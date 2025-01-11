@@ -4,15 +4,5 @@
   "workspaces": [
     "packages/*"
   ],
-  "scripts": {
-    "build": "tsup",
-    "clean": "rm -rf dist",
-    "check-format": "prettier --check .",
-    "check-exports": "attw --pack .",
-    "format": "prettier --write .",
-    "lint": "tsc",
-    "ci": "yarn lint && yarn clean && yarn build && yarn check-format && yarn check-exports",
-    "changeset": "npx changeset",
-    "local-release": "changeset version && changeset publish"
-  }
+  "scripts": {}
 }

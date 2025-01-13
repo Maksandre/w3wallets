@@ -4,5 +4,9 @@
   "workspaces": [
     "packages/*"
   ],
-  "scripts": {}
+  "scripts": {
+    "start:chain": "yarn workspace @w3wallets/test-contract local-node",
+    "start:ui": "yarn workspace @w3wallets/test-ui dev",
+    "deploy:contract": "yarn workspace @w3wallets/test-contract deploy"
+  }
 }

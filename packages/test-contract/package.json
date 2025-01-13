@@ -1,10 +1,11 @@
 {
   "name": "@w3wallets/test-contract",
   "version": "0.0.1",
+  "private": "true",
   "scripts": {
     "compile": "hardhat compile",
     "local-node": "npx hardhat node",
-    "deploy": "npx hardhat run scripts/deploy.ts --network localhost"
+    "deploy": "npx hardhat s-deploy --network localhost"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",

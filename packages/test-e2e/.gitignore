@@ -5,3 +5,5 @@ node_modules/
 /playwright/.cache/
 
 /wallets
+test.spec.ts
+.env

@@ -1,1 +1,1 @@
-export type BackPackNetwork = "Eclipse";
+export type BackPackNetwork = "Eclipse" | "Ethereum";

@@ -4,6 +4,5 @@ node_modules
 .w3wallets
 
 /dist
-/extensions
 /playwright-report
 /tests

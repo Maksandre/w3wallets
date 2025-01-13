@@ -1,5 +1,6 @@
 {
   "name": "tests",
+  "private": true,
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -7,5 +8,8 @@
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.5"
   },
-  "scripts": {}
+  "scripts": {
+    "start:ui": "yarn workspace @w3wallets/test-app dev"
+  },
+  "dependencies": {}
 }

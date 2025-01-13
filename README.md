@@ -22,7 +22,7 @@ Only the `Backpack` wallet is supported at this point.
 
 Currently, you need to download the extension manually. You can use [Chrome extension source viewer](https://chromewebstore.google.com/detail/chrome-extension-source-v/jifpbeccnghkjeaalbbjmodiffmgedin).
 
-Put the unzipped files to the root of your Playwright project `extensions/backpack`.
+Put the unzipped files to the root of your Playwright project `wallets/backpack`.
 
 <!-- ```sh
 npx w3wallets

@@ -9,7 +9,7 @@ type Config = {
 };
 
 export function withWallets(test: typeof base, config: Config) {
-  const backpack = path.join(process.cwd(), "extensions", "backpack");
+  const backpack = path.join(process.cwd(), "wallets", "backpack");
   // const metamask = path.join(process.cwd(), "metamask");
 
   return test.extend<{

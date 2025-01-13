@@ -1,0 +1,16 @@
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+.codegpt
+
+package-lock.json
+
+# package's data
+/dist
+.w3wallets
+
+# testing
+test.spec.ts

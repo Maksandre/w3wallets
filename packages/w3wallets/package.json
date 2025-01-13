@@ -20,9 +20,7 @@
   "files": [
     "dist"
   ],
-  "bin": {
-    "w3wallets": "./src/scripts/download.js"
-  },
+  "bin": "./src/scripts/download.js",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.2",
     "@changesets/cli": "^2.27.11",

@@ -1,7 +1,6 @@
 {
   "name": "@w3wallets/test-contract",
   "version": "0.0.1",
-  "private": "true",
   "scripts": {
     "compile": "hardhat compile",
     "local-node": "npx hardhat node",

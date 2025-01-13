@@ -1,1 +1,1 @@
-export { withWallets as withExtensions } from "./withWallets";
+export { withWallets } from "./withWallets";

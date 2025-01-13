@@ -6,10 +6,11 @@
   "license": "MIT",
   "devDependencies": {
     "@playwright/test": "^1.49.1",
-    "@types/node": "^22.10.5"
+    "@types/node": "^22.10.5",
+    "w3wallets": "workspace:^"
   },
   "scripts": {
-    "start:ui": "yarn workspace @w3wallets/test-app dev"
-  },
-  "dependencies": {}
+    "start:ui": "yarn workspace @w3wallets/test-app dev",
+    "build": "yarn workspace w3wallets build"
+  }
 }

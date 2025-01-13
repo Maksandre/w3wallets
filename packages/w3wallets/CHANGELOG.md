@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.1.2
+
+### Patch Changes
+
+- Add Ethereum support for Backpack
+
 ## 0.1.0
 
 ### Minor Changes

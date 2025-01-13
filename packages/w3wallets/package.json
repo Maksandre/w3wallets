@@ -21,19 +21,6 @@
     "dist"
   ],
   "bin": "./src/scripts/download.js",
-  "devDependencies": {
-    "@arethetypeswrong/cli": "^0.17.2",
-    "@changesets/cli": "^2.27.11",
-    "@playwright/test": "^1.49.1",
-    "@types/node": "^22.10.5",
-    "prettier": "^3.4.2",
-    "standard-version": "^9.5.0",
-    "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
-  },
-  "peerDependencies": {
-    "@playwright/test": "^1.49.1"
-  },
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist",
@@ -48,5 +35,18 @@
   "dependencies": {
     "adm-zip": "^0.5.16",
     "follow-redirects": "^1.15.9"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.2",
+    "@changesets/cli": "^2.27.11",
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.5",
+    "prettier": "^3.4.2",
+    "standard-version": "^9.5.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.49.1"
   }
 }

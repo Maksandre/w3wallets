@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.1.0
+
+### Minor Changes
+
+- rename withExtensions to withWallets
+
 ## 0.0.4
 
 ### Patch Changes

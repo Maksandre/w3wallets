@@ -5,9 +5,6 @@
 
 Web3 wallets for Playwright.
 
-> [!IMPORTANT]
-> This is Alpha!
-
 This library provides methods for interacting with Web3 wallets using Playwright.
 
 ```sh

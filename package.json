@@ -1,54 +1,14 @@
 {
-  "name": "w3wallets",
-  "description": "browser wallets for playwright",
-  "version": "0.0.4",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "homepage": "https://github.com/Maksandre/w3wallets",
-  "bugs": {
-    "url": "https://github.com/Maksandre/w3wallets/issues"
-  },
-  "author": "Max Andreev",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Maksandre/w3wallets.git"
-  },
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "dist"
+  "name": "wallets-pw",
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
-  "bin": {
-    "w3wallets": "./src/scripts/download.js"
-  },
-  "devDependencies": {
-    "@arethetypeswrong/cli": "^0.17.2",
-    "@changesets/cli": "^2.27.11",
-    "@playwright/test": "^1.49.1",
-    "@types/node": "^22.10.5",
-    "prettier": "^3.4.2",
-    "standard-version": "^9.5.0",
-    "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
-  },
-  "peerDependencies": {
-    "@playwright/test": "^1.49.1"
-  },
   "scripts": {
-    "build": "tsup",
-    "clean": "rm -rf dist",
-    "check-format": "prettier --check .",
-    "check-exports": "attw --pack .",
-    "format": "prettier --write .",
-    "lint": "tsc",
-    "ci": "yarn lint && yarn clean && yarn build && yarn check-format && yarn check-exports",
-    "changeset": "npx changeset",
-    "local-release": "changeset version && changeset publish"
+    "start:chain": "yarn workspace @w3wallets/test-contract local-node",
+    "start:ui": "yarn workspace @w3wallets/test-app dev",
+    "deploy:contract": "yarn workspace @w3wallets/test-contract deploy",
+    "build": "yarn workspace w3wallets build"
   },
-  "dependencies": {
-    "adm-zip": "^0.5.16",
-    "follow-redirects": "^1.15.9"
-  }
+  "packageManager": "yarn@1.22.22+sha256.c17d3797fb9a9115bf375e31bfd30058cac6bc9c3b8807a3d8cb2094794b51ca"
 }

@@ -17,13 +17,11 @@ Only the `Backpack` wallet is supported at this point.
 
 #### 1. Download Backpack
 
-Currently, you need to download the extension manually. You can use [Chrome extension source viewer](https://chromewebstore.google.com/detail/chrome-extension-source-v/jifpbeccnghkjeaalbbjmodiffmgedin).
+```sh
+npx w3wallets backpack
+```
 
-Put the unzipped files to the root of your Playwright project `wallets/backpack`.
-
-<!-- ```sh
-npx w3wallets
-``` -->
+The unzipped files should be stored in the `wallets/backpack` directory. Add them to `.gitignore`.
 
 #### 2. Wrap your fixture `withWallets`
 

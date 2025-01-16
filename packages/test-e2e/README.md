@@ -1,4 +1,4 @@
-In `vscode`, this project should be opened as a root.
+To work on this project in VS Code, make sure you open the project's root directory.
 
 1. Install dependencies
 

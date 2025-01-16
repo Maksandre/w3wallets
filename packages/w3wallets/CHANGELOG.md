@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.1.3
+
+### Patch Changes
+
+- Download wallets with npx w3wallets
+
 ## 0.1.2
 
 ### Patch Changes

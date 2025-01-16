@@ -2,6 +2,7 @@
 
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 [![npm version](https://img.shields.io/npm/v/w3wallets.svg)](https://www.npmjs.com/package/w3wallets)
+![CodeQL](https://github.com/Maksandre/w3wallets/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
 
 Web3 wallets for Playwright.
 
@@ -17,13 +18,11 @@ Only the `Backpack` wallet is supported at this point.
 
 #### 1. Download Backpack
 
-Currently, you need to download the extension manually. You can use [Chrome extension source viewer](https://chromewebstore.google.com/detail/chrome-extension-source-v/jifpbeccnghkjeaalbbjmodiffmgedin).
+```sh
+npx w3wallets backpack
+```
 
-Put the unzipped files to the root of your Playwright project `wallets/backpack`.
-
-<!-- ```sh
-npx w3wallets
-``` -->
+The unzipped files should be stored in the `wallets/backpack` directory. Add them to `.gitignore`.
 
 #### 2. Wrap your fixture `withWallets`
 

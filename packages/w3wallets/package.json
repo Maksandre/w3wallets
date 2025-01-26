@@ -13,6 +13,14 @@
     "type": "git",
     "url": "git+https://github.com/Maksandre/w3wallets.git"
   },
+  "keywords": [
+    "e2e",
+    "playwright",
+    "backpack",
+    "testing",
+    "eclipse",
+    "ethereum"
+  ],
   "license": "MIT",
   "publishConfig": {
     "access": "public"

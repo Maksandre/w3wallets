@@ -6,7 +6,12 @@ node_modules
 /dist
 /playwright-report
 /tests
-.yarn/
+
+# yarn
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+.pnp.*
 
 # Logs
 logs

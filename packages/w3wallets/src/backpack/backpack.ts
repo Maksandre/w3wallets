@@ -1,54 +1,63 @@
 import { expect, type Page } from "@playwright/test";
 import type { BackPackNetwork } from "./types";
+import { PageBase } from "./pagebase";
 
-export class Backpack {
+export class Backpack extends PageBase {
   private defaultPassword = "11111111";
 
-  constructor(
-    private page: Page,
-    private extensionId: string,
-  ) {}
+  constructor(page: Page, private extensionId: string) {
+    super(page);
+  }
 
   async onboard(network: BackPackNetwork, privateKey: string) {
-    await this.page.getByRole("button", { name: "Import wallet" }).click();
-    await this.page.getByRole("button", { name: network }).click();
-    await this.page.getByRole("button", { name: "Import private key" }).click();
-    await this.page.getByPlaceholder("Enter private key").fill(privateKey);
-    await this.page.getByRole("button", { name: "Import" }).click();
-    await this.page
-      .getByPlaceholder("Password", { exact: true })
-      .fill(this.defaultPassword);
-    await this.page
-      .getByPlaceholder("Confirm Password")
-      .fill(this.defaultPassword);
-    await this.page.getByRole("checkbox").click();
-    await this.page.getByRole("button", { name: "Next" }).click();
-    await expect(this.page.getByText("You're all good!")).toBeVisible();
-    await this.page.goto(`chrome-extension://${this.extensionId}/popup.html`);
+    const extensionUrl = `chrome-extension://${this.extensionId}/popup.html`;
+
+    await this.clickOnButtonWithName("Import wallet");
+    await this.clickOnButtonWithName(network);
+    await this.clickOnButtonWithName("Import private key");
+    await this.enterValueInPrivateKeyInput(privateKey);
+    await this.clickOnButtonWithName("Import");
+    await this.enterValueInPasswordInput(this.defaultPassword);
+    await this.enterValueInConfirmPasswordInput(this.defaultPassword);
+    await this.clickOnCheckbox();
+    await this.clickOnButtonWithName("Next");
+    await this.assertLabelDisplayed("You're all good!");
+    await this.navigateTo(extensionUrl)
+  }
+
+  async enterValueInPrivateKeyInput(value: string) {
+    (await this.getInputByPlaceholder("Enter private key")).fill(value)
+  }
+
+  async enterValueInPasswordInput(value: string) {
+    (await this.getInputByPlaceholder("Password", true)).fill(value)
+  }
+
+  async enterValueInConfirmPasswordInput(value: string) {
+    (await this.getInputByPlaceholder("Confirm Password")).fill(value)
   }
 
   async unlock() {
     await this.page.getByPlaceholder("Password").fill(this.defaultPassword);
-    await this.page.getByRole("button", { name: "Unlock" }).click();
+    await this.clickOnButtonWithName("Unlock");
   }
 
   async goToSettings(accountName?: string) {
-    await this.page.getByRole("button", { name: accountName ?? "A1" }).click();
-    await this.page.getByRole("button", { name: "Settings" }).click();
+    await this.clickOnButtonWithName(accountName ?? "A1");
+    await this.clickOnButtonWithName("Settings");
   }
 
   async setRPC(network: BackPackNetwork, rpc: string) {
     await this.goToSettings();
-    await this.page.getByRole("button", { name: network }).click();
-    await this.page.getByRole("button", { name: "RPC Connection" }).click();
-    await this.page.getByRole("button", { name: "Custom" }).click();
-    await this.page.getByPlaceholder("RPC URL").fill(rpc);
+    await this.clickOnButtonWithName(network);
+    await this.clickOnButtonWithName("RPC Connection");
+    await this.clickOnButtonWithName("Custom");
+    (await this.getInputByPlaceholder("RPC URL")).fill(rpc);
     await this.page.keyboard.press("Enter");
   }
 
   async ignoreAndProceed() {
-    const ignoreButton = this.page.getByText("Ignore and proceed anyway.");
-    await ignoreButton.click();
+    this.clickOnButtonWithName("Ignore and proceed anyway.");
   }
 
   async approve() {

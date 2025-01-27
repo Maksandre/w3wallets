@@ -12,6 +12,8 @@
   },
   "scripts": {
     "start:ui": "yarn workspace @w3wallets/test-app dev",
-    "build": "yarn workspace w3wallets build"
+    "build": "yarn workspace w3wallets build",
+    "install:chrome": "npx playwright install chromium",
+    "test": "npx playwright test"
   }
 }

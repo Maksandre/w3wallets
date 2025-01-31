@@ -12539,6 +12539,7 @@ __metadata:
     "@changesets/cli": "npm:^2.27.11"
     "@playwright/test": "npm:^1.49.1"
     "@types/node": "npm:^22.10.5"
+    dotenv: "npm:^16.4.7"
     follow-redirects: "npm:^1.15.9"
     prettier: "npm:^3.4.2"
     standard-version: "npm:^9.5.0"

@@ -22,6 +22,7 @@ const zlib = require("zlib");
 const ALIASES = {
   backpack: "aflkmfhebedbjioipglgcbcmnbpgliof",
   metamask: "nkbihfbeogaeaoehlefnkodbefgpgknn",
+  polkadotJS: "mopnmbcafieddcagagdcbnhejhlodfdd",
 };
 
 // ---------------------------------------------------------------------

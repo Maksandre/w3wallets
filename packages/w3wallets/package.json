@@ -30,6 +30,7 @@
   ],
   "bin": "./src/scripts/download.js",
   "scripts": {
+    "start:ui": "yarn workspace @w3wallets/test-app dev",
     "build": "tsup",
     "clean": "rm -rf dist",
     "check-format": "prettier --check .",
@@ -49,6 +50,7 @@
     "@changesets/cli": "^2.27.11",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.5",
+    "dotenv": "^16.4.7",
     "prettier": "^3.4.2",
     "standard-version": "^9.5.0",
     "tsup": "^8.3.5",

@@ -31,6 +31,7 @@
   "bin": "./src/scripts/download.js",
   "scripts": {
     "start:ui": "yarn workspace @w3wallets/test-app dev",
+    "test": "npx playwright test",
     "build": "tsup",
     "clean": "rm -rf dist",
     "check-format": "prettier --check .",

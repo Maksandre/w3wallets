@@ -4,18 +4,13 @@ import config from "./utils/config";
 
 const test = withWallets(base, "backpack", "polkadotJS");
 
-test("Can connect the Backpack wallet", async ({
-  page,
-  backpack,
-  polkadotJS,
-}) => {
-  await backpack!.onboard("Ethereum", config.ethPrivateKey);
+test("Can connect the Polkadot{.js} wallet", async ({ page, polkadotJS }) => {
+  await polkadotJS!.onboard(config.substrateSeed);
   await page.goto("http://localhost:3000");
 
-  await page.getByRole("button", { name: "Backpack" }).click();
-
-  await backpack!.approve();
+  await page.getByRole("button", { name: "Polkadot" }).click();
+  await polkadotJS!.selectAccount("Test");
+  await polkadotJS!.approve();
 
   await expect(page.getByText("status: connected")).toBeVisible();
-  await expect(page.getByText("success")).toBeVisible();
 });

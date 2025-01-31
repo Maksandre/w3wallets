@@ -24,8 +24,8 @@ export function withWallets<T extends readonly WalletName[]>(
 
   return test.extend<{
     context: BrowserContext;
-    backpack?: Backpack;
-    polkadotJS?: PolkadotJS;
+    backpack: Backpack;
+    polkadotJS: PolkadotJS;
   }>({
     /**
      * Sets up a persistent browser context with the requested extensions loaded.
@@ -73,8 +73,7 @@ export function withWallets<T extends readonly WalletName[]>(
 
     backpack: async ({ context }, use) => {
       if (!withBackpack) {
-        await use(undefined);
-        return;
+        throw Error("The Backpack wallet hasn't been loaded. Add it to the withWallets function.")
       }
 
       const backpack = await initializeExtension(
@@ -87,8 +86,7 @@ export function withWallets<T extends readonly WalletName[]>(
 
     polkadotJS: async ({ context }, use) => {
       if (!withPolkadotJS) {
-        await use(undefined);
-        return;
+        throw Error("The Polkadot{.js} wallet hasn't been loaded. Add it to the withWallets function.")
       }
 
       const polkadotJS = await initializeExtension(

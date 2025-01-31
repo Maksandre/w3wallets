@@ -8,3 +8,7 @@ export type NoDuplicates<
     ? never
     : [Head, ...NoDuplicates<Tail, [...Acc, Head]>]
   : T;
+
+export interface IWallet {
+  gotoOnboardPage(): Promise<void>;
+}

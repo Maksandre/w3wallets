@@ -1,57 +1,56 @@
-import { sleep } from './../tests/utils/sleep';
 import path from "path";
 import fs from "fs";
-import { test as base, type BrowserContext } from "@playwright/test";
-import { chromium } from "@playwright/test";
+import { sleep } from "../tests/utils/sleep";
+import {
+  test as base,
+  type BrowserContext,
+  chromium,
+  type Page,
+} from "@playwright/test";
 import { Backpack } from "./backpack";
-import { PolkadotJS } from "./polkadotJS"; // Example if you have a similar class
-import type { NoDuplicates, WalletName } from "./types";
+import { PolkadotJS } from "./polkadotJS";
+import type { IWallet, NoDuplicates, WalletName } from "./types";
 
-export function withWallets<T extends readonly WalletName[]>(test: typeof base, ...config: NoDuplicates<T>) {
+export function withWallets<T extends readonly WalletName[]>(
+  test: typeof base,
+  ...config: NoDuplicates<T>
+) {
+  const withBackpack = config.includes("backpack");
+  const withPolkadotJS = config.includes("polkadotJS");
+
+  // Define wallet paths
   const backpackPath = path.join(process.cwd(), "wallets", "backpack");
   const polkadotJSPath = path.join(process.cwd(), "wallets", "polkadotJS");
-
-  const withBackpack = config.find(w => w === 'backpack') ? true : false;
-  const withPolkadotJS = config.find(w => w === 'polkadotJS') ? true : false;
 
   return test.extend<{
     context: BrowserContext;
     backpack?: Backpack;
     polkadotJS?: PolkadotJS;
   }>({
+    /**
+     * Sets up a persistent browser context with the requested extensions loaded.
+     */
     context: async ({}, use, testInfo) => {
       const userDataDir = path.join(
         process.cwd(),
         ".w3wallets",
         testInfo.testId,
       );
-      if (fs.existsSync(userDataDir)) {
-        fs.rmSync(userDataDir, { recursive: true });
-      }
+
+      cleanUserDataDir(userDataDir);
 
       const extensionPaths: string[] = [];
 
-      // Add Backpack
       if (withBackpack) {
-        if (!fs.existsSync(path.join(backpackPath, "manifest.json"))) {
-          throw Error(
-            "Cannot find Backpack. Please download it via npx w3wallets",
-          );
-        }
+        ensureWalletExtensionExists(backpackPath, "backpack");
         extensionPaths.push(backpackPath);
       }
 
-      // Add Polkadot{.js}
       if (withPolkadotJS) {
-        if (!fs.existsSync(path.join(polkadotJSPath, "manifest.json"))) {
-          throw Error(
-            "Cannot find Polkadot{.js} wallet. Please download it via npx w3wallets polkadotJS",
-          );
-        }
+        ensureWalletExtensionExists(polkadotJSPath, "polkadotJS");
         extensionPaths.push(polkadotJSPath);
       }
 
-      // Launch persistent context with all requested extensions
       const context = await chromium.launchPersistentContext(userDataDir, {
         headless: false,
         args: [
@@ -60,78 +59,104 @@ export function withWallets<T extends readonly WalletName[]>(test: typeof base, 
         ],
       });
 
-      await context.waitForEvent('serviceworker');
-      while (context.serviceWorkers().length < config.length) {
+      // Wait until service workers appear for the loaded extensions
+      await context.waitForEvent("serviceworker");
+
+      // Depending on how quickly the extension service workers load, we poll.
+      while (context.serviceWorkers().length < extensionPaths.length) {
         await sleep(1000);
       }
 
       await use(context);
       await context.close();
     },
+
     backpack: async ({ context }, use) => {
       if (!withBackpack) {
         await use(undefined);
         return;
       }
 
-      const serviceWorkers = context.serviceWorkers();
-
-      // Identify which service worker is Backpack.
-      const backpackWorker = serviceWorkers.find((worker) => {
-        // TODO: Replace with a more robust test if loading multiple wallets.
-        return worker.url().includes("chrome-extension://");
-      });
-
-      if (!backpackWorker) {
-        throw Error("Could not find Backpack extension service worker");
-      }
-
-      const extensionId = backpackWorker.url().split("/")[2];
-      if (!extensionId) {
-        throw Error("Failed to parse Backpack extension ID");
-      }
-
-      // Create a dedicated page for Backpack
-      const page = await context.newPage();
-      const backpack = new Backpack(page, extensionId);
-
-      // Go to the Backpack onboarding page or any other relevant page
-      await page.goto(
-        `chrome-extension://${extensionId}/options.html?onboarding=true`,
+      const backpack = await initializeExtension(
+        context,
+        Backpack,
+        "Backpack is not initialized",
       );
-
       await use(backpack);
     },
+
     polkadotJS: async ({ context }, use) => {
       if (!withPolkadotJS) {
         await use(undefined);
         return;
       }
 
-      const serviceWorkers = context.serviceWorkers();
-
-      // Identify which service worker is Polkadot{.js}.
-      const polkadotJsWorker = serviceWorkers.find((worker) =>
-        // TODO: Replace with a more robust test if loading multiple wallets.
-        worker.url().includes("chrome-extension://"),
+      const polkadotJS = await initializeExtension(
+        context,
+        PolkadotJS,
+        "Polkadot{.js} is not initialized",
       );
-
-      if (!polkadotJsWorker) {
-        throw Error("Could not find Polkadot{.js} extension service worker");
-      }
-
-      const extensionId = polkadotJsWorker.url().split("/")[2];
-      if (!extensionId) {
-        throw Error("Failed to parse Polkadot{.js} extension ID");
-      }
-
-      const page = await context.newPage();
-
-      await page.goto(`chrome-extension://${extensionId}/options.html`);
-
-      const polkadotJS = new PolkadotJS(page, extensionId);
-
       await use(polkadotJS);
     },
   });
+}
+
+/**
+ * Deletes the specified directory if it exists.
+ */
+function cleanUserDataDir(userDataDir: string): void {
+  if (fs.existsSync(userDataDir)) {
+    fs.rmSync(userDataDir, { recursive: true });
+  }
+}
+
+/**
+ * Verifies that a wallet manifest file exists in the given path.
+ * Throws an error if the file is missing.
+ */
+function ensureWalletExtensionExists(
+  walletPath: string,
+  walletName: WalletName,
+): void {
+  if (!fs.existsSync(path.join(walletPath, "manifest.json"))) {
+    throw new Error(
+      `Cannot find ${walletName}. Please download it via 'npx w3wallets ${walletName}'.`,
+    );
+  }
+}
+
+/**
+ * Initializes an extension by attempting to navigate to its onboard page.
+ * If initialization fails for one service worker, it tries the next.
+ */
+async function initializeExtension<T extends IWallet>(
+  context: BrowserContext,
+  ExtensionClass: new (page: Page, extensionId: string) => T,
+  notInitializedErrorMessage: string,
+): Promise<T> {
+  const serviceWorkers = context.serviceWorkers();
+
+  // We keep reusing a "fresh" page each time a navigation fails.
+  let page = await context.newPage();
+
+  for (const worker of serviceWorkers) {
+    const extensionId = worker.url().split("/")[2];
+    // If we cannot parse the extension ID, skip or throw as needed.
+    if (!extensionId) {
+      continue;
+    }
+
+    const extension = new ExtensionClass(page, extensionId);
+
+    try {
+      await extension.gotoOnboardPage();
+      return extension;
+    } catch {
+      // If navigating fails, close the page and try the next service worker.
+      await page.close();
+      page = await context.newPage();
+    }
+  }
+
+  throw new Error(notInitializedErrorMessage);
 }

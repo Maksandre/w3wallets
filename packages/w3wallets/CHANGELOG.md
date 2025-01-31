@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.2.0
+
+### Minor Changes
+
+- Add Polkadot{.js} wallet & change withWallets signature
+
 ## 0.1.3
 
 ### Patch Changes

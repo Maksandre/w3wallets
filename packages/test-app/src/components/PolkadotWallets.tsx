@@ -43,7 +43,6 @@ export function PolkadotWallet() {
             {connector.name}
           </button>
         ))}
-        <div>Status: {status}</div>
         <div style={{ color: 'red' }}>{error?.message}</div>
       </div>
     </div>

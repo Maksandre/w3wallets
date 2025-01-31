@@ -2148,14 +2148,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.49.1":
-  version: 1.49.1
-  resolution: "@playwright/test@npm:1.49.1"
+"@playwright/test@npm:^1.50.1":
+  version: 1.50.1
+  resolution: "@playwright/test@npm:1.50.1"
   dependencies:
-    playwright: "npm:1.49.1"
+    playwright: "npm:1.50.1"
   bin:
     playwright: cli.js
-  checksum: 10c0/2fca0bb7b334f7a23c7c5dfa5dbe37b47794c56f39b747c8d74a2f95c339e7902a296f2f1dd32c47bdd723cfa92cee05219f1a5876725dc89a1871b9137a286d
+  checksum: 10c0/77c1a7cfaca7b3b88804256bb4c0e15c54b8df02690298086ef4a4fc8c2a42b99b69ba1b83906d00cc7ddb322ce8b2f19f0238f189913607c679779a4d132da1
   languageName: node
   linkType: hard
 
@@ -7060,7 +7060,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.12.1, follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.15.6, follow-redirects@npm:^1.15.9":
+"follow-redirects@npm:^1.12.1, follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.15.6":
   version: 1.15.9
   resolution: "follow-redirects@npm:1.15.9"
   peerDependenciesMeta:
@@ -7920,13 +7920,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immediate@npm:~3.0.5":
-  version: 3.0.6
-  resolution: "immediate@npm:3.0.6"
-  checksum: 10c0/f8ba7ede69bee9260241ad078d2d535848745ff5f6995c7c7cb41cfdc9ccc213f66e10fa5afb881f90298b24a3f7344b637b592beb4f54e582770cdce3f1f039
-  languageName: node
-  linkType: hard
-
 "immutable@npm:^4.0.0-rc.12":
   version: 4.3.7
   resolution: "immutable@npm:4.3.7"
@@ -8416,18 +8409,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jszip@npm:^3.1.0":
-  version: 3.10.1
-  resolution: "jszip@npm:3.10.1"
-  dependencies:
-    lie: "npm:~3.3.0"
-    pako: "npm:~1.0.2"
-    readable-stream: "npm:~2.3.6"
-    setimmediate: "npm:^1.0.5"
-  checksum: 10c0/58e01ec9c4960383fb8b38dd5f67b83ccc1ec215bf74c8a5b32f42b6e5fb79fada5176842a11409c4051b5b94275044851814a31076bf49e1be218d3ef57c863
-  languageName: node
-  linkType: hard
-
 "keccak@npm:^3.0.0, keccak@npm:^3.0.2, keccak@npm:^3.0.3":
   version: 3.0.4
   resolution: "keccak@npm:3.0.4"
@@ -8480,15 +8461,6 @@ __metadata:
     prelude-ls: "npm:~1.1.2"
     type-check: "npm:~0.3.2"
   checksum: 10c0/e440df9de4233da0b389cd55bd61f0f6aaff766400bebbccd1231b81801f6dbc1d816c676ebe8d70566394b749fa624b1ed1c68070e9c94999f0bdecc64cb676
-  languageName: node
-  linkType: hard
-
-"lie@npm:~3.3.0":
-  version: 3.3.0
-  resolution: "lie@npm:3.3.0"
-  dependencies:
-    immediate: "npm:~3.0.5"
-  checksum: 10c0/56dd113091978f82f9dc5081769c6f3b947852ecf9feccaf83e14a123bc630c2301439ce6182521e5fbafbde88e88ac38314327a4e0493a1bea7e0699a7af808
   languageName: node
   linkType: hard
 
@@ -9047,7 +9019,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:0.5.x, mkdirp@npm:^0.5.1":
+"mkdirp@npm:0.5.x":
   version: 0.5.6
   resolution: "mkdirp@npm:0.5.6"
   dependencies:
@@ -9739,13 +9711,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pako@npm:~1.0.2":
-  version: 1.0.11
-  resolution: "pako@npm:1.0.11"
-  checksum: 10c0/86dd99d8b34c3930345b8bbeb5e1cd8a05f608eeb40967b293f72fe469d0e9c88b783a8777e4cc7dc7c91ce54c5e93d88ff4b4f060e6ff18408fd21030d9ffbe
-  languageName: node
-  linkType: hard
-
 "parent-module@npm:^1.0.0":
   version: 1.0.1
   resolution: "parent-module@npm:1.0.1"
@@ -10023,27 +9988,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.49.1":
-  version: 1.49.1
-  resolution: "playwright-core@npm:1.49.1"
+"playwright-core@npm:1.50.1":
+  version: 1.50.1
+  resolution: "playwright-core@npm:1.50.1"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/990b619c75715cd98b2c10c1180a126e3a454b247063b8352bc67792fe01183ec07f31d30c8714c3768cefed12886d1d64ac06da701f2baafc2cad9b439e3919
+  checksum: 10c0/c158764257d870897c31807a830ddcc3f5aaf4376719e05aeada3489a01f751650b2dc43e027201a40405a1b075084e89f58cd3730a985a229efe9d8cecfe360
   languageName: node
   linkType: hard
 
-"playwright@npm:1.49.1":
-  version: 1.49.1
-  resolution: "playwright@npm:1.49.1"
+"playwright@npm:1.50.1":
+  version: 1.50.1
+  resolution: "playwright@npm:1.50.1"
   dependencies:
     fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.49.1"
+    playwright-core: "npm:1.50.1"
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 10c0/2368762c898920d4a0a5788b153dead45f9c36c3f5cf4d2af5228d0b8ea65823e3bbe998877950a2b9bb23a211e4633996f854c6188769dc81a25543ac818ab5
+  checksum: 10c0/b292ee6e0d122748a3d024b85ace86a0d9c848fc4121685d90ffc5d43d6bcf13ed7dc7488b1055f69040599c420052306ccba6fabfe2f69a15fc109c55171207
   languageName: node
   linkType: hard
 
@@ -11654,17 +11619,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tests@workspace:packages/test-e2e":
-  version: 0.0.0-use.local
-  resolution: "tests@workspace:packages/test-e2e"
-  dependencies:
-    "@playwright/test": "npm:^1.49.1"
-    "@types/node": "npm:^22.10.5"
-    dotenv: "npm:^16.4.7"
-    w3wallets: "workspace:^"
-  languageName: unknown
-  linkType: soft
-
 "text-extensions@npm:^1.0.0":
   version: 1.9.0
   resolution: "text-extensions@npm:1.9.0"
@@ -12331,17 +12285,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unzip-crx@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "unzip-crx@npm:0.2.0"
-  dependencies:
-    jszip: "npm:^3.1.0"
-    mkdirp: "npm:^0.5.1"
-    yaku: "npm:^0.16.6"
-  checksum: 10c0/a378e1bdf28ba5782c2d5f1132731da80bab089d364f21fbb0ffa49b98e12dc42316a6ec68819ce0cb62458de8cf39acddb1386a643184c20fa956b71ca7c667
-  languageName: node
-  linkType: hard
-
 "uri-js@npm:^4.2.2":
   version: 4.4.1
   resolution: "uri-js@npm:4.4.1"
@@ -12531,22 +12474,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"w3wallets@workspace:^, w3wallets@workspace:packages/w3wallets":
+"w3wallets@workspace:packages/w3wallets":
   version: 0.0.0-use.local
   resolution: "w3wallets@workspace:packages/w3wallets"
   dependencies:
     "@arethetypeswrong/cli": "npm:^0.17.2"
     "@changesets/cli": "npm:^2.27.11"
-    "@playwright/test": "npm:^1.49.1"
+    "@playwright/test": "npm:^1.50.1"
     "@types/node": "npm:^22.10.5"
-    follow-redirects: "npm:^1.15.9"
+    dotenv: "npm:^16.4.7"
     prettier: "npm:^3.4.2"
     standard-version: "npm:^9.5.0"
     tsup: "npm:^8.3.5"
     typescript: "npm:^5.7.2"
-    unzip-crx: "npm:^0.2.0"
   peerDependencies:
-    "@playwright/test": ^1.49.1
+    "@playwright/test": ^1.50.1
   bin:
     w3wallets: ./src/scripts/download.js
   languageName: unknown
@@ -12893,13 +12835,6 @@ __metadata:
   version: 5.0.8
   resolution: "y18n@npm:5.0.8"
   checksum: 10c0/4df2842c36e468590c3691c894bc9cdbac41f520566e76e24f59401ba7d8b4811eb1e34524d57e54bc6d864bcb66baab7ffd9ca42bf1eda596618f9162b91249
-  languageName: node
-  linkType: hard
-
-"yaku@npm:^0.16.6":
-  version: 0.16.7
-  resolution: "yaku@npm:0.16.7"
-  checksum: 10c0/de45a2f6c31ab905174c4e5a3aad93972cb3cf2946d206ab9718ad5fb9adf0781c011d8b1d576daf20ebfa02fa120a8e7552a742a88bb3d288eea5a3a693187c
   languageName: node
   linkType: hard
 

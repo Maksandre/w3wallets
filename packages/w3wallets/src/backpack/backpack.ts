@@ -1,13 +1,16 @@
-import { expect, type Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 import type { BackPackNetwork } from "./types";
+import { Wallet } from "../wallet";
 
-export class Backpack {
+export class Backpack extends Wallet {
   private defaultPassword = "11111111";
 
-  constructor(
-    private page: Page,
-    private extensionId: string,
-  ) {}
+  async gotoOnboardPage() {
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/options.html?onboarding=true`,
+    );
+    await expect(this.page.getByText("Welcome to Backpack")).toBeVisible();
+  }
 
   async onboard(network: BackPackNetwork, privateKey: string) {
     await this.page.getByRole("button", { name: "Import wallet" }).click();

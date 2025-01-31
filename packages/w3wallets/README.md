@@ -14,15 +14,15 @@ npm install -D w3wallets
 
 ## Getting Started
 
-Only the `Backpack` wallet is supported at this point.
+The `Backpack` and the `Polkadot{.js}` wallets are currently supported.
 
-#### 1. Download Backpack
+#### 1. Download wallets
 
 ```sh
-npx w3wallets backpack
+npx w3wallets backpack polkadotJS
 ```
 
-The unzipped files should be stored in the `wallets/backpack` directory. Add them to `.gitignore`.
+The unzipped files should be stored in the `.w3wallets/<wallet-name>` directory. Add them to `.gitignore`.
 
 #### 2. Wrap your fixture `withWallets`
 
@@ -30,7 +30,8 @@ The unzipped files should be stored in the `wallets/backpack` directory. Add the
 import { test as base } from "@playwright/test";
 import { withWallets } from "../src/withWallets";
 
-const test = withWallets(base, { backpack: true });
+// Specify one or many wallets that should be installed in the browser
+const test = withWallets(base, "backpack", "polkadotJS");
 
 test("has title", async ({ page, backpack }) => {
   await page.goto("https://playwright.dev/");
@@ -40,4 +41,39 @@ test("has title", async ({ page, backpack }) => {
 
   await backpack.onboard("Eclipse", privateKey);
 });
+```
+
+## Run tests
+
+To work on this project in VS Code, make sure you open the project's root directory.
+
+0. Create the `.env` using `.env.example` as a reference.
+1. Install dependencies
+
+```sh
+yarn
+```
+
+2. Install Chrome browser
+
+```sh
+npx playwright install chromium
+```
+
+3. Download wallet extensions
+
+```sh
+npx w3wallets backpack polkadotJS
+```
+
+4. Start UI
+
+```sh
+yarn start:ui
+```
+
+5. Run Tests with Playwright
+
+```sh
+yarn test
 ```

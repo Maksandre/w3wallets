@@ -22,6 +22,7 @@ const zlib = require("zlib");
 const ALIASES = {
   backpack: "aflkmfhebedbjioipglgcbcmnbpgliof",
   metamask: "nkbihfbeogaeaoehlefnkodbefgpgknn",
+  polkadotJS: "mopnmbcafieddcagagdcbnhejhlodfdd",
 };
 
 // ---------------------------------------------------------------------
@@ -58,7 +59,7 @@ for (const alias of inputAliases) {
       console.log(`Got CRX data for "${alias}"! ${crxBuffer.length} bytes`);
 
       // 2) Save raw CRX to disk
-      const outDir = path.join("wallets", alias);
+      const outDir = path.join(".w3wallets", alias);
       fs.mkdirSync(outDir, { recursive: true });
 
       const debugPath = path.join(outDir, `debug-${alias}.crx`);

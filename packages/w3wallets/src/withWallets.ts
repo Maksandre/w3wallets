@@ -11,7 +11,7 @@ import { Backpack } from "./backpack";
 import { PolkadotJS } from "./polkadotJS";
 import type { IWallet, NoDuplicates, WalletName } from "./types";
 
-const w3walletsDir = '.w3wallets';
+const w3walletsDir = ".w3wallets";
 
 export function withWallets<T extends readonly WalletName[]>(
   test: typeof base,
@@ -76,7 +76,9 @@ export function withWallets<T extends readonly WalletName[]>(
 
     backpack: async ({ context }, use) => {
       if (!withBackpack) {
-        throw Error("The Backpack wallet hasn't been loaded. Add it to the withWallets function.")
+        throw Error(
+          "The Backpack wallet hasn't been loaded. Add it to the withWallets function.",
+        );
       }
 
       const backpack = await initializeExtension(
@@ -89,7 +91,9 @@ export function withWallets<T extends readonly WalletName[]>(
 
     polkadotJS: async ({ context }, use) => {
       if (!withPolkadotJS) {
-        throw Error("The Polkadot{.js} wallet hasn't been loaded. Add it to the withWallets function.")
+        throw Error(
+          "The Polkadot{.js} wallet hasn't been loaded. Add it to the withWallets function.",
+        );
       }
 
       const polkadotJS = await initializeExtension(

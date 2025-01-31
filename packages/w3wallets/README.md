@@ -14,7 +14,7 @@ npm install -D w3wallets
 
 ## Getting Started
 
-The `Backpack` and the `Polkadot{.js}` wallets are supported at this point.
+The `Backpack` and the `Polkadot{.js}` wallets are currently supported.
 
 #### 1. Download wallets
 
@@ -31,7 +31,7 @@ import { test as base } from "@playwright/test";
 import { withWallets } from "../src/withWallets";
 
 // Specify one or many wallets that should be installed in the browser
-const test = withWallets(base, 'backpack', 'polkadotJS');
+const test = withWallets(base, "backpack", "polkadotJS");
 
 test("has title", async ({ page, backpack }) => {
   await page.goto("https://playwright.dev/");
@@ -54,7 +54,7 @@ To work on this project in VS Code, make sure you open the project's root direct
 yarn
 ```
 
-2. Install chrome browser
+2. Install Chrome browser
 
 ```sh
 npx playwright install chromium

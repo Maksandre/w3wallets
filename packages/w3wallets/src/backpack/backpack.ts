@@ -6,7 +6,9 @@ export class Backpack extends Wallet {
   private defaultPassword = "11111111";
 
   async gotoOnboardPage() {
-    await this.page.goto(`chrome-extension://${this.extensionId}/options.html?onboarding=true`);
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/options.html?onboarding=true`,
+    );
     await expect(this.page.getByText("Welcome to Backpack")).toBeVisible();
   }
 

@@ -19,21 +19,9 @@ export class PolkadotJS extends Wallet {
     await this.page.getByText("Import account from pre-existing seed").click();
     await this.page.locator(".seedInput").getByRole("textbox").fill(seed);
     await this.page.getByRole("button", { name: "Next" }).click();
-    await this.page
-      .locator(
-        '//label[text()="A descriptive name for your account"]/following-sibling::input',
-      )
-      .fill(name ?? "Test");
-    await this.page
-      .locator(
-        '//label[text()="A new password for this account"]/following-sibling::input',
-      )
-      .fill(password ?? this.defaultPassword);
-    await this.page
-      .locator(
-        '//label[text()="Repeat password for verification"]/following-sibling::input',
-      )
-      .fill(password ?? this.defaultPassword);
+    await this._getLabeledInput("A descriptive name for your account").fill(name ?? "Test");
+    await this._getLabeledInput("A new password for this account").fill(password ?? this.defaultPassword);
+    await this._getLabeledInput("Repeat password for verification").fill(password ?? this.defaultPassword);
     await this.page
       .getByRole("button", { name: "Add the account with the supplied seed" })
       .click();
@@ -52,11 +40,27 @@ export class PolkadotJS extends Wallet {
       .check();
   }
 
+  async enterPassword(password?: string) {
+    await this._getLabeledInput("Password for this account").fill(password ?? this.defaultPassword);
+  }
+
   async approve() {
-    await this.page.getByRole("button", { name: "Connect" }).click();
+    const connect = this.page.getByRole("button", { name: "Connect" });
+    const signTransaction = this.page.getByRole("button", { name: "Sign the transaction" });
+    
+    await connect.or(signTransaction).click();
   }
 
   async deny() {
-    await this.page.getByRole("button", { name: "Reject" }).click();
+    const reject = this.page.getByRole("button", { name: "Reject" });
+    const cancel = this.page.getByRole('link', {name: "Cancel"})
+    await reject.or(cancel).click();
+  }
+
+  private _getLabeledInput(label: string) {
+    return this.page
+      .locator(
+        `//label[text()="${label}"]/following-sibling::input`,
+      )
   }
 }

@@ -14,15 +14,15 @@ npm install -D w3wallets
 
 ## Getting Started
 
-Only the `Backpack` wallet is supported at this point.
+The `Backpack` and the `Polkadot{.js}` wallets are supported at this point.
 
-#### 1. Download Backpack
+#### 1. Download wallets
 
 ```sh
-npx w3wallets backpack
+npx w3wallets backpack polkadotJS
 ```
 
-The unzipped files should be stored in the `wallets/backpack` directory. Add them to `.gitignore`.
+The unzipped files should be stored in the `.w3wallets/<wallet-name>` directory. Add them to `.gitignore`.
 
 #### 2. Wrap your fixture `withWallets`
 
@@ -30,7 +30,8 @@ The unzipped files should be stored in the `wallets/backpack` directory. Add the
 import { test as base } from "@playwright/test";
 import { withWallets } from "../src/withWallets";
 
-const test = withWallets(base, { backpack: true });
+// Specify one or many wallets that should be installed in the browser
+const test = withWallets(base, 'backpack', 'polkadotJS');
 
 test("has title", async ({ page, backpack }) => {
   await page.goto("https://playwright.dev/");

@@ -11,6 +11,8 @@ import { Backpack } from "./backpack";
 import { PolkadotJS } from "./polkadotJS";
 import type { IWallet, NoDuplicates, WalletName } from "./types";
 
+const w3walletsDir = '.w3wallets';
+
 export function withWallets<T extends readonly WalletName[]>(
   test: typeof base,
   ...config: NoDuplicates<T>
@@ -19,8 +21,8 @@ export function withWallets<T extends readonly WalletName[]>(
   const withPolkadotJS = config.includes("polkadotJS");
 
   // Define wallet paths
-  const backpackPath = path.join(process.cwd(), "wallets", "backpack");
-  const polkadotJSPath = path.join(process.cwd(), "wallets", "polkadotJS");
+  const backpackPath = path.join(process.cwd(), w3walletsDir, "backpack");
+  const polkadotJSPath = path.join(process.cwd(), w3walletsDir, "polkadotJS");
 
   return test.extend<{
     context: BrowserContext;
@@ -34,6 +36,7 @@ export function withWallets<T extends readonly WalletName[]>(
       const userDataDir = path.join(
         process.cwd(),
         ".w3wallets",
+        ".context",
         testInfo.testId,
       );
 

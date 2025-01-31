@@ -11654,17 +11654,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tests@workspace:packages/test-e2e":
-  version: 0.0.0-use.local
-  resolution: "tests@workspace:packages/test-e2e"
-  dependencies:
-    "@playwright/test": "npm:^1.49.1"
-    "@types/node": "npm:^22.10.5"
-    dotenv: "npm:^16.4.7"
-    w3wallets: "workspace:^"
-  languageName: unknown
-  linkType: soft
-
 "text-extensions@npm:^1.0.0":
   version: 1.9.0
   resolution: "text-extensions@npm:1.9.0"
@@ -12531,7 +12520,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"w3wallets@workspace:^, w3wallets@workspace:packages/w3wallets":
+"w3wallets@workspace:packages/w3wallets":
   version: 0.0.0-use.local
   resolution: "w3wallets@workspace:packages/w3wallets"
   dependencies:

@@ -18,8 +18,9 @@
     "playwright",
     "backpack",
     "testing",
-    "eclipse",
-    "ethereum"
+    "ethereum",
+    "polkadot",
+    "eclipse"
   ],
   "license": "MIT",
   "publishConfig": {

@@ -4,6 +4,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 jobs:
   playwright:
     name: "Playwright Tests"
@@ -20,8 +21,6 @@ jobs:
           node-version: lts/*
       - name: Install dependencies
         run: yarn
-      - name: Install Chrome
-        run: npx playwright install chromium
       - name: Start UI
         run: yarn start:ui
       - name: Download extensions

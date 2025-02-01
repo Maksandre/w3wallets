@@ -22,7 +22,13 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Start UI
-        run: yarn start:ui &
+        run: |
+          yarn start:ui &
+          echo "Waiting for Next.js to be ready..."
+          until curl --silent --fail http://localhost:3000 > /dev/null; do
+            sleep 2
+          done
+          echo "Next.js is ready!"
       - name: Download extensions
         run: npx w3wallets backpack polkadotJS
       - name: Run tests

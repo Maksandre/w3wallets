@@ -6,7 +6,6 @@ import {
   type BrowserContext,
   chromium,
   type Page,
-  type TestInfo,
 } from "@playwright/test";
 import { Backpack } from "./backpack";
 import { PolkadotJS } from "./polkadotJS";

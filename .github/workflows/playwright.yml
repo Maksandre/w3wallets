@@ -19,9 +19,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: Install dependencies
+      - name: ⚙️ Install dependencies
         run: yarn
-      - name: Start UI
+      - name: 🌐 Start UI
         run: |
           yarn start:ui &
           echo "Waiting for Next.js to be ready..."
@@ -29,7 +29,9 @@ jobs:
             sleep 2
           done
           echo "Next.js is ready!"
-      - name: Download extensions
+      - name: 👝 Download wallets
         run: npx w3wallets backpack polkadotJS
-      - name: Run tests
+      - name: 🖨 Copy test envs
+        run: cp packages/w3wallets/.env.example packages/w3wallets/.env
+      - name: 🧪 Run tests
         run: yarn test

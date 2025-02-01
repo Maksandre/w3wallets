@@ -30,7 +30,7 @@ jobs:
           done
           echo "Next.js is ready!"
       - name: 👝 Download wallets
-        run: npx w3wallets backpack polkadotJS
+        run: yarn download-wallets
       - name: 🖨 Copy test envs
         run: cp packages/w3wallets/.env.example packages/w3wallets/.env
       - name: 🧪 Run tests

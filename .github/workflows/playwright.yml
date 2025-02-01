@@ -22,6 +22,8 @@ jobs:
         run: npx playwright install chromium
       - name: Start UI
         run: yarn start:ui
+        env:
+          NEXT_PUBLIC_WC_PROJECT_ID: ${{secrets.NEXT_PUBLIC_WC_PROJECT_ID}}
       - name: Download extensions
         run: npx w3wallets backpack polkadotJS
       - name: Run tests

@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Start UI
-        run: yarn start:ui
+        run: yarn start:ui &
       - name: Download extensions
         run: npx w3wallets backpack polkadotJS
       - name: Run tests

@@ -6,6 +6,7 @@ import {
   type BrowserContext,
   chromium,
   type Page,
+  type TestInfo,
 } from "@playwright/test";
 import { Backpack } from "./backpack";
 import { PolkadotJS } from "./polkadotJS";
@@ -55,7 +56,8 @@ export function withWallets<T extends readonly WalletName[]>(
       }
 
       const context = await chromium.launchPersistentContext(userDataDir, {
-        headless: false,
+        headless: testInfo.project.use.headless ?? true,
+        channel: "chromium",
         args: [
           `--disable-extensions-except=${extensionPaths.join(",")}`,
           `--load-extension=${extensionPaths.join(",")}`,

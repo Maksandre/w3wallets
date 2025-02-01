@@ -11,6 +11,8 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.50.1-noble
       options: --user 1001
+    env:
+      NEXT_PUBLIC_WC_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WC_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,8 +24,6 @@ jobs:
         run: npx playwright install chromium
       - name: Start UI
         run: yarn start:ui
-        env:
-          NEXT_PUBLIC_WC_PROJECT_ID: ${{secrets.NEXT_PUBLIC_WC_PROJECT_ID}}
       - name: Download extensions
         run: npx w3wallets backpack polkadotJS
       - name: Run tests

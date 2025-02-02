@@ -54,32 +54,9 @@ export function withWallets<T extends readonly WalletName[]>(
         extensionPaths.push(polkadotJSPath);
       }
 
-      console.log("launching context");
-
-      extensionPaths.forEach((extPath) => {
-        try {
-          // Check that the directory itself is accessible
-          fs.accessSync(extPath, fs.constants.R_OK);
-          console.log(`✅ Found extension directory: ${extPath}`);
-        } catch (error) {
-          console.error(
-            `❌ Extension path not found or no permission: ${extPath}`,
-            error,
-          );
-        }
-
-        // Check specifically for manifest.json (common entrypoint)
-        const manifestPath = path.join(extPath, "manifest.json");
-        if (fs.existsSync(manifestPath)) {
-          console.log(`✅ Found manifest.json at: ${manifestPath}`);
-        } else {
-          console.error(`❌ No manifest.json found at: ${manifestPath}`);
-        }
-      });
-
       const context = await chromium.launchPersistentContext(userDataDir, {
         // TODO: return parametrization
-        headless: false,
+        headless: true,
         // headless: testInfo.project.use.headless ?? true,
         channel: "chromium",
         args: [

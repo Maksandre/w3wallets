@@ -55,7 +55,9 @@ export function withWallets<T extends readonly WalletName[]>(
       }
 
       const context = await chromium.launchPersistentContext(userDataDir, {
-        headless: testInfo.project.use.headless ?? true,
+        // TODO: return parametrization
+        headless: true,
+        // headless: testInfo.project.use.headless ?? true,
         channel: "chromium",
         args: [
           `--disable-extensions-except=${extensionPaths.join(",")}`,

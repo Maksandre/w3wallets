@@ -79,7 +79,7 @@ export function withWallets<T extends readonly WalletName[]>(
 
       const context = await chromium.launchPersistentContext(userDataDir, {
         // TODO: return parametrization
-        headless: true,
+        headless: false,
         // headless: testInfo.project.use.headless ?? true,
         channel: "chromium",
         args: [
@@ -88,10 +88,27 @@ export function withWallets<T extends readonly WalletName[]>(
         ],
       });
 
+      context.on("page", (page) => {
+        // Capture console logs on each page
+        page.on("console", (msg) => {
+          console.log(`console(${msg.type()}): ${msg.text()}`);
+        });
+        // Capture page errors (e.g., uncaught exceptions)
+        page.on("pageerror", (err) => {
+          console.log(`pageerror: ${err}`);
+        });
+      });
+
+      // Global console events
+      context.on("console", (msg) =>
+        console.log(`(context) console(${msg.type()}): ${msg.text()}`),
+      );
+
       console.log("launched");
 
       // Wait until service workers appear for the loaded extensions
-      await context.waitForEvent("serviceworker");
+      // TODO:
+      // await context.waitForEvent("serviceworker");
 
       // Depending on how quickly the extension service workers load, we poll.
       while (context.serviceWorkers().length < extensionPaths.length) {

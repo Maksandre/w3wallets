@@ -54,10 +54,9 @@ export function withWallets<T extends readonly WalletName[]>(
         extensionPaths.push(polkadotJSPath);
       }
 
-      // TODO: logs
-      console.log(extensionPaths.join(","));
+      console.log("launching context");
 
-      const context = await chromium.launchPersistentContext("", {
+      const context = await chromium.launchPersistentContext(userDataDir, {
         // TODO: return parametrization
         headless: true,
         // headless: testInfo.project.use.headless ?? true,
@@ -68,12 +67,15 @@ export function withWallets<T extends readonly WalletName[]>(
         ],
       });
 
+      console.log("launched");
+
       // Wait until service workers appear for the loaded extensions
       await context.waitForEvent("serviceworker");
 
       // Depending on how quickly the extension service workers load, we poll.
       while (context.serviceWorkers().length < extensionPaths.length) {
         await sleep(1000);
+        console.log("Awaiting service workers");
       }
 
       await use(context);

@@ -30,6 +30,9 @@ jobs:
       - name: ⚙️ Install dependencies
         run: yarn install --immutable
 
+      - name: Print File Tree
+        run: tree -I node_modules
+
       - name: 🌐 Start UI
         run: |
           yarn start:ui &

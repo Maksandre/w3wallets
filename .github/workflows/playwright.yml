@@ -31,7 +31,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Print File Tree
-        run: sudo apt-get install tree && tree -I node_modules
+        run: apt-get install tree && tree -I node_modules
 
       - name: 🌐 Start UI
         run: |

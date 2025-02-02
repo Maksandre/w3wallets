@@ -1,10 +1,12 @@
 name: Playwright Tests
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
+
 jobs:
   playwright:
     name: "Playwright Tests"
@@ -16,11 +18,18 @@ jobs:
       NEXT_PUBLIC_WC_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WC_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          cache: "yarn"
+
+      - name: ⚙️ Enable Corepack (Yarn 4)
+        run: corepack enable
+
       - name: ⚙️ Install dependencies
-        run: yarn
+        run: yarn install --immutable
+
       - name: 🌐 Start UI
         run: |
           yarn start:ui &
@@ -29,9 +38,12 @@ jobs:
             sleep 2
           done
           echo "Next.js is ready!"
+
       - name: 👝 Download wallets
         run: yarn download-wallets
+
       - name: 🖨 Copy test envs
         run: cp packages/w3wallets/.env.example packages/w3wallets/.env
+
       - name: 🧪 Run tests
         run: yarn test

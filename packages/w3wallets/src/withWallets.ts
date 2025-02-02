@@ -54,7 +54,10 @@ export function withWallets<T extends readonly WalletName[]>(
         extensionPaths.push(polkadotJSPath);
       }
 
-      const context = await chromium.launchPersistentContext(userDataDir, {
+      // TODO: logs
+      console.log(extensionPaths.join(","));
+
+      const context = await chromium.launchPersistentContext("", {
         // TODO: return parametrization
         headless: true,
         // headless: testInfo.project.use.headless ?? true,

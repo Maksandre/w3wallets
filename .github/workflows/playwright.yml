@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.50.1-noble
-      options: --user 1001
     env:
       NEXT_PUBLIC_WC_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WC_PROJECT_ID }}
     steps:
@@ -29,9 +28,6 @@ jobs:
 
       - name: ⚙️ Install dependencies
         run: yarn install --immutable
-
-      - name: Print File Tree
-        run: apt-get install tree && tree -I node_modules
 
       - name: 🌐 Start UI
         run: |

@@ -63,10 +63,6 @@ export function withWallets<T extends readonly WalletName[]>(
         ],
       });
 
-      // // Wait until service workers appear for the loaded extensions
-      // await context.waitForEvent("serviceworker");
-
-      // Depending on how quickly the extension service workers load, we poll.
       while (context.serviceWorkers().length < extensionPaths.length) {
         await sleep(1000);
       }

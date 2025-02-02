@@ -3,6 +3,7 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 [![npm version](https://img.shields.io/npm/v/w3wallets.svg)](https://www.npmjs.com/package/w3wallets)
 ![CodeQL](https://github.com/Maksandre/w3wallets/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)
+[![Tests](https://github.com/Maksandre/w3wallets/actions/workflows/playwright.yml/badge.svg?branch=main)](https://github.com/Maksandre/w3wallets/actions/workflows/playwright.yml)
 
 Web3 wallets for Playwright.
 

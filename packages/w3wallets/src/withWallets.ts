@@ -55,17 +55,14 @@ export function withWallets<T extends readonly WalletName[]>(
       }
 
       const context = await chromium.launchPersistentContext(userDataDir, {
-        headless: false,
+        headless: testInfo.project.use.headless ?? true,
+        channel: "chromium",
         args: [
           `--disable-extensions-except=${extensionPaths.join(",")}`,
           `--load-extension=${extensionPaths.join(",")}`,
         ],
       });
 
-      // Wait until service workers appear for the loaded extensions
-      await context.waitForEvent("serviceworker");
-
-      // Depending on how quickly the extension service workers load, we poll.
       while (context.serviceWorkers().length < extensionPaths.length) {
         await sleep(1000);
       }

@@ -1,0 +1,48 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  playwright:
+    name: "Playwright Tests"
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.50.1-noble
+    env:
+      NEXT_PUBLIC_WC_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WC_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "yarn"
+
+      - name: ⚙️ Enable Corepack (Yarn 4)
+        run: corepack enable
+
+      - name: ⚙️ Install dependencies
+        run: yarn install --immutable
+
+      - name: 🌐 Start UI
+        run: |
+          yarn start:ui &
+          echo "Waiting for Next.js to be ready..."
+          until curl --silent --fail http://localhost:3000 > /dev/null; do
+            sleep 2
+          done
+          echo "Next.js is ready!"
+
+      - name: 👝 Download wallets
+        run: yarn download-wallets
+
+      - name: 🖨 Copy test envs
+        run: cp packages/w3wallets/.env.example packages/w3wallets/.env
+
+      - name: 🧪 Run tests
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1280x800x24' yarn test

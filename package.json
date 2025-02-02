@@ -6,9 +6,11 @@
   ],
   "scripts": {
     "start:chain": "yarn workspace @w3wallets/test-contract local-node",
-    "start:ui": "yarn workspace @w3wallets/test-app dev",
+    "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
     "deploy:contract": "yarn workspace @w3wallets/test-contract deploy",
-    "build": "yarn workspace w3wallets build"
+    "build": "yarn workspace w3wallets build",
+    "download-wallets": "yarn workspace w3wallets download-wallets",
+    "test": "yarn workspace w3wallets test"
   },
-  "packageManager": "yarn@1.22.22+sha256.c17d3797fb9a9115bf375e31bfd30058cac6bc9c3b8807a3d8cb2094794b51ca"
+  "packageManager": "yarn@4.6.0"
 }

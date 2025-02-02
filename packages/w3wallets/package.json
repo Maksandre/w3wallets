@@ -31,8 +31,9 @@
   ],
   "bin": "./src/scripts/download.js",
   "scripts": {
-    "start:ui": "yarn workspace @w3wallets/test-app dev",
-    "test": "npx playwright test",
+    "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
+    "download-wallets": "npx w3wallets backpack polkadotJS",
+    "test": "npx playwright test --project=ci",
     "build": "tsup",
     "clean": "rm -rf dist",
     "check-format": "prettier --check .",

@@ -17,6 +17,11 @@ npm install -D w3wallets
 
 The `Backpack` and the `Polkadot{.js}` wallets are currently supported.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/coral-xyz/backpack/refs/heads/master/assets/backpack.png" alt="Backpack Logo" width="60"/>
+  <img src="https://polkadot.js.org/logo.svg" alt="Polkadot JS Logo" width="60"/>
+</p>
+
 #### 1. Download wallets
 
 ```sh
@@ -27,54 +32,33 @@ The unzipped files should be stored in the `.w3wallets/<wallet-name>` directory.
 
 #### 2. Wrap your fixture `withWallets`
 
+Install needed wallets into the chromium using `withWallets`.
+
 ```ts
+// your-fixture.ts
+import { withWallets } from "w3wallets";
 import { test as base } from "@playwright/test";
-import { withWallets } from "../src/withWallets";
 
-// Specify one or many wallets that should be installed in the browser
-const test = withWallets(base, "backpack", "polkadotJS");
+export const test = withWallets(base, 'backpack', 'polkadotJS').extend<BaseFixture>({
+  magic: (_, use) => use(42),
+});
 
-test("has title", async ({ page, backpack }) => {
-  await page.goto("https://playwright.dev/");
+type BaseFixture = {
+  magic: number;
+};
 
+export { expect } from "@playwright/test";
+```
+
+#### 3. Use the installed wallets in tests
+
+```ts
+import { test } from "./your-fixture";
+
+test("Can use wallet", async ({ page, backpack }) => {
   const privateKey =
     "4wDJd9Ds5ueTdS95ReAZGSBVkjMcNKbgZk47xcmqzpUJjCt7VoB2Cs7hqwXWRnopzXqE4mCP6BEDHCYrFttEcBw2";
 
   await backpack.onboard("Eclipse", privateKey);
 });
-```
-
-## Run tests
-
-To work on this project in VS Code, make sure you open the project's root directory.
-
-0. Create the `.env` using `.env.example` as a reference.
-1. Install dependencies
-
-```sh
-yarn
-```
-
-2. Install Chrome browser
-
-```sh
-npx playwright install chromium
-```
-
-3. Download wallet extensions
-
-```sh
-npx w3wallets backpack polkadotJS
-```
-
-4. Start UI
-
-```sh
-yarn start:ui
-```
-
-5. Run Tests with Playwright
-
-```sh
-yarn test
 ```

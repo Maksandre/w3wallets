@@ -55,10 +55,10 @@ export class Backpack extends Wallet {
   }
 
   async approve() {
-    await this.page.getByText("Approve").click();
+    await this.page.getByText("Approve", { exact: true }).click();
   }
 
   async deny() {
-    await this.page.getByText("Deny").click();
+    await this.page.getByText("Deny", { exact: true }).click();
   }
 }

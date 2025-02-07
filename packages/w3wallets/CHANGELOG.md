@@ -1,5 +1,17 @@
 # w3wallets
 
+## 0.2.2
+
+### Patch Changes
+
+- Fix approve/deny for backpack
+
+## 0.2.1
+
+### Patch Changes
+
+- Fixed locked context
+
 ## 0.2.0
 
 ### Minor Changes

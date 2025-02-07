@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.2.1
+
+### Patch Changes
+
+- Fixed locked context
+
 ## 0.2.0
 
 ### Minor Changes

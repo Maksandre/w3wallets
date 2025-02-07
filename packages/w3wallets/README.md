@@ -17,6 +17,11 @@ npm install -D w3wallets
 
 The `Backpack` and the `Polkadot{.js}` wallets are currently supported.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/coral-xyz/backpack/refs/heads/master/assets/backpack.png" alt="Backpack Logo" width="60"/>
+  <img src="https://polkadot.js.org/logo.svg" alt="Polkadot JS Logo" width="60"/>
+</p>
+
 #### 1. Download wallets
 
 ```sh
@@ -35,8 +40,6 @@ import { withWallets } from "../src/withWallets";
 const test = withWallets(base, "backpack", "polkadotJS");
 
 test("has title", async ({ page, backpack }) => {
-  await page.goto("https://playwright.dev/");
-
   const privateKey =
     "4wDJd9Ds5ueTdS95ReAZGSBVkjMcNKbgZk47xcmqzpUJjCt7VoB2Cs7hqwXWRnopzXqE4mCP6BEDHCYrFttEcBw2";
 

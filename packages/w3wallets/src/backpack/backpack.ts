@@ -29,6 +29,10 @@ export class Backpack extends Wallet {
     await this._importAccount(network, privateKey, false);
   }
 
+  /**
+   * Switch account
+   * @param id The first added account has id 1, the second – 2, and so on
+   */
   async switchAccount(id: number) {
     await this.page.getByRole("button", { name: `A${this.currentAccountId}` }).click();
     await this.page.getByRole("button", { name: `Account ${id}` }).click();

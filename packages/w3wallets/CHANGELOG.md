@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.3.0
+
+### Minor Changes
+
+- Backpack: addAccount and switchAccount methods
+
 ## 0.2.2
 
 ### Patch Changes

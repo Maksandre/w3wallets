@@ -1,15 +1,20 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { EthereumWallet } from '../components/EthereumWallets';
-import { PolkadotWallet } from '../components/PolkadotWallets';
+import React from "react";
+import { EthereumWallet } from "../components/EthereumWallets";
+import { PolkadotWallet } from "../components/PolkadotWallets";
+import TransferForm from "@/components/TransferForm";
 
 function App() {
   return (
     <>
-      <EthereumWallet />
-      <hr />
-      <PolkadotWallet />
+      <div>
+        <EthereumWallet />
+      </div>
+      <div>
+        <PolkadotWallet />
+        <TransferForm></TransferForm>
+      </div>
     </>
   );
 }

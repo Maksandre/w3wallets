@@ -1,12 +1,15 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { usePolkadotWalletContext } from '../polkadot/PolkadotWalletProvider';
+import React from "react";
+import { usePolkadotWalletContext } from "../polkadot/PolkadotWalletProvider";
+import { Island } from "./Island";
 
 export function PolkadotWallet() {
   const {
     status,
     addresses,
+    activeAccount,
+    setActiveAccount,
     connectors,
     connect,
     disconnect,
@@ -14,37 +17,54 @@ export function PolkadotWallet() {
   } = usePolkadotWalletContext();
 
   return (
-    <div>
-      <h2>Polkadot</h2>
-
+    <Island>
       <div>
-        <strong>Account Info:</strong>
-        <br />
-        Status: {status}
-        <br />
-        Addresses: {JSON.stringify(addresses)}
-      </div>
+        <h2>Polkadot Wallet</h2>
 
-      {status === 'connected' && (
-        <button type="button" onClick={disconnect}>
-          Disconnect
-        </button>
-      )}
+        <div>
+          <strong>Account Info:</strong>
+          <p>Status: {status}</p>
+          <p>Active Account: {activeAccount || "None"}</p>
+        </div>
 
-      <div>
-        <h3>Connect</h3>
-        {connectors.map((connector) => (
-          <button
-            key={connector.uid}
-            onClick={() => connect({ connector })}
-            type="button"
-            disabled={!connector.installed}
-          >
-            {connector.name}
+        {status === "connected" && (
+          <button type="button" onClick={disconnect}>
+            Disconnect
           </button>
-        ))}
-        <div style={{ color: 'red' }}>{error?.message}</div>
+        )}
+
+        {addresses.length > 0 && (
+          <div>
+            <h3>Connected Accounts</h3>
+            <div>
+              <ul>
+                {addresses.map((address) => (
+                  <li key={address} onClick={() => setActiveAccount(address)}>
+                    {address}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        <div>
+          <h3>Connect a Wallet</h3>
+          <div>
+            {connectors.map((connector) => (
+              <button
+                key={connector.uid}
+                onClick={() => connect({ connector })}
+                type="button"
+                disabled={!connector.installed}
+              >
+                {connector.name}
+              </button>
+            ))}
+          </div>
+          {error && <div>{error.message}</div>}
+        </div>
       </div>
-    </div>
+    </Island>
   );
 }

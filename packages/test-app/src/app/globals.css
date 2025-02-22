@@ -24,19 +24,10 @@
   text-rendering: optimizeLegibility;
 }
 
-/* Reset margins and paddings */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* Ensure body takes full height */
 html, body {
   height: 100%;
   width: 100%;
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  padding: 10px;
 }

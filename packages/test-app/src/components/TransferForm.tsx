@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useAccount } from "@/lib/polkadot";
+import Heading from "./ui/Heading";
+import Button from "./ui/Button";
+import Input from "./ui/Input";
 
 const TransferForm: React.FC = () => {
   const [recipient, setRecipient] = useState<string>("");
@@ -8,33 +11,36 @@ const TransferForm: React.FC = () => {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Sending", { recipient, amount });
-    // Handle the send logic here
   };
 
   return (
-    <>
-      <h2>Transfer</h2>
-      <form onSubmit={handleSubmit}>
-        <input
+    <div>
+      <Heading level={2}>Transfer</Heading>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
           type="text"
           value={recipient}
           onChange={(e) => setRecipient(e.target.value)}
           required
-          placeholder="Recipient"
+          name="recipient"
+          placeholder="Enter recipient address"
         />
 
-        <input
+        <Input
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           required
-          placeholder="Amount"
+          name="amount"
+          placeholder="Enter amount"
         />
 
-        <button type="submit">Send</button>
+        <Button type="submit" variant="primary">
+          Send
+        </Button>
       </form>
-    </>
+    </div>
   );
 };
 

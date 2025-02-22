@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useAccount } from "@/polkadot";
-import { Island } from "./Island";
+import { useAccount } from "@/lib/polkadot";
 
 const TransferForm: React.FC = () => {
   const [recipient, setRecipient] = useState<string>("");
@@ -14,7 +13,7 @@ const TransferForm: React.FC = () => {
   };
 
   return (
-    <Island>
+    <>
       <h2>Transfer</h2>
       <form onSubmit={handleSubmit}>
         <input
@@ -35,7 +34,7 @@ const TransferForm: React.FC = () => {
 
         <button type="submit">Send</button>
       </form>
-    </Island>
+    </>
   );
 };
 

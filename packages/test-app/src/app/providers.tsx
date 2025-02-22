@@ -5,7 +5,7 @@ import { type ReactNode, useState } from "react";
 import { type State, WagmiProvider } from "wagmi";
 
 import { getConfig } from "@/wagmi";
-import { PolkadotWalletProvider } from "@/polkadot";
+import { PolkadotWalletProvider } from "@/lib/polkadot";
 
 export function Providers(props: {
   children: ReactNode;

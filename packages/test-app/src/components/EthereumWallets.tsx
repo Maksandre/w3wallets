@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { Island } from "./Island";
 
 export function EthereumWallet() {
   const account = useAccount();
@@ -10,41 +9,39 @@ export function EthereumWallet() {
   const { disconnect } = useDisconnect();
 
   return (
-    <Island>
+    <div>
+      <h2>Ethereum</h2>
+
       <div>
-        <h2>Ethereum</h2>
-
-        <div>
-          <strong>Account Info:</strong>
-          <br />
-          Status: {account.status}
-          <br />
-          Addresses: {JSON.stringify(account.addresses)}
-          <br />
-          Chain ID: {account.chainId}
-        </div>
-
-        {account.status === "connected" && (
-          <button type="button" onClick={() => disconnect()}>
-            Disconnect
-          </button>
-        )}
-
-        <div>
-          <h3>Connect</h3>
-          {connectors.map((connector) => (
-            <button
-              key={connector.id}
-              onClick={() => connect({ connector })}
-              type="button"
-            >
-              {connector.name}
-            </button>
-          ))}
-          <div>Status: {status}</div>
-          <div style={{ color: "red" }}>{error?.message}</div>
-        </div>
+        <strong>Account Info:</strong>
+        <br />
+        Status: {account.status}
+        <br />
+        Addresses: {JSON.stringify(account.addresses)}
+        <br />
+        Chain ID: {account.chainId}
       </div>
-    </Island>
+
+      {account.status === "connected" && (
+        <button type="button" onClick={() => disconnect()}>
+          Disconnect
+        </button>
+      )}
+
+      <div>
+        <h3>Connect</h3>
+        {connectors.map((connector) => (
+          <button
+            key={connector.id}
+            onClick={() => connect({ connector })}
+            type="button"
+          >
+            {connector.name}
+          </button>
+        ))}
+        <div>Status: {status}</div>
+        <div style={{ color: "red" }}>{error?.message}</div>
+      </div>
+    </div>
   );
 }

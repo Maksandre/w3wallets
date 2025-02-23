@@ -26,6 +26,9 @@ jobs:
       - name: ⚙️ Enable Corepack (Yarn 4)
         run: corepack enable
 
+      - name: 👽 Generate PAPI types
+        run: yarn typegen
+
       - name: ⚙️ Install dependencies
         run: yarn install --immutable
 

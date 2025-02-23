@@ -10,6 +10,7 @@
     "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
     "deploy:contract": "yarn workspace w3wallets deploy",
     "build": "yarn workspace w3wallets build",
+    "typegen": "yarn workspace @w3wallets/test-app typegen",
     "download-wallets": "yarn workspace w3wallets download-wallets",
     "test": "yarn workspace w3wallets test"
   },

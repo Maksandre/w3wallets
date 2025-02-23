@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "buildAndStart": "yarn build && yarn start",
+    "buildAndStart": "yarn typegen && yarn build && yarn start",
     "lint": "next lint",
     "typegen": "npx papi add ksmhub -n ksmcc3_asset_hub"
   },

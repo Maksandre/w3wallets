@@ -24,7 +24,6 @@
 //   useEffect(() => {
 //     const initClient = async () => {
 //       try {
-//         // TODO: Move endpoint to config.
 //         // const provider = new WsProvider({endpoint: 'wss://westmint-rpc-tn.dwellir.com', timeout: 10000000000});
 //         const provider = new WsProvider({endpoint: 'ws://localhost:8822', timeout: 10000000000});
 

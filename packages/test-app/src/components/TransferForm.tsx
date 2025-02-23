@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount } from "@/lib/polkadot";
 import Heading from "@/components/ui/Heading";
 import Button from "@/components/ui/Button";
@@ -10,13 +10,21 @@ import Text from "./ui/Text";
 const TransferForm: React.FC = () => {
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
-  const [sending, setSending] = useState(false);
+  const [status, setStatus] = useState("");
   const { api } = usePAPI();
   const { activeAccount } = useAccount();
 
+  useEffect(() => {
+    if (status === "Success") {
+      setTimeout(() => {
+        setStatus("");
+      }, 3000);
+    } 
+  }, [status]);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setSending(true);
+    setStatus("Pending...");
     if (!api || !activeAccount) return;
 
     const tx = api.tx.Balances.transfer_keep_alive({
@@ -29,23 +37,24 @@ const TransferForm: React.FC = () => {
         ev.type === "finalized" ||
         (ev.type === "txBestBlocksState" && ev.found)
       ) {
-        setSending(false);
+        setStatus("Success");
       }
     });
   };
 
   return (
-    <div>
-      <Heading level={2}>Transfer</Heading>
+    <div data-testid="transfer-form">
+      <Heading level={2} data-testid="transfer-heading">Transfer</Heading>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" data-testid="transfer-form-container">
         <Input
           type="text"
           value={recipient}
           onChange={(e) => setRecipient(e.target.value)}
           required
           name="recipient"
-          placeholder="Enter recipient address"
+          placeholder="Recipient"
+          data-testid="transfer-recipient-input"
         />
 
         <Input
@@ -54,14 +63,15 @@ const TransferForm: React.FC = () => {
           onChange={(e) => setAmount(e.target.value)}
           required
           name="amount"
-          placeholder="Enter amount"
+          placeholder="Amount"
+          data-testid="transfer-amount-input"
         />
 
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" data-testid="transfer-submit-button">
           Send
         </Button>
 
-        {sending && <Text>Sending...</Text>}
+        {status && <Text testId="transfer-status">{status}</Text>}
       </form>
     </div>
   );

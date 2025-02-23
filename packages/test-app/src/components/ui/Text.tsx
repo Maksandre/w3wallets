@@ -8,6 +8,7 @@ interface TextProps {
   weight?: "light" | "normal" | "medium" | "bold";
   align?: "left" | "center" | "right" | "justify";
   className?: string;
+  testId?: string
 }
 
 const Text: React.FC<TextProps> = ({
@@ -18,6 +19,7 @@ const Text: React.FC<TextProps> = ({
   weight = "normal",
   align = "left",
   className = "",
+  testId
 }) => {
   const Tag = as;
 
@@ -46,6 +48,7 @@ const Text: React.FC<TextProps> = ({
   return (
     <Tag
       className={`${sizeStyles[size]} ${colorStyles[color]} ${weightStyles[weight]} text-${align} ${className}`}
+      data-testid={testId}
     >
       {children}
     </Tag>

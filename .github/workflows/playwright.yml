@@ -27,7 +27,7 @@ jobs:
         run: corepack enable
 
       - name: 👽 Generate PAPI types
-        run: cd ./packages/test-app && npm install -g papi && npx papi add ksmhub -n ksmcc3_asset_hub
+        run: cd ./packages/test-app && yarn && yarn papi add ksmhub -n ksmcc3_asset_hub
 
       - name: ⚙️ Install dependencies
         run: yarn install --immutable

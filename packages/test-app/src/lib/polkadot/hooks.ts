@@ -6,10 +6,10 @@ interface ConnectArgs {
 }
 
 export function useAccount() {
-  const { status, addresses, activeAccount, setActiveAccount } = usePolkadotWalletContext();
+  const { status, accounts, activeAccount, setActiveAccount } = usePolkadotWalletContext();
   return {
     status,
-    addresses,
+    accounts,
     activeAccount,
     setActiveAccount,
   };

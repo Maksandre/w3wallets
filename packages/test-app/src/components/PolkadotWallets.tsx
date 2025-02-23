@@ -10,7 +10,7 @@ import Text from "./ui/Text";
 export function PolkadotWallet() {
   const {
     status,
-    addresses,
+    accounts,
     activeAccount,
     setActiveAccount,
     connectors,
@@ -26,19 +26,20 @@ export function PolkadotWallet() {
       {/* Account Info Section */}
       <div className="space-y-2">
         <Text>Status: {status}</Text>
-        <Text>Active Account: {activeAccount || "None"}</Text>
+        <Text>Active Account: {activeAccount?.address || "None"}</Text>
       </div>
 
       {/* Connected Accounts Section */}
-      {addresses.length > 0 && (
+      {accounts.length > 0 && (
         <div className="space-y-4">
           <Heading level={3}>Connected Accounts</Heading>
           {activeAccount && (
             <Radio
               name="account-select"
-              selectedValue={activeAccount}
-              onChange={(address) => setActiveAccount(address)}
-              options={addresses.map((a) => ({ label: a, value: a }))}
+              selectedValue={activeAccount.address}
+              // TODO: fix !
+              onChange={(address) => setActiveAccount(accounts.find(a => a.address === address)!)}
+              options={accounts.map((a) => ({ label: a.address, value: a.address }))}
             />
           )}
 

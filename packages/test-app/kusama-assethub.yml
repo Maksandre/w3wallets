@@ -1,0 +1,46 @@
+endpoint: wss://kusama-asset-hub-rpc.polkadot.io
+mock-signature-host: true
+db: ./db.kusama-asset-hub.sqlite
+addr: 0.0.0.0
+
+import-storage:
+  System:
+    Account:
+      -
+        -
+          - 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+        - providers: 1
+          data:
+            free: "100000000000000000"
+      -
+        -
+          - 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty
+        - providers: 1
+          data:
+            free: "100000000000000000"
+      -
+        -
+          - 5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y
+        - providers: 1
+          data:
+            free: "100000000000000000"
+      -
+        -
+          - 5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy
+        - providers: 1
+          data:
+            free: "100000000000000000"
+      -
+        -
+          - 5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw
+        - providers: 1
+          data:
+            free: "100000000000000000"
+      -
+        -
+          - 5E2FRkEAYeqKrK63eaqwkPjRdqzt75Ho89WB3amA7hg5PeZi
+        - providers: 1
+          data:
+            free: "100000000000000000"
+
+build-block-mode: Batch

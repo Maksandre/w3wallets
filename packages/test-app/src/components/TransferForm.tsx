@@ -1,16 +1,37 @@
 import { useState } from "react";
 import { useAccount } from "@/lib/polkadot";
-import Heading from "./ui/Heading";
-import Button from "./ui/Button";
-import Input from "./ui/Input";
+import Heading from "@/components/ui/Heading";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import { usePAPI } from "@/lib/polkadot/PAPIProvider";
+import { MultiAddress } from "@polkadot-api/descriptors";
+import Text from "./ui/Text";
 
 const TransferForm: React.FC = () => {
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
-  const {} = useAccount();
+  const [sending, setSending] = useState(false);
+  const { api } = usePAPI();
+  const { activeAccount } = useAccount();
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setSending(true);
+    if (!api || !activeAccount) return;
+
+    const tx = api.tx.Balances.transfer_keep_alive({
+      dest: MultiAddress.Id(recipient),
+      value: BigInt(amount),
+    });
+
+    tx.signSubmitAndWatch(activeAccount.polkadotSigner).subscribe((ev) => {
+      if (
+        ev.type === "finalized" ||
+        (ev.type === "txBestBlocksState" && ev.found)
+      ) {
+        setSending(false);
+      }
+    });
   };
 
   return (
@@ -29,7 +50,7 @@ const TransferForm: React.FC = () => {
 
         <Input
           type="number"
-          value={amount}
+          value={amount.toString()}
           onChange={(e) => setAmount(e.target.value)}
           required
           name="amount"
@@ -39,6 +60,8 @@ const TransferForm: React.FC = () => {
         <Button type="submit" variant="primary">
           Send
         </Button>
+
+        {sending && <Text>Sending...</Text>}
       </form>
     </div>
   );

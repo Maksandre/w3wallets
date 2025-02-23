@@ -29,6 +29,18 @@ jobs:
       - name: ⚙️ Install dependencies
         run: yarn install --immutable
 
+      - name: 🚀 Start Polkadot Node
+        run: yarn start:polkadot &
+
+      - name: 🔄 Wait for Polkadot Node to be ready
+        run: |
+          echo "Waiting for Polkadot node on ws://localhost:8822..."
+          # Using netcat to check if port 8822 is open
+          until nc -z localhost 8822; do
+            sleep 2
+          done
+          echo "Polkadot node is ready!"
+
       - name: 🌐 Start UI
         run: |
           yarn start:ui &

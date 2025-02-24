@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "start:chain": "yarn workspace @w3wallets/test-contract local-node",
-    "start:polkadot": "yarn workspace @w3wallets/test-contract local-node",
+    "start:polkadot": "yarn workspace @w3wallets/test-app chopsticks",
     "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
     "deploy:contract": "yarn workspace w3wallets deploy",
     "build": "yarn workspace w3wallets build",

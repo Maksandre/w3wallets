@@ -8,7 +8,8 @@
     "start": "next start",
     "buildAndStart": "yarn typegen && yarn build && yarn start",
     "lint": "next lint",
-    "chopsticks": "docker compose up -d",
+    "chopsticks": "chopsticks --config=./kusama-assethub.yml",
+    "chopsticks:docker": "docker compose up -d",
     "typegen": "npx papi add ksmhub -n ksmcc3_asset_hub"
   },
   "dependencies": {

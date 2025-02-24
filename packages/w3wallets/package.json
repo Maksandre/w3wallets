@@ -33,7 +33,6 @@
   "scripts": {
     "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
     "download-wallets": "npx w3wallets backpack polkadotJS",
-    "launch-polkadot": "docker compose up",
     "test": "npx playwright test --project=ci",
     "build": "tsup",
     "clean": "rm -rf dist",

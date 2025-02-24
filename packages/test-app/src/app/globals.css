@@ -1,21 +1,33 @@
+@import "tailwindcss";
+
 :root {
-  background-color: #181818;
-  color: rgba(255, 255, 255, 0.87);
-  color-scheme: light dark;
+  --background-color: #f8f8f8;
+  --text-color: #181818;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --card-bg: #ffffff;
+  --hover-bg: #f2f2f2;
+  --button-bg: #007bff;
+  --button-hover-bg: #0056b3;
+  --disconnect-btn-bg: #ff4d4d;
+  --disconnect-btn-hover-bg: #cc0000;
+  --input-bg: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.3);
+  --input-focus-border: #007bff;
+  --input-text-color: black;
+  --input-placeholder-color: rgba(0, 0, 0, 0.6);
+
+  background-color: var(--background-color);
+  color: var(--text-color);
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  font-synthesis: none;
   font-weight: 400;
   line-height: 1.5;
   text-rendering: optimizeLegibility;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    background-color: #f8f8f8;
-    color: #181818;
-  }
+html, body {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
 }

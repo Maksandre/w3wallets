@@ -6,11 +6,18 @@
   ],
   "scripts": {
     "start:chain": "yarn workspace @w3wallets/test-contract local-node",
+    "start:polkadot": "yarn workspace @w3wallets/test-app chopsticks",
     "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
-    "deploy:contract": "yarn workspace @w3wallets/test-contract deploy",
+    "deploy:contract": "yarn workspace w3wallets deploy",
     "build": "yarn workspace w3wallets build",
+    "typegen": "yarn workspace @w3wallets/test-app typegen",
     "download-wallets": "yarn workspace w3wallets download-wallets",
     "test": "yarn workspace w3wallets test"
   },
-  "packageManager": "yarn@4.6.0"
+  "packageManager": "yarn@4.6.0",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.0.8",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.0.8"
+  }
 }

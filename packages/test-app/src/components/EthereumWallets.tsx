@@ -1,7 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import React from "react";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import Heading from "./ui/Heading";
+import Button from "./ui/Button";
+import Text from "./ui/Text";
 
 export function EthereumWallet() {
   const account = useAccount();
@@ -10,37 +13,35 @@ export function EthereumWallet() {
 
   return (
     <div>
-      <h2>Ethereum</h2>
+      <Heading level={2}>Ethereum</Heading>
 
-      <div>
-        <strong>Account Info:</strong>
-        <br />
-        Status: {account.status}
-        <br />
-        Addresses: {JSON.stringify(account.addresses)}
-        <br />
-        Chain ID: {account.chainId}
+      <div className="space-y-2">
+        <Text>Status: {account.status}</Text>
+        <Text>Addresses: {JSON.stringify(account.addresses)}</Text>
+        <Text>Chain ID: {account.chainId}</Text>
       </div>
 
-      {account.status === 'connected' && (
-        <button type="button" onClick={() => disconnect()}>
+      {account.status === "connected" && (
+        <Button onClick={() => disconnect()} variant="danger">
           Disconnect
-        </button>
+        </Button>
       )}
 
-      <div>
-        <h3>Connect</h3>
-        {connectors.map((connector) => (
-          <button
-            key={connector.id}
-            onClick={() => connect({ connector })}
-            type="button"
-          >
-            {connector.name}
-          </button>
-        ))}
-        <div>Status: {status}</div>
-        <div style={{ color: 'red' }}>{error?.message}</div>
+      <div className="space-y-4">
+        <Heading level={3}>Connect</Heading>
+        <div className="flex flex-wrap gap-2">
+          {connectors.map((connector) => (
+            <Button
+              key={connector.id}
+              onClick={() => connect({ connector })}
+              variant="primary"
+            >
+              {connector.name}
+            </Button>
+          ))}
+        </div>
+        <Text>Status: {status}</Text>
+        {error && <Text color="danger">{error.message}</Text>}
       </div>
     </div>
   );

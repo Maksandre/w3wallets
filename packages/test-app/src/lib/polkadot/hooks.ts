@@ -1,15 +1,17 @@
-import { usePolkadotWalletContext } from './PolkadotWalletProvider';
-import type { PolkadotConnector } from './connectors';
+import { usePolkadotWalletContext } from "./PolkadotWalletProvider";
+import type { PolkadotConnector } from "./connectors";
 
 interface ConnectArgs {
   connector: PolkadotConnector;
 }
 
 export function useAccount() {
-  const { status, addresses } = usePolkadotWalletContext();
+  const { status, accounts, activeAccount, setActiveAccount } = usePolkadotWalletContext();
   return {
     status,
-    addresses,
+    accounts,
+    activeAccount,
+    setActiveAccount,
   };
 }
 
@@ -29,5 +31,13 @@ export function useDisconnect() {
 
   return {
     disconnect,
+  };
+}
+
+export function useActiveAccount() {
+  const { activeAccount, setActiveAccount } = usePolkadotWalletContext();
+  return {
+    activeAccount,
+    setActiveAccount,
   };
 }

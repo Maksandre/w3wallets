@@ -33,7 +33,7 @@ jobs:
         run: yarn typegen
 
       - name: 🚀 Start Polkadot Node
-        run: npm install -g @acala-network/chopsticks@latest && yarn start:polkadot &
+        run: npm install -g @acala-network/chopsticks@latest && yarn start:polkadot
 
       - name: 🔄 Wait for Polkadot Node to be ready
         run: |

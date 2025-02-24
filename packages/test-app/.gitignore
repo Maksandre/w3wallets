@@ -34,4 +34,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.papi
+# Generate metadata with 'yarn typegen'
+.papi/metadata/

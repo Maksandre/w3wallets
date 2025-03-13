@@ -59,7 +59,7 @@ export function withWallets<T extends readonly WalletName[]>(
       }
 
       if (withMetamask) {
-        ensureWalletExtensionExists(polkadotJSPath, "metamask");
+        ensureWalletExtensionExists(metamaskPath, "metamask");
         extensionPaths.push(metamaskPath);
       }
 

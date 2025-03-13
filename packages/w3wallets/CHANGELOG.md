@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.4.1
+
+### Patch Changes
+
+- Fix metamask extension path
+
 ## 0.4.0
 
 ### Minor Changes

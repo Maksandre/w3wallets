@@ -1,5 +1,5 @@
 import { test as base, expect } from "@playwright/test";
-import { withWallets } from "w3wallets";
+import { withWallets } from "../src/withWallets";
 import config from "./utils/config";
 
 const test = withWallets(base, "metamask");

@@ -33,7 +33,7 @@
   "bin": "./src/scripts/download.js",
   "scripts": {
     "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
-    "download-wallets": "npx w3wallets backpack polkadotJS",
+    "download-wallets": "npx w3wallets backpack polkadotJS metamask",
     "test": "npx playwright test --project=ci",
     "build": "tsup",
     "clean": "rm -rf dist",

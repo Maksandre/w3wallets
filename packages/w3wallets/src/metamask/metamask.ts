@@ -1,5 +1,6 @@
 import { type Page } from "@playwright/test";
 import { Wallet } from "../wallet";
+import type { NetworkSettings } from "./types";
 
 export class Beta__Metamask extends Wallet {
   private defaultPassword = "11111111";
@@ -31,6 +32,33 @@ export class Beta__Metamask extends Wallet {
 
     await this.page.getByTestId("pin-extension-next").click();
     await this.page.getByTestId("pin-extension-done").click();
+  }
+
+  async connectToNetwork(settings: NetworkSettings, switchNetwork = true) {
+    await this.page.locator(".mm-picker-network").click();
+    await this.page
+      .getByRole("button", { name: "Add a custom network" })
+      .click();
+    await this.page
+      .getByTestId("network-form-network-name")
+      .fill(settings.name);
+    await this.page
+      .getByTestId("network-form-chain-id")
+      .fill(settings.chainId.toString());
+    await this.page
+      .getByTestId("network-form-ticker-input")
+      .fill(settings.currencySymbol);
+
+    await this.page.getByTestId("test-add-rpc-drop-down").click();
+    await this.page.getByRole("button", { name: "Add RPC URL" }).click();
+    await this.page.getByTestId("rpc-url-input-test").fill(settings.rpc);
+    await this.page.getByRole("button", { name: "Add URL" }).click();
+    await this.page.getByRole("button", { name: "Save" }).click();
+
+    if (switchNetwork) {
+      await this.page.locator(".mm-picker-network").click();
+      await this.page.getByTestId(settings.name).click();
+    }
   }
 
   async approve() {

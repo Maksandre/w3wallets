@@ -10,6 +10,7 @@ import {
 import { Backpack } from "./backpack";
 import { PolkadotJS } from "./polkadotJS";
 import type { IWallet, NoDuplicates, WalletName } from "./types";
+import { Beta__Metamask } from "./metamask";
 
 const w3walletsDir = ".w3wallets";
 
@@ -19,15 +20,18 @@ export function withWallets<T extends readonly WalletName[]>(
 ) {
   const withBackpack = config.includes("backpack");
   const withPolkadotJS = config.includes("polkadotJS");
+  const withMetamask = config.includes("metamask");
 
   // Define wallet paths
   const backpackPath = path.join(process.cwd(), w3walletsDir, "backpack");
   const polkadotJSPath = path.join(process.cwd(), w3walletsDir, "polkadotJS");
+  const metamaskPath = path.join(process.cwd(), w3walletsDir, "metamask");
 
   return test.extend<{
     context: BrowserContext;
     backpack: Backpack;
     polkadotJS: PolkadotJS;
+    metamask: Beta__Metamask
   }>({
     /**
      * Sets up a persistent browser context with the requested extensions loaded.
@@ -52,6 +56,11 @@ export function withWallets<T extends readonly WalletName[]>(
       if (withPolkadotJS) {
         ensureWalletExtensionExists(polkadotJSPath, "polkadotJS");
         extensionPaths.push(polkadotJSPath);
+      }
+
+      if (withMetamask) {
+        ensureWalletExtensionExists(polkadotJSPath, "metamask");
+        extensionPaths.push(metamaskPath);
       }
 
       const context = await chromium.launchPersistentContext(userDataDir, {
@@ -99,6 +108,21 @@ export function withWallets<T extends readonly WalletName[]>(
         "Polkadot{.js} is not initialized",
       );
       await use(polkadotJS);
+    },
+
+    metamask: async ({ context }, use) => {
+      if (!withMetamask) {
+        throw Error(
+          "The Metamask wallet hasn't been loaded. Add it to the withWallets function.",
+        );
+      }
+
+      const metamask = await initializeExtension(
+        context,
+        Beta__Metamask,
+        "Metamask is not initialized",
+      );
+      await use(metamask);
     },
   });
 }

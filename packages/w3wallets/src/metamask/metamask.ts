@@ -76,7 +76,7 @@ export class Metamask extends Wallet {
     await p.goto(`chrome-extension://${this.extensionId}/notification.html`);
     await p
       .locator(
-        '[data-testid="confirm-footer-button"], [data-testid="confirm-btn"]'
+        '[data-testid="confirm-footer-button"], [data-testid="confirm-btn"]',
       )
       .click();
     await p.close();

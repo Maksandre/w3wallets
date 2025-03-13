@@ -34,7 +34,9 @@ export class Backpack extends Wallet {
    * @param id The first added account has id 1, the second – 2, and so on
    */
   async switchAccount(id: number) {
-    await this.page.getByRole("button", { name: `A${this.currentAccountId}` }).click();
+    await this.page
+      .getByRole("button", { name: `A${this.currentAccountId}` })
+      .click();
     await this.page.getByRole("button", { name: `Account ${id}` }).click();
     this.currentAccountId = id;
   }
@@ -69,7 +71,9 @@ export class Backpack extends Wallet {
   }
 
   private async _clickOnAccount() {
-    return this.page.getByRole("button", { name: `A${this.currentAccountId}`, exact: true }).click();
+    return this.page
+      .getByRole("button", { name: `A${this.currentAccountId}`, exact: true })
+      .click();
   }
 
   private async _importAccount(
@@ -90,8 +94,8 @@ export class Backpack extends Wallet {
         .getByPlaceholder("Confirm Password")
         .fill(this.defaultPassword);
 
-        await this.page.getByRole("checkbox").click();
-        await this.page.getByRole("button", { name: "Next" }).click();
+      await this.page.getByRole("checkbox").click();
+      await this.page.getByRole("button", { name: "Next" }).click();
     }
     await expect(this.page.getByText("You're all good!")).toBeVisible();
     await this.page.goto(`chrome-extension://${this.extensionId}/popup.html`);

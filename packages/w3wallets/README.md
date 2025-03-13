@@ -18,6 +18,7 @@ npm install -D w3wallets
 The `Backpack` and the `Polkadot{.js}` wallets are currently supported.
 
 <p align="center">
+  <img src="https://images.ctfassets.net/clixtyxoaeas/1ezuBGezqfIeifWdVtwU4c/d970d4cdf13b163efddddd5709164d2e/MetaMask-icon-Fox.svg" alt="Metamask Logo" width="60"/>
   <img src="https://raw.githubusercontent.com/coral-xyz/backpack/refs/heads/master/assets/backpack.png" alt="Backpack Logo" width="60"/>
   <img src="https://polkadot.js.org/logo.svg" alt="Polkadot JS Logo" width="60"/>
 </p>
@@ -51,6 +52,12 @@ export { expect } from "@playwright/test";
 ```
 
 #### 3. Use the installed wallets in tests
+
+Most of the actions will use the following methods:
+
+1. `onboard`: to set up your wallet
+2. `approve`: for operations that confirm actions
+3. `deny`: for actions that reject or cancel operations
 
 ```ts
 import { test } from "./your-fixture";

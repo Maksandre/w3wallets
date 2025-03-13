@@ -1,1 +1,1 @@
-export { Beta__Metamask } from "./metamask";
+export { Metamask } from "./metamask";

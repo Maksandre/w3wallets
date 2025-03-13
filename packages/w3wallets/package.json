@@ -34,7 +34,8 @@
   "scripts": {
     "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
     "download-wallets": "npx w3wallets backpack polkadotJS metamask",
-    "test": "npx playwright test --project=ci",
+    "test": "npx playwright test --project=local --workers=2",
+    "test:ci": "npx playwright test --project=ci",
     "build": "tsup",
     "clean": "rm -rf dist",
     "check-format": "prettier --check .",

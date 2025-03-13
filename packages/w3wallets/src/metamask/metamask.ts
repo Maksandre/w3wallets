@@ -2,7 +2,7 @@ import { type Page } from "@playwright/test";
 import { Wallet } from "../wallet";
 import type { NetworkSettings } from "./types";
 
-export class Beta__Metamask extends Wallet {
+export class Metamask extends Wallet {
   private defaultPassword = "11111111";
 
   async gotoOnboardPage(): Promise<void> {
@@ -61,14 +61,25 @@ export class Beta__Metamask extends Wallet {
     }
   }
 
+  // async approve() {
+  //   return this.usingNotificationPage((p) =>
+  //     p
+  //       .locator(
+  //         '[data-test-id="confirm-footer-button"], [data-test-id="confirm-btn"]',
+  //       )
+  //       .click(),
+  //   );
+  // }
+
   async approve() {
-    return this.usingNotificationPage((p) =>
-      p
-        .locator(
-          '[data-test-id="confirm-footer-button"], [data-test-id="confirm-btn"]',
-        )
-        .click(),
-    );
+    const p = await this.page.context().newPage();
+    await p.goto(`chrome-extension://${this.extensionId}/notification.html`);
+    await p
+      .locator(
+        '[data-testid="confirm-footer-button"], [data-testid="confirm-btn"]'
+      )
+      .click();
+    await p.close();
   }
 
   async deny() {

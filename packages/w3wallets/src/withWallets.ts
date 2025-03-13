@@ -10,7 +10,7 @@ import {
 import { Backpack } from "./backpack";
 import { PolkadotJS } from "./polkadotJS";
 import type { IWallet, NoDuplicates, WalletName } from "./types";
-import { Beta__Metamask } from "./metamask";
+import { Metamask } from "./metamask";
 
 const w3walletsDir = ".w3wallets";
 
@@ -31,7 +31,7 @@ export function withWallets<T extends readonly WalletName[]>(
     context: BrowserContext;
     backpack: Backpack;
     polkadotJS: PolkadotJS;
-    metamask: Beta__Metamask
+    metamask: Metamask;
   }>({
     /**
      * Sets up a persistent browser context with the requested extensions loaded.
@@ -119,7 +119,7 @@ export function withWallets<T extends readonly WalletName[]>(
 
       const metamask = await initializeExtension(
         context,
-        Beta__Metamask,
+        Metamask,
         "Metamask is not initialized",
       );
       await use(metamask);

@@ -1,4 +1,4 @@
-export type WalletName = "backpack" | "polkadotJS";
+export type WalletName = "backpack" | "polkadotJS" | "metamask";
 
 export type NoDuplicates<
   T extends readonly unknown[],

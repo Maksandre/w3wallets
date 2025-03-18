@@ -1,7 +1,7 @@
 {
   "name": "w3wallets",
   "description": "browser wallets for playwright",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/Maksandre/w3wallets",
@@ -17,6 +17,7 @@
     "e2e",
     "playwright",
     "backpack",
+    "metamask",
     "testing",
     "ethereum",
     "polkadot",
@@ -32,8 +33,9 @@
   "bin": "./src/scripts/download.js",
   "scripts": {
     "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
-    "download-wallets": "npx w3wallets backpack polkadotJS",
-    "test": "npx playwright test --project=ci",
+    "download-wallets": "npx w3wallets backpack polkadotJS metamask",
+    "test": "npx playwright test --project=local --workers=2",
+    "test:ci": "npx playwright test --project=ci",
     "build": "tsup",
     "clean": "rm -rf dist",
     "check-format": "prettier --check .",

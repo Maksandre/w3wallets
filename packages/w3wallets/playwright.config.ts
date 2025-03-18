@@ -26,10 +26,12 @@ export default defineConfig({
     headless: true,
   },
 
+  timeout: 120_000,
+
   projects: [
     {
       name: "local",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...devices["Desktop Chrome"], headless: false },
     },
     {
       name: "ci",

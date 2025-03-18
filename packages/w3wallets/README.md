@@ -57,7 +57,7 @@ export { expect } from "@playwright/test";
 
 #### 3. Use the installed wallets in tests
 
-Most ofthen you will use the following methods:
+Most often, you will use the following methods:
 
 1. `onboard`: to set up your wallet
 2. `approve`: for operations that confirm actions

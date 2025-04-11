@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.4.2
+
+### Patch Changes
+
+- new Backpack version support
+
 ## 0.4.1
 
 ### Patch Changes

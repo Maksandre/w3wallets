@@ -9,7 +9,7 @@ export class Backpack extends Wallet {
 
   async gotoOnboardPage() {
     await this.page.goto(
-      `chrome-extension://${this.extensionId}/options.html?onboarding=true`,
+      `chrome-extension://${this.extensionId}/onboarding.html`,
     );
     await expect(this.page.getByText("Welcome to Backpack")).toBeVisible();
   }
@@ -24,7 +24,7 @@ export class Backpack extends Wallet {
     this.maxAccountId++;
     this.currentAccountId = this.maxAccountId;
     await this.page.goto(
-      `chrome-extension://${this.extensionId}/options.html?add-user-account=true`,
+      `chrome-extension://${this.extensionId}/onboarding.html?add-user-account=true`,
     );
     await this._importAccount(network, privateKey, false);
   }
@@ -81,23 +81,30 @@ export class Backpack extends Wallet {
     privateKey: string,
     isOnboard: boolean,
   ) {
-    await this.page.getByRole("button", { name: "Import wallet" }).click();
-    await this.page.getByRole("button", { name: network }).click();
-    await this.page.getByRole("button", { name: "Import private key" }).click();
-    await this.page.getByPlaceholder("Enter private key").fill(privateKey);
-    await this.page.getByRole("button", { name: "Import" }).click();
-    if (isOnboard) {
-      await this.page
-        .getByPlaceholder("Password", { exact: true })
-        .fill(this.defaultPassword);
-      await this.page
-        .getByPlaceholder("Confirm Password")
-        .fill(this.defaultPassword);
-
-      await this.page.getByRole("checkbox").click();
-      await this.page.getByRole("button", { name: "Next" }).click();
+    {
+      // TODO: this is workaround of a bug in backpack
+      await this.page.waitForTimeout(2000);
+      if (await this.page.getByText("You're all good!").isVisible()) {
+        await this.page.getByLabel("Go back").click();
+      }
     }
-    await expect(this.page.getByText("You're all good!")).toBeVisible();
+    await this.page
+      .getByRole("button", { name: "I agree to the terms" })
+      .click();
+    await this.page.getByText("I already have a wallet").click();
+    await this.page.getByText("Show all networks").click();
+    await this.page.getByText(network).click();
+    await this.page.getByText("Private key").click();
+    await this.page.getByPlaceholder("Private key").fill(privateKey);
+    await this.page.waitForTimeout(1000);
+    await this.page.getByText("Import", { exact: true }).click();
+
+    if (isOnboard) {
+      await this.page.getByRole("textbox").nth(1).fill(this.defaultPassword);
+      await this.page.getByRole("textbox").nth(2).fill(this.defaultPassword);
+      await this.page.getByText("Next", { exact: true }).click();
+      await expect(this.page.getByText("You're all good!")).toBeVisible();
+    }
     await this.page.goto(`chrome-extension://${this.extensionId}/popup.html`);
   }
 }

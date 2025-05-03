@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.5.0
+
+### Minor Changes
+
+- metamask: switch network
+
 ## 0.4.2
 
 ### Patch Changes

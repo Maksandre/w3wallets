@@ -34,31 +34,42 @@ export class Metamask extends Wallet {
     await this.page.getByTestId("pin-extension-done").click();
   }
 
-  async connectToNetwork(settings: NetworkSettings, switchNetwork = true) {
-    await this.page.locator(".mm-picker-network").click();
-    await this.page
-      .getByRole("button", { name: "Add a custom network" })
-      .click();
-    await this.page
-      .getByTestId("network-form-network-name")
-      .fill(settings.name);
-    await this.page
-      .getByTestId("network-form-chain-id")
-      .fill(settings.chainId.toString());
-    await this.page
-      .getByTestId("network-form-ticker-input")
-      .fill(settings.currencySymbol);
-
-    await this.page.getByTestId("test-add-rpc-drop-down").click();
-    await this.page.getByRole("button", { name: "Add RPC URL" }).click();
-    await this.page.getByTestId("rpc-url-input-test").fill(settings.rpc);
-    await this.page.getByRole("button", { name: "Add URL" }).click();
-    await this.page.getByRole("button", { name: "Save" }).click();
-
-    if (switchNetwork) {
+  async connectToNetwork(networkName: string): Promise<void>;
+  async connectToNetwork(settings: NetworkSettings): Promise<void>;
+  async connectToNetwork(settingsOrName: NetworkSettings | string) {
+    if (typeof settingsOrName !== "string") {
       await this.page.locator(".mm-picker-network").click();
-      await this.page.getByTestId(settings.name).click();
+      await this.page
+        .getByRole("button", { name: "Add a custom network" })
+        .click();
+      await this.page
+        .getByTestId("network-form-network-name")
+        .fill(settingsOrName.name);
+      await this.page
+        .getByTestId("network-form-chain-id")
+        .fill(settingsOrName.chainId.toString());
+      await this.page
+        .getByTestId("network-form-ticker-input")
+        .fill(settingsOrName.currencySymbol);
+
+      await this.page.getByTestId("test-add-rpc-drop-down").click();
+      await this.page.getByRole("button", { name: "Add RPC URL" }).click();
+      await this.page
+        .getByTestId("rpc-url-input-test")
+        .fill(settingsOrName.rpc);
+      await this.page.getByRole("button", { name: "Add URL" }).click();
+      await this.page.getByRole("button", { name: "Save" }).click();
     }
+
+    await this.page.locator(".mm-picker-network").click();
+    await this.page.locator('text=Show test networks >> xpath=following-sibling::label').click();
+    await this.page
+      .getByTestId(
+        typeof settingsOrName === "string"
+          ? settingsOrName
+          : settingsOrName.name,
+      )
+      .click();
   }
 
   // async approve() {

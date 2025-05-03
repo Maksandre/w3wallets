@@ -17,12 +17,7 @@ test("Can connect the Metamask wallet", async ({ page, metamask }) => {
 
 test("Can switch existing network", async ({ page, metamask }) => {
   await metamask.onboard(config.ethMnemonic);
-  await metamask.connectToNetwork({
-    chainId: 998,
-    name: "Hyper",
-    rpc: "https://rpc.hyperliquid-testnet.xyz/evm",
-    currencySymbol: "HYPE",
-  });
+  await metamask.connectToNetwork("Mega Testnet");
 });
 
 test("Can connect to custom network", async ({ page, metamask }) => {

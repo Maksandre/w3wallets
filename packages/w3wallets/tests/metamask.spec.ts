@@ -31,10 +31,7 @@ test("Can connect to custom network", async ({ page, metamask }) => {
   });
 });
 
-test("Can import account and switch between accounts", async ({
-  page,
-  metamask,
-}) => {
+test("Can import account and switch between accounts", async ({ metamask }) => {
   const checkAccountName = async (nameShouldBe: string) => {
     await sleep(2000);
     const accountName = await metamask.getAccountName();

@@ -32,6 +32,10 @@ export class Metamask extends Wallet {
 
     await this.page.getByTestId("pin-extension-next").click();
     await this.page.getByTestId("pin-extension-done").click();
+
+    // Sometimes MM uses dialogues – close them
+    await this.page.waitForTimeout(1000);
+    await this.clickTopRightCornerToCloseAllTheMarketingBullshit();
   }
 
   async switchAccount(nameOrAddress: string) {
@@ -150,5 +154,9 @@ export class Metamask extends Wallet {
     await p.goto(`chrome-extension://${this.extensionId}/notification.html`);
     await action(p);
     await p.close();
+  }
+
+  private async clickTopRightCornerToCloseAllTheMarketingBullshit() {
+    await this.page.mouse.click(1000, 10);
   }
 }

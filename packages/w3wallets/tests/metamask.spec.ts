@@ -1,6 +1,7 @@
 import { test as base, expect } from "@playwright/test";
 import { withWallets } from "../src/withWallets";
 import config from "./utils/config";
+import { sleep } from "./utils/sleep";
 
 const test = withWallets(base, "metamask");
 
@@ -28,4 +29,22 @@ test("Can connect to custom network", async ({ page, metamask }) => {
     rpc: "https://rpc.hyperliquid-testnet.xyz/evm",
     currencySymbol: "HYPE",
   });
+});
+
+test("Can import account and switch between accounts", async ({
+  page,
+  metamask,
+}) => {
+  const checkAccountName = async (nameShouldBe: string) => {
+    await sleep(2000);
+    const accountName = await metamask.getAccountName();
+    expect(accountName).toEqual(nameShouldBe);
+  };
+  await metamask.onboard(config.ethMnemonic);
+
+  await metamask.importAccount(config.ethPrivateKeys[1]);
+  await checkAccountName("Account 2");
+
+  await metamask.switchAccount("Account 1");
+  await checkAccountName("Account 1");
 });

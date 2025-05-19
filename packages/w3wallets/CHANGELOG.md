@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.5.1
+
+### Patch Changes
+
+- metamask: import and switch accounts
+
 ## 0.5.0
 
 ### Minor Changes

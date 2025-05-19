@@ -38,13 +38,18 @@ export class Metamask extends Wallet {
     await this.clickTopRightCornerToCloseAllTheMarketingBullshit();
   }
 
-  async switchAccount(nameOrAddress: string) {
+  async switchAccount(nameOrAddress: string, network: "ETH" | "SOL" = "ETH") {
     if (nameOrAddress.startsWith("0x"))
       nameOrAddress = nameOrAddress.slice(0, 7);
     await this.page.getByTestId("account-menu-icon").click();
     await this.page
       .locator(".multichain-account-menu-popover__list--menu-item")
       .filter({ hasText: nameOrAddress })
+      .filter({
+        has: this.page
+          .getByTestId("second-currency-display")
+          .filter({ hasText: network }),
+      })
       .click();
   }
 

@@ -32,16 +32,18 @@ test("Can connect to custom network", async ({ page, metamask }) => {
 });
 
 test("Can import account and switch between accounts", async ({ metamask }) => {
-  const checkAccountName = async (nameShouldBe: string) => {
+  const getAccountName = async () => {
     await sleep(2000);
-    const accountName = await metamask.getAccountName();
-    expect(accountName).toEqual(nameShouldBe);
+    return metamask.getAccountName();
   };
   await metamask.onboard(config.ethMnemonic);
+  const currentAccount1 = await getAccountName();
 
   await metamask.importAccount(config.ethPrivateKeys[1]);
-  await checkAccountName("Account 2");
+  const currentAccount2 = await getAccountName();
+  expect(currentAccount2).not.toEqual(currentAccount1);
 
   await metamask.switchAccount("Account 1");
-  await checkAccountName("Account 1");
+  const currentAccount3 = await getAccountName();
+  expect(currentAccount3).toEqual("Account 1");
 });

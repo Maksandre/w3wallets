@@ -1,5 +1,17 @@
 # w3wallets
 
+## 0.5.3
+
+### Patch Changes
+
+- MetaMask: fix switch
+
+## 0.5.2
+
+### Patch Changes
+
+- MetaMask: close dialog
+
 ## 0.5.1
 
 ### Patch Changes

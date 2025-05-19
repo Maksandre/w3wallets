@@ -1,5 +1,29 @@
 # w3wallets
 
+## 0.5.3
+
+### Patch Changes
+
+- MetaMask: fix switch
+
+## 0.5.2
+
+### Patch Changes
+
+- MetaMask: close dialog
+
+## 0.5.1
+
+### Patch Changes
+
+- metamask: import and switch accounts
+
+## 0.5.0
+
+### Minor Changes
+
+- metamask: switch network
+
 ## 0.4.2
 
 ### Patch Changes

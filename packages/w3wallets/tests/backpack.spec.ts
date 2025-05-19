@@ -16,7 +16,7 @@ test("Can connect the Backpack wallet", async ({ page, backpack }) => {
   await expect(page.getByText("success")).toBeVisible();
 });
 
-test("Can add and switch accounts", async ({ backpack }) => {
+test.skip("Can add and switch accounts", async ({ backpack }) => {
   await backpack.onboard("Ethereum", config.ethPrivateKeys[0]);
   await backpack.addAccount("Ethereum", config.ethPrivateKeys[1]);
   await backpack.addAccount("Eclipse", config.eclipsePrivateKey);

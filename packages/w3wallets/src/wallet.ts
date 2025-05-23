@@ -3,7 +3,7 @@ import type { IWallet } from "./types";
 
 export abstract class Wallet implements IWallet {
   constructor(
-    protected page: Page,
+    public page: Page,
     protected extensionId: string,
   ) {}
 

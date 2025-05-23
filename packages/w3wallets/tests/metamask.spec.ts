@@ -5,8 +5,14 @@ import { sleep } from "./utils/sleep";
 
 const test = withWallets(base, "metamask");
 
-test("Can connect the Metamask wallet", async ({ page, metamask }) => {
+test.beforeEach(async ({metamask}) => {
   await metamask.onboard(config.ethMnemonic);
+
+  // TODO: to close solana promo popup
+  await metamask.page.locator(".page-container__header-close").click();
+});
+
+test("Can connect the Metamask wallet", async ({ page, metamask }) => {
   await page.goto("http://localhost:3000");
   await page.getByRole("button", { name: "MetaMask" }).click();
   await metamask.approve();
@@ -17,12 +23,10 @@ test("Can connect the Metamask wallet", async ({ page, metamask }) => {
 });
 
 test("Can switch existing network", async ({ page, metamask }) => {
-  await metamask.onboard(config.ethMnemonic);
   await metamask.connectToNetwork("Mega Testnet");
 });
 
 test("Can connect to custom network", async ({ page, metamask }) => {
-  await metamask.onboard(config.ethMnemonic);
   await metamask.connectToNetwork({
     chainId: 998,
     name: "Hyper",
@@ -36,7 +40,6 @@ test("Can import account and switch between accounts", async ({ metamask }) => {
     await sleep(2000);
     return metamask.getAccountName();
   };
-  await metamask.onboard(config.ethMnemonic);
   const currentAccount1 = await getAccountName();
 
   await metamask.importAccount(config.ethPrivateKeys[1]);

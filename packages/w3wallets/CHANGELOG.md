@@ -1,5 +1,29 @@
 # w3wallets
 
+## 0.7.0
+
+### Minor Changes
+
+- Improve MetaMask switch account API and fix Backpack
+
+## 0.9.0
+
+### Minor Changes
+
+- Improve MetaMask switch account API and fix Backpack
+
+## 0.8.0
+
+### Minor Changes
+
+- Improve MetaMask switch account API and fix Backpack
+
+## 0.7.0
+
+### Minor Changes
+
+- Improve MetaMask switch account API and fix Backpack
+
 ## 0.6.0
 
 ### Minor Changes

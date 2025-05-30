@@ -5,7 +5,7 @@ import { sleep } from "./utils/sleep";
 
 const test = withWallets(base, "metamask");
 
-test.beforeEach(async ({metamask}) => {
+test.beforeEach(async ({ metamask }) => {
   await metamask.onboard(config.ethMnemonic);
 
   // TODO: to close solana promo popup
@@ -46,7 +46,26 @@ test("Can import account and switch between accounts", async ({ metamask }) => {
   const currentAccount2 = await getAccountName();
   expect(currentAccount2).not.toEqual(currentAccount1);
 
-  await metamask.switchAccount("Account 1");
+  await metamask.switchAccount({ name: "Account 1" });
   const currentAccount3 = await getAccountName();
   expect(currentAccount3).toEqual("Account 1");
+});
+
+test("Can add a custom network and switch account", async ({ metamask }) => {
+  await metamask.connectToNetwork({
+    chainId: 123420001114,
+    currencySymbol: "CAMP",
+    name: "Basecamp",
+    rpc: "https://rpc-campnetwork.xyz",
+  });
+
+  await metamask.importAccount(config.ethPrivateKeys[1]);
+  await metamask.switchAccount({ name: "Account 1" });
+});
+
+test("Can switch account by address", async ({ metamask }) => {
+  await metamask.importAccount(config.ethPrivateKeys[1]);
+  await metamask.switchAccount({
+    address: "0x5b7BDE2eF040354Ba49d9c30e492c91391B5b353",
+  });
 });

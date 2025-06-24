@@ -133,22 +133,12 @@ export class Metamask extends Wallet {
       .click();
   }
 
-  // async approve() {
-  //   return this.usingNotificationPage((p) =>
-  //     p
-  //       .locator(
-  //         '[data-test-id="confirm-footer-button"], [data-test-id="confirm-btn"]',
-  //       )
-  //       .click(),
-  //   );
-  // }
-
   async approve() {
     const p = await this.page.context().newPage();
     await p.goto(`chrome-extension://${this.extensionId}/notification.html`);
     await p
       .locator(
-        '[data-testid="confirm-footer-button"], [data-testid="confirm-btn"]',
+        '[data-testid="confirm-footer-button"], [data-testid="confirm-btn"], [data-testid="page-container-footer-next"]',
       )
       .click();
     await p.close();

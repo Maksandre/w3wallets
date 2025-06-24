@@ -138,9 +138,13 @@ export class Metamask extends Wallet {
     await p.goto(`chrome-extension://${this.extensionId}/notification.html`);
     await p
       .locator(
-        '[data-testid="confirm-footer-button"], [data-testid="confirm-btn"], [data-testid="page-container-footer-next"]',
+        '[data-testid="confirm-footer-button"], [data-testid="confirm-btn"], [data-testid="page-container-footer-next"], [data-testid="confirmation-submit-button"]',
       )
       .click();
+
+    // Check page is empty (action performed)
+    await p.waitForSelector('.main-container-wrapper:empty', { timeout: 10000 });
+
     await p.close();
   }
 

@@ -150,7 +150,9 @@ export class Metamask extends Wallet {
       .click();
 
     // Check page is empty (action performed)
-    await p.waitForSelector('.main-container-wrapper:empty', { timeout: 10000 });
+    await p.waitForSelector(".main-container-wrapper:empty", {
+      timeout: 10000,
+    });
 
     await p.close();
   }

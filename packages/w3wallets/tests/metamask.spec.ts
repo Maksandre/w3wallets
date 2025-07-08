@@ -7,9 +7,6 @@ const test = withWallets(base, "metamask");
 
 test.beforeEach(async ({ metamask }) => {
   await metamask.onboard(config.ethMnemonic);
-
-  // // TODO: to close solana promo popup
-  // await metamask.page.locator(".page-container__header-close").click();
 });
 
 test("Can connect the Metamask wallet", async ({ page, metamask }) => {

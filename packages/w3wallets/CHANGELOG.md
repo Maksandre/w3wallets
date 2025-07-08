@@ -1,5 +1,23 @@
 # w3wallets
 
+## 0.8.2
+
+### Patch Changes
+
+- Fix metamask onboarding
+
+## 0.8.1
+
+### Patch Changes
+
+- Fix MetaMask actions awaiting
+
+## 0.8.0
+
+### Minor Changes
+
+- Add more metamask approvals
+
 ## 0.7.0
 
 ### Minor Changes

@@ -15,24 +15,31 @@ export class Metamask extends Wallet {
    * @param mnemonic 12-word mnemonic seed phrase
    */
   async onboard(mnemonic: string, password = this.defaultPassword) {
-    await this.page.getByTestId("onboarding-terms-checkbox").click();
+    await this.page.getByTestId("onboarding-get-started-button").click();
+    await this.page.getByTestId("terms-of-use-scroll-button").click();
+    await this.page.getByTestId("terms-of-use-checkbox").click();
+    await this.page.getByTestId("terms-of-use-agree-button").click();
+
+    //////
     await this.page.getByTestId("onboarding-import-wallet").click();
-    await this.page.getByTestId("metametrics-i-agree").click();
-
-    for (const [i, word] of mnemonic.split(" ").entries())
-      await this.page.getByTestId(`import-srp__srp-word-${i}`).fill(word);
-
+    await this.page
+      .getByTestId("srp-input-import__srp-note")
+      .pressSequentially(mnemonic);
     await this.page.getByTestId("import-srp-confirm").click();
-
-    await this.page.getByTestId("create-password-new").fill(password);
-    await this.page.getByTestId("create-password-confirm").fill(password);
+    ////// Password
+    await this.page.getByTestId("create-password-new-input").fill(password);
+    await this.page.getByTestId("create-password-confirm-input").fill(password);
     await this.page.getByTestId("create-password-terms").click();
+    await this.page.getByTestId("create-password-submit").click();
+    ////// Help us improve
+    await this.page.getByTestId("metametrics-no-thanks").click();
 
-    await this.page.getByTestId("create-password-import").click();
+    ////// Complete
     await this.page.getByTestId("onboarding-complete-done").click();
-
-    await this.page.getByTestId("pin-extension-next").click();
     await this.page.getByTestId("pin-extension-done").click();
+
+    await this.page.getByTestId("unlock-password").fill(password);
+    await this.page.getByTestId("unlock-submit").click();
 
     // Sometimes MM uses dialogues – close them
     await this.page.waitForTimeout(1000);
@@ -138,9 +145,15 @@ export class Metamask extends Wallet {
     await p.goto(`chrome-extension://${this.extensionId}/notification.html`);
     await p
       .locator(
-        '[data-testid="confirm-footer-button"], [data-testid="confirm-btn"], [data-testid="page-container-footer-next"]',
+        '[data-testid="confirm-footer-button"], [data-testid="confirm-btn"], [data-testid="page-container-footer-next"], [data-testid="confirmation-submit-button"]',
       )
       .click();
+
+    // Check page is empty (action performed)
+    await p.waitForSelector(".main-container-wrapper:empty", {
+      timeout: 10000,
+    });
+
     await p.close();
   }
 

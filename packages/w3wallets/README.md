@@ -15,7 +15,7 @@ npm install -D w3wallets
 
 ## Getting Started
 
-The `Backpack` and the `Polkadot{.js}` wallets are currently supported.
+`MetaMask`, `Backpack`, and `Polkadot{.js}` wallets are currently supported.
 
 <p align="center">
   <img src="https://images.ctfassets.net/clixtyxoaeas/1ezuBGezqfIeifWdVtwU4c/d970d4cdf13b163efddddd5709164d2e/MetaMask-icon-Fox.svg" alt="Metamask Logo" width="60"/>
@@ -31,9 +31,9 @@ npx w3wallets backpack polkadotJS
 
 The unzipped files should be stored in the `.w3wallets/<wallet-name>` directory. Add them to `.gitignore`.
 
-#### 2. Wrap your fixture `withWallets`
+#### 2. Wrap your fixture with `withWallets`
 
-Install needed wallets into the chromium using `withWallets`.
+Install the required wallets into Chromium using `withWallets`.
 
 ```ts
 // your-fixture.ts
@@ -57,7 +57,7 @@ export { expect } from "@playwright/test";
 
 #### 3. Use the installed wallets in tests
 
-Most often, you will use the following methods:
+Most commonly, you will use the following methods:
 
 1. `onboard`: to set up your wallet
 2. `approve`: for operations that confirm actions

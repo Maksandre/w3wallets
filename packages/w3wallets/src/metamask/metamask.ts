@@ -38,12 +38,8 @@ export class Metamask extends Wallet {
     await this.page.getByTestId("onboarding-complete-done").click();
     await this.page.getByTestId("pin-extension-done").click();
 
-    await this.page.getByTestId("unlock-password").fill(password);
-    await this.page.getByTestId("unlock-submit").click();
-
-    // Sometimes MM uses dialogues – close them
-    await this.page.waitForTimeout(1000);
-    await this.clickTopRightCornerToCloseAllTheMarketingBullshit();
+    await this.page.getByTestId("not-now-button").click();
+    // await this.clickTopRightCornerToCloseAllTheMarketingBullshit();
   }
 
   async switchAccount(accountName: { name: string }): Promise<void>;

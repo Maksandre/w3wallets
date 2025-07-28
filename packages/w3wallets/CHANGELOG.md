@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.8.3
+
+### Patch Changes
+
+- Fix MetaMask onboarding method
+
 ## 0.8.2
 
 ### Patch Changes

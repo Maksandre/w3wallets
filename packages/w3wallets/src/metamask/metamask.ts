@@ -22,6 +22,7 @@ export class Metamask extends Wallet {
 
     //////
     await this.page.getByTestId("onboarding-import-wallet").click();
+    await this.page.getByTestId("onboarding-import-with-srp-button").click();
     await this.page
       .getByTestId("srp-input-import__srp-note")
       .pressSequentially(mnemonic);
@@ -100,7 +101,8 @@ export class Metamask extends Wallet {
   async connectToNetwork(settings: NetworkSettings): Promise<void>;
   async connectToNetwork(settingsOrName: NetworkSettings | string) {
     if (typeof settingsOrName !== "string") {
-      await this.page.locator(".mm-picker-network").click();
+      await this.page.getByTestId("account-options-menu-button").click();
+      await this.page.getByTestId("global-menu-networks").click();
       await this.page
         .getByRole("button", { name: "Add a custom network" })
         .click();
@@ -121,19 +123,23 @@ export class Metamask extends Wallet {
         .fill(settingsOrName.rpc);
       await this.page.getByRole("button", { name: "Add URL" }).click();
       await this.page.getByRole("button", { name: "Save" }).click();
-    }
+    } else {
+      await this.page.getByTestId("sort-by-networks").click();
+      await this.page.getByRole("button", { name: "Default" }).click();
 
-    await this.page.locator(".mm-picker-network").click();
-    await this.page
-      .locator("text=Show test networks >> xpath=following-sibling::label")
-      .click();
-    await this.page
-      .getByTestId(
-        typeof settingsOrName === "string"
-          ? settingsOrName
-          : settingsOrName.name,
-      )
-      .click();
+      const additionalNetwork = this.page
+        .getByTestId("additional-network-item")
+        .getByText(settingsOrName);
+
+      try {
+        await additionalNetwork.isEnabled({ timeout: 1000 });
+        await additionalNetwork.click();
+        await this.page.getByTestId("confirmation-submit-button").click();
+      } catch (error) {
+        await this.page.getByText(settingsOrName).click();
+        await this.page.getByTestId("modal-header-close-button").click();
+      }
+    }
   }
 
   async approve() {

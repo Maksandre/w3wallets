@@ -20,11 +20,11 @@ test.describe("Metamask", () => {
     await expect(page.getByText("status: connected")).toBeHidden();
   });
 
-  test("Can switch existing network", async ({ page, metamask }) => {
-    await metamask.connectToNetwork("Mega Testnet");
+  test("Can switch existing network", async ({ metamask }) => {
+    await metamask.connectToNetwork("Arbitrum One");
   });
 
-  test("Can connect to custom network", async ({ page, metamask }) => {
+  test("Can connect to custom network", async ({ metamask }) => {
     await metamask.connectToNetwork({
       chainId: 998,
       name: "Hyper",

@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.9.0
+
+### Minor Changes
+
+- MetaMask: separate switch and add networks methods
+
 ## 0.8.4
 
 ### Patch Changes

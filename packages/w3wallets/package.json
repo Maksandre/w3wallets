@@ -1,7 +1,7 @@
 {
   "name": "w3wallets",
   "description": "browser wallets for playwright",
-  "version": "0.8.4",
+  "version": "0.9.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/Maksandre/w3wallets",

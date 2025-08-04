@@ -20,12 +20,17 @@ test.describe("Metamask", () => {
     await expect(page.getByText("status: connected")).toBeHidden();
   });
 
-  test("Can switch existing network", async ({ page, metamask }) => {
-    await metamask.connectToNetwork("Mega Testnet");
+  test("Can switch to existing network", async ({ metamask }) => {
+    await metamask.connectToNetwork("Arbitrum One");
   });
 
-  test("Can connect to custom network", async ({ page, metamask }) => {
-    await metamask.connectToNetwork({
+  test("Can switch to existing test network", async ({ metamask }) => {
+    await metamask.enableTestNetworks();
+    await metamask.connectToNetwork("Mega Testnet", "Custom");
+  });
+
+  test("Can connect to custom network", async ({ metamask }) => {
+    await metamask.addCustomNetwork({
       chainId: 998,
       name: "Hyper",
       rpc: "https://rpc.hyperliquid-testnet.xyz/evm",
@@ -52,7 +57,7 @@ test.describe("Metamask", () => {
   });
 
   test("Can add a custom network and switch account", async ({ metamask }) => {
-    await metamask.connectToNetwork({
+    await metamask.addCustomNetwork({
       chainId: 123420001114,
       currencySymbol: "CAMP",
       name: "Basecamp",

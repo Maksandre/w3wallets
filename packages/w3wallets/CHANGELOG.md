@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.8.4
+
+### Patch Changes
+
+- Update MetaMask components
+
 ## 0.8.3
 
 ### Patch Changes

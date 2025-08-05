@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.9.1
+
+### Patch Changes
+
+- Fix metamask selector
+
 ## 0.9.0
 
 ### Minor Changes

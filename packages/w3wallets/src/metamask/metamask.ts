@@ -102,7 +102,7 @@ export class Metamask extends Wallet {
     networkType: "Default" | "Custom" = "Default",
   ) {
     await this.page.getByTestId("sort-by-networks").click();
-    await this.page.getByRole("button", { name: networkType }).click();
+    await this.page.getByRole("button", { name: networkType, exact: true }).click();
 
     const additionalNetwork = this.page
       .getByTestId("additional-network-item")

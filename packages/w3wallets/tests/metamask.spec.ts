@@ -68,6 +68,19 @@ test.describe("Metamask", () => {
     await metamask.switchAccount({ name: "Account 1" });
   });
 
+  test("Can add a custom network and an existing network", async ({
+    metamask,
+  }) => {
+    await metamask.addCustomNetwork({
+      chainId: 123420001114,
+      currencySymbol: "CAMP",
+      name: "Basecamp",
+      rpc: "https://rpc-campnetwork.xyz",
+    });
+    await metamask.enableTestNetworks();
+    await metamask.connectToNetwork("Mega Testnet", "Custom");
+  });
+
   test("Can switch account by address", async ({ metamask }) => {
     await metamask.importAccount(config.ethPrivateKeys[1]);
     await metamask.switchAccount({

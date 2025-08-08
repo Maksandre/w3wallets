@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.9.2
+
+### Patch Changes
+
+- Fix backpack selector
+
 ## 0.9.1
 
 ### Patch Changes

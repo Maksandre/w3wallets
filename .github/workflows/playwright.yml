@@ -5,7 +5,13 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "28 5 * * *"
   workflow_dispatch:
+
+concurrency:
+  group: playwright-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   playwright:

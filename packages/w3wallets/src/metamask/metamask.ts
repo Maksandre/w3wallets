@@ -38,9 +38,6 @@ export class Metamask extends Wallet {
     ////// Complete
     await this.page.getByTestId("onboarding-complete-done").click();
     await this.page.getByTestId("pin-extension-done").click();
-
-    await this.page.getByTestId("not-now-button").click();
-    // await this.clickTopRightCornerToCloseAllTheMarketingBullshit();
   }
 
   async switchAccount(accountName: { name: string }): Promise<void>;

@@ -37,6 +37,7 @@ export class Metamask extends Wallet {
 
     ////// Complete
     await this.page.getByTestId("onboarding-complete-done").click();
+    await this.page.getByTestId("download-app-continue").click();
     await this.page.getByTestId("pin-extension-done").click();
   }
 
@@ -96,7 +97,7 @@ export class Metamask extends Wallet {
 
   async connectToNetwork(
     networkName: string,
-    networkType: "Default" | "Custom" = "Default",
+    networkType: "Popular" | "Custom" = "Popular",
   ) {
     await this.page.getByTestId("sort-by-networks").click();
     await this.page
@@ -113,7 +114,6 @@ export class Metamask extends Wallet {
       await this.page.getByTestId("confirmation-submit-button").click();
     } catch (error) {
       await this.page.getByText(networkName).click();
-      await this.page.getByTestId("modal-header-close-button").click();
     }
   }
 

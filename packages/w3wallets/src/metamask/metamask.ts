@@ -176,6 +176,8 @@ export class Metamask extends Wallet {
   }
 
   private async clickTopRightCornerToCloseAllTheMarketingBullshit() {
+    await this.page.waitForTimeout(500);
+    await this.page.keyboard.press("Escape");
     await this.page.mouse.click(1000, 10);
   }
 }

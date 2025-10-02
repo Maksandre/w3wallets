@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.9.5
+
+### Patch Changes
+
+- Update onboarding
+
 ## 0.9.4
 
 ### Patch Changes

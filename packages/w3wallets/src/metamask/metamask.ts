@@ -15,12 +15,6 @@ export class Metamask extends Wallet {
    * @param mnemonic 12-word mnemonic seed phrase
    */
   async onboard(mnemonic: string, password = this.defaultPassword) {
-    await this.page.getByTestId("onboarding-get-started-button").click();
-    await this.page.getByTestId("terms-of-use-scroll-button").click();
-    await this.page.getByTestId("terms-of-use-checkbox").click();
-    await this.page.getByTestId("terms-of-use-agree-button").click();
-
-    //////
     await this.page.getByTestId("onboarding-import-wallet").click();
     await this.page.getByTestId("onboarding-import-with-srp-button").click();
     await this.page
@@ -39,6 +33,8 @@ export class Metamask extends Wallet {
     await this.page.getByTestId("onboarding-complete-done").click();
     await this.page.getByTestId("download-app-continue").click();
     await this.page.getByTestId("pin-extension-done").click();
+
+    await this.clickTopRightCornerToCloseAllTheMarketingBullshit();
   }
 
   async switchAccount(accountName: { name: string }): Promise<void>;
@@ -180,6 +176,8 @@ export class Metamask extends Wallet {
   }
 
   private async clickTopRightCornerToCloseAllTheMarketingBullshit() {
+    await this.page.waitForTimeout(500);
+    await this.page.keyboard.press("Escape");
     await this.page.mouse.click(1000, 10);
   }
 }

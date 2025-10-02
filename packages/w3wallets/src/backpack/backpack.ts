@@ -107,7 +107,7 @@ export class Backpack extends Wallet {
     }
     await this.page.goto(`chrome-extension://${this.extensionId}/popup.html`);
     await this.page
-      .getByTestId("AccountBalanceRoundedIcon")
+      .getByTestId("__CAROUSEL_ITEM_0__")
       .waitFor({ state: "visible" });
   }
 }

@@ -27,46 +27,32 @@ export class Metamask extends Wallet {
     await this.page.getByTestId("create-password-terms").click();
     await this.page.getByTestId("create-password-submit").click();
     ////// Help us improve
-    await this.page.getByTestId("metametrics-no-thanks").click();
+    await this.page.getByTestId("metametrics-i-agree").click();
 
     ////// Complete
     await this.page.getByTestId("onboarding-complete-done").click();
-    await this.page.getByTestId("download-app-continue").click();
-    await this.page.getByTestId("pin-extension-done").click();
 
     await this.clickTopRightCornerToCloseAllTheMarketingBullshit();
   }
 
+  // NOTE: No address option anymore
   async switchAccount(accountName: { name: string }): Promise<void>;
-  async switchAccount(accountAddress: { address: string }): Promise<void>;
-  async switchAccount(
-    accountNameOrAddress: { name: string } | { address: string },
-  ) {
+  // async switchAccount(accountAddress: { address: string }): Promise<void>;
+  async switchAccount(accountNameOrAddress: { name: string }) {
     await this.page.getByTestId("account-menu-icon").click();
 
-    if ("name" in accountNameOrAddress) {
-      await this.page
-        .locator(".multichain-account-list-item__account-name")
-        .getByRole("button", { name: accountNameOrAddress.name, exact: true })
-        .click();
-    } else {
-      await this.page
-        .getByTestId("account-list-address")
-        .filter({ hasText: shortenAddress(accountNameOrAddress.address) })
-        .click();
-    }
+    await this.page
+      .getByText(accountNameOrAddress.name, { exact: true })
+      .click();
   }
 
   async importAccount(privateKey: string) {
     await this.page.getByTestId("account-menu-icon").click();
-    await this.page
-      .getByTestId("multichain-account-menu-popover-action-button")
-      .click();
-    await this.page
-      .getByTestId("multichain-account-menu-popover-add-imported-account")
-      .click();
+    await this.page.getByTestId("account-list-add-wallet-button").click();
+    await this.page.getByTestId("add-wallet-modal-import-account").click();
     await this.page.locator("#private-key-box").fill(privateKey);
     await this.page.getByTestId("import-account-confirm-button").click();
+    await this.page.getByRole("button", { name: "Back" }).click();
   }
 
   async addAccount(accountName?: string) {
@@ -97,20 +83,14 @@ export class Metamask extends Wallet {
   ) {
     await this.page.getByTestId("sort-by-networks").click();
     await this.page
-      .getByRole("button", { name: networkType, exact: true })
+      .getByRole("tab", { name: networkType, exact: true })
       .click();
 
     const additionalNetwork = this.page
       .getByTestId("additional-network-item")
       .getByText(networkName);
 
-    try {
-      await additionalNetwork.isEnabled({ timeout: 1000 });
-      await additionalNetwork.click();
-      await this.page.getByTestId("confirmation-submit-button").click();
-    } catch (error) {
-      await this.page.getByText(networkName).click();
-    }
+    await this.page.getByText(networkName).click();
   }
 
   async addCustomNetwork(settings: NetworkSettings) {

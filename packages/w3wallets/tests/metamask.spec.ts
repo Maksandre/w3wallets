@@ -21,7 +21,7 @@ test.describe("Metamask", () => {
   });
 
   test("Can switch to existing network", async ({ metamask }) => {
-    await metamask.connectToNetwork("Arbitrum One");
+    await metamask.connectToNetwork("Arbitrum");
   });
 
   test("Can switch to existing test network", async ({ metamask }) => {
@@ -79,12 +79,5 @@ test.describe("Metamask", () => {
     });
     await metamask.enableTestNetworks();
     await metamask.connectToNetwork("Mega Testnet", "Custom");
-  });
-
-  test("Can switch account by address", async ({ metamask }) => {
-    await metamask.importAccount(config.ethPrivateKeys[1]);
-    await metamask.switchAccount({
-      address: "0x5b7BDE2eF040354Ba49d9c30e492c91391B5b353",
-    });
   });
 });

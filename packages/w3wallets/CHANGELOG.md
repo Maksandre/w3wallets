@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.10.0
+
+### Minor Changes
+
+- Update wallets api
+
 ## 0.9.5
 
 ### Patch Changes

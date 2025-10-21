@@ -92,7 +92,6 @@ export class Backpack extends Wallet {
       .getByRole("button", { name: "I agree to the terms" })
       .click();
     await this.page.getByText("I already have a wallet").click();
-    await this.page.getByText("View all").click();
     await this.page.getByText(network).click();
     await this.page.getByText("Private key").click();
     await this.page.getByPlaceholder("Private key").fill(privateKey);
@@ -100,8 +99,8 @@ export class Backpack extends Wallet {
     await this.page.getByText("Import", { exact: true }).click();
 
     if (isOnboard) {
+      await this.page.getByRole("textbox").nth(0).fill(this.defaultPassword);
       await this.page.getByRole("textbox").nth(1).fill(this.defaultPassword);
-      await this.page.getByRole("textbox").nth(2).fill(this.defaultPassword);
       await this.page.getByText("Next", { exact: true }).click();
       await expect(this.page.getByText("You're all good!")).toBeVisible();
     }

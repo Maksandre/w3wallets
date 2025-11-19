@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.10.1
+
+### Patch Changes
+
+- Fix pjs wallet
+
 ## 0.10.0
 
 ### Minor Changes

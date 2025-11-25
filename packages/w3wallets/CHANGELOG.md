@@ -1,5 +1,11 @@
 # w3wallets
 
+## 0.10.2
+
+### Patch Changes
+
+- Fix wallets
+
 ## 0.10.1
 
 ### Patch Changes

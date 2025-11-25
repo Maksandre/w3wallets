@@ -19,8 +19,8 @@ export class Metamask extends Wallet {
     await this.page.getByTestId("onboarding-import-with-srp-button").click();
     await this.page
       .getByTestId("srp-input-import__srp-note")
-      .pressSequentially(mnemonic);
-    await this.page.getByTestId("import-srp-confirm").click();
+      .pressSequentially(mnemonic, { delay: 5 });
+    await this.page.getByRole("button", { name: "Continue" }).click();
     ////// Password
     await this.page.getByTestId("create-password-new-input").fill(password);
     await this.page.getByTestId("create-password-confirm-input").fill(password);
@@ -135,7 +135,7 @@ export class Metamask extends Wallet {
       .click();
 
     // Check page is empty (action performed)
-    await p.waitForSelector(".main-container-wrapper:empty", {
+    await p.waitForSelector(".multichain-app-header", {
       timeout: 10000,
     });
 

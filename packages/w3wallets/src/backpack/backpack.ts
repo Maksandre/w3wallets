@@ -88,9 +88,7 @@ export class Backpack extends Wallet {
         await this.page.getByLabel("Go back").click();
       }
     }
-    await this.page
-      .getByRole("button", { name: "I agree to the terms" })
-      .click();
+    await this.page.getByTestId("terms-of-service-checkbox").click();
     await this.page.getByText("I already have a wallet").click();
     await this.page.getByText(network).click();
     await this.page.getByText("Private key").click();

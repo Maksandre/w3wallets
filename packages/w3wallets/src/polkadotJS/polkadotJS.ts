@@ -15,6 +15,7 @@ export class PolkadotJS extends Wallet {
     await this.page
       .getByRole("button", { name: "Understood, let me continue" })
       .click();
+    await this.page.getByRole("button", { name: "I Understand" }).click();
     await this.page.locator(".popupToggle").first().click();
     await this.page.getByText("Import account from pre-existing seed").click();
     await this.page.locator(".seedInput").getByRole("textbox").fill(seed);

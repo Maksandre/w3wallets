@@ -19,7 +19,7 @@ export class Metamask extends Wallet {
     await this.page.getByTestId("onboarding-import-with-srp-button").click();
     await this.page
       .getByTestId("srp-input-import__srp-note")
-      .pressSequentially(mnemonic, { delay: 5 });
+      .pressSequentially(mnemonic, { delay: 20 });
     await this.page.getByRole("button", { name: "Continue" }).click();
     ////// Password
     await this.page.getByTestId("create-password-new-input").fill(password);

@@ -52,3 +52,13 @@ jobs:
 
       - name: 🧪 Run tests
         run: xvfb-run --auto-servernum --server-args='-screen 0 1280x800x24' yarn test
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: |
+            packages/w3wallets/playwright-report/
+            packages/w3wallets/test-results/
+          retention-days: 3

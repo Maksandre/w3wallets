@@ -1,6 +1,12 @@
 "use client";
 
-import { WalletConnect, NetworkInfo } from "@/components";
+import {
+  WalletConnect,
+  NetworkInfo,
+  TokenBalance,
+  TokenTransfer,
+  TokenApprove,
+} from "@/components";
 
 export default function Home() {
   return (
@@ -20,10 +26,14 @@ export default function Home() {
           <NetworkInfo />
         </section>
 
-        {/* ERC-20 Section - Placeholder */}
+        {/* ERC-20 Section */}
         <section className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">ERC-20 Token</h2>
-          <p className="text-gray-500">Coming in Phase 4...</p>
+          <TokenBalance />
+          <hr className="my-6 border-gray-200" />
+          <TokenTransfer />
+          <hr className="my-6 border-gray-200" />
+          <TokenApprove />
         </section>
 
         {/* ERC-721 Section - Placeholder */}

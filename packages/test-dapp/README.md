@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# W3Wallets Test DApp
 
-## Getting Started
+Test DApp for the w3wallets library. Includes ERC-20 and ERC-721 contracts for testing wallet interactions.
 
-First, run the development server:
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Install dependencies
+yarn install
+
+# Compile contracts (generates ABIs)
+yarn workspace @w3wallets/test-dapp compile
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Start local blockchain (Anvil)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+yarn start:anvil
+```
 
-## Learn More
+### 2. Deploy contracts
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 yarn deploy
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Contracts are deployed to deterministic addresses:
+- TestToken (ERC-20): `0x5FbDB2315678afecb367f032d93F642f64180aa3`
+- TestNFT (ERC-721): `0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Start the DApp
 
-## Deploy on Vercel
+```bash
+yarn start:dapp
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open http://localhost:3001
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Contracts
+
+- **TestToken.sol** - ERC-20 token with public `mint()` function
+- **TestNFT.sol** - ERC-721 NFT with public `mint(address, uri)` function
+
+## Scripts
+
+| Script | Description |
+|--------|-------------|
+| `yarn workspace @w3wallets/test-dapp compile` | Compile contracts with Foundry |
+| `yarn workspace @w3wallets/test-dapp anvil` | Start local Anvil node |
+| `yarn workspace @w3wallets/test-dapp deploy` | Deploy contracts to Anvil |
+| `yarn workspace @w3wallets/test-dapp dev` | Start Next.js dev server |

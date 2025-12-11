@@ -6,7 +6,10 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "eslint"
+    "lint": "eslint",
+    "compile": "forge build",
+    "anvil": "anvil",
+    "deploy": "forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --broadcast"
   },
   "dependencies": {
     "@reown/appkit": "^1.8.15",

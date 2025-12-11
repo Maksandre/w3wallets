@@ -7,8 +7,7 @@
   "scripts": {
     "start:anvil": "yarn workspace @w3wallets/test-dapp anvil",
     "start:polkadot": "yarn workspace @w3wallets/test-app chopsticks",
-    "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
-    "start:dapp": "yarn workspace @w3wallets/test-dapp dev",
+    "start:dapp": "yarn workspace @w3wallets/test-dapp start:all",
     "deploy": "yarn workspace @w3wallets/test-dapp deploy",
     "build": "yarn workspace w3wallets build",
     "typegen": "yarn workspace @w3wallets/test-app typegen",

@@ -5,6 +5,7 @@ import {
   NetworkInfo,
   TokenSection,
   NftSection,
+  SignMessageSection,
 } from "@/components";
 
 export default function Home() {
@@ -35,6 +36,12 @@ export default function Home() {
         <section className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">ERC-721 NFT</h2>
           <NftSection />
+        </section>
+
+        {/* Sign Message Section */}
+        <section className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Sign Message</h2>
+          <SignMessageSection />
         </section>
       </div>
     </main>

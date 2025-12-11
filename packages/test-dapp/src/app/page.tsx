@@ -3,9 +3,8 @@
 import {
   WalletConnect,
   NetworkInfo,
-  TokenBalance,
-  TokenTransfer,
-  TokenApprove,
+  TokenSection,
+  NftSection,
 } from "@/components";
 
 export default function Home() {
@@ -29,17 +28,13 @@ export default function Home() {
         {/* ERC-20 Section */}
         <section className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">ERC-20 Token</h2>
-          <TokenBalance />
-          <hr className="my-6 border-gray-200" />
-          <TokenTransfer />
-          <hr className="my-6 border-gray-200" />
-          <TokenApprove />
+          <TokenSection />
         </section>
 
-        {/* ERC-721 Section - Placeholder */}
+        {/* ERC-721 Section */}
         <section className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">ERC-721 NFT</h2>
-          <p className="text-gray-500">Coming in Phase 5...</p>
+          <NftSection />
         </section>
       </div>
     </main>

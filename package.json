@@ -8,6 +8,7 @@
     "start:chain": "yarn workspace @w3wallets/test-contract local-node",
     "start:polkadot": "yarn workspace @w3wallets/test-app chopsticks",
     "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
+    "start:ui2": "yarn workspace @w3wallets/test-dapp dev",
     "deploy:contract": "yarn workspace w3wallets deploy",
     "build": "yarn workspace w3wallets build",
     "typegen": "yarn workspace @w3wallets/test-app typegen",

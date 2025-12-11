@@ -1,0 +1,3 @@
+[submodule "packages/test-dapp/lib/openzeppelin-contracts"]
+	path = packages/test-dapp/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts

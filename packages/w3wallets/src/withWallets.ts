@@ -1,16 +1,16 @@
 import path from "path";
 import fs from "fs";
-import { sleep } from "../tests/utils/sleep";
 import {
   test as base,
   type BrowserContext,
   chromium,
   type Page,
 } from "@playwright/test";
-import { Backpack } from "./backpack";
-import { PolkadotJS } from "./polkadotJS";
-import type { IWallet, NoDuplicates, WalletName } from "./types";
-import { Metamask } from "./metamask";
+import { sleep } from "./core/utils";
+import type { IWallet, NoDuplicates, WalletName } from "./core/types";
+import { Backpack } from "./wallets/backpack";
+import { Metamask } from "./wallets/metamask";
+import { PolkadotJS } from "./wallets/polkadot-js";
 
 const w3walletsDir = ".w3wallets";
 

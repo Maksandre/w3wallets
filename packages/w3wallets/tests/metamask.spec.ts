@@ -1,7 +1,7 @@
 import { test as base, expect } from "@playwright/test";
 import { withWallets } from "../src/withWallets";
 import config from "./utils/config";
-import { sleep } from "./utils/sleep";
+import { sleep } from "../src/core/utils";
 
 const test = withWallets(base, "metamask");
 

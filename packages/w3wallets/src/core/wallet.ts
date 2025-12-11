@@ -3,9 +3,11 @@ import type { IWallet } from "./types";
 
 export abstract class Wallet implements IWallet {
   constructor(
-    public page: Page,
-    protected extensionId: string,
+    public readonly page: Page,
+    protected readonly extensionId: string,
   ) {}
 
   abstract gotoOnboardPage(): Promise<void>;
+  abstract approve(): Promise<void>;
+  abstract deny(): Promise<void>;
 }

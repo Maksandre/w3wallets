@@ -1,8 +1,8 @@
 import { test as base, expect } from "@playwright/test";
-import { withWallets } from "../src/withWallets";
+import { withWallets, polkadotJS } from "../src";
 import config from "./utils/config";
 
-const test = withWallets(base, "polkadotJS");
+const test = withWallets(base, polkadotJS);
 
 test.beforeEach(async ({ polkadotJS, page }) => {
   await polkadotJS.onboard(config.substrateSeed);

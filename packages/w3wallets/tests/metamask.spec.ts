@@ -1,9 +1,9 @@
 import { test as base, expect } from "@playwright/test";
-import { withWallets } from "../src/withWallets";
+import { withWallets, metamask } from "../src";
 import config from "./utils/config";
 import { sleep } from "../src/core/utils";
 
-const test = withWallets(base, "metamask");
+const test = withWallets(base, metamask);
 
 test.beforeEach(async ({ metamask }) => {
   await metamask.onboard(config.ethMnemonic);

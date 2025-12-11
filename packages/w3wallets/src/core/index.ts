@@ -1,3 +1,4 @@
 export { Wallet } from "./wallet";
 export { sleep } from "./utils";
-export type { IWallet, WalletName, NoDuplicates, Network } from "./types";
+export { createWallet } from "./types";
+export type { IWallet, WalletConfig, Network } from "./types";

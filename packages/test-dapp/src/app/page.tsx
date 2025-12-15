@@ -1,5 +1,6 @@
 "use client";
 
+import { useChainId } from "wagmi";
 import {
   WalletConnect,
   NetworkInfo,
@@ -7,11 +8,15 @@ import {
   NftSection,
   SignMessageSection,
 } from "@/components";
+import { localHardhat } from "@/config/wagmi";
 
 export default function Home() {
+  const chainId = useChainId();
+  const isHardhat = chainId === localHardhat.id;
+
   return (
     <main className="min-h-screen p-8 bg-gray-50">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">W3Wallets Test DApp</h1>
 
         {/* Wallet Connection Section */}
@@ -26,17 +31,26 @@ export default function Home() {
           <NetworkInfo />
         </section>
 
-        {/* ERC-20 Section */}
-        <section className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">ERC-20 Token</h2>
-          <TokenSection />
-        </section>
+        {/* Token Sections - Only visible on Hardhat */}
+        {isHardhat && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* ERC-20 Section */}
+            <section className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">
+                TestToken <span className="text-gray-500 font-normal">(ERC-20)</span>
+              </h2>
+              <TokenSection />
+            </section>
 
-        {/* ERC-721 Section */}
-        <section className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">ERC-721 NFT</h2>
-          <NftSection />
-        </section>
+            {/* ERC-721 Section */}
+            <section className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">
+                TestNFT <span className="text-gray-500 font-normal">(ERC-721)</span>
+              </h2>
+              <NftSection />
+            </section>
+          </div>
+        )}
 
         {/* Sign Message Section */}
         <section className="bg-white rounded-lg shadow p-6 mb-6">

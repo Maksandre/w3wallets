@@ -20,6 +20,12 @@ export interface WalletConfig<
   extensionDir: string;
   /** Wallet class constructor */
   WalletClass: new (page: Page, extensionId: string) => TWallet;
+  /**
+   * Chrome extension ID. If not provided, it will be derived from
+   * the manifest.json `key` field. Required for custom extensions
+   * that don't have a `key` field in their manifest.
+   */
+  extensionId?: string;
 }
 
 /**

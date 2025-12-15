@@ -407,6 +407,7 @@ function extractCrxToFolder(crxBuffer, outFolder) {
 
   const version = crxBuffer.readUInt32LE(4);
   let zipStartOffset = 0;
+
   if (version === 2) {
     const pkLen = crxBuffer.readUInt32LE(8);
     const sigLen = crxBuffer.readUInt32LE(12);

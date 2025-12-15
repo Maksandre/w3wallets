@@ -26,10 +26,46 @@ npm install -D w3wallets
 #### 1. Download wallets
 
 ```sh
-npx w3wallets backpack polkadotJS
+npx w3wallets metamask backpack polkadotjs
 ```
 
-The unzipped files should be stored in the `.w3wallets/<wallet-name>` directory. Add them to `.gitignore`.
+Short aliases are also supported:
+
+```sh
+npx w3wallets mm bp pjs
+```
+
+The unzipped files are stored in the `.w3wallets/<wallet-name>` directory. Add `.w3wallets` to `.gitignore`.
+
+<details>
+<summary>CLI Options</summary>
+
+```
+USAGE:
+  npx w3wallets [OPTIONS] <targets...>
+
+TARGETS:
+  Alias name      Known wallet alias (metamask, backpack, polkadotjs)
+  Short alias     Short form (mm, bp, pjs)
+  Extension ID    32-character Chrome extension ID
+  URL             Chrome Web Store URL
+
+OPTIONS:
+  -h, --help      Show help message
+  -l, --list      List available wallet aliases
+  -o, --output    Output directory (default: .w3wallets)
+  -f, --force     Force re-download even if already exists
+  --debug         Save raw .crx file for debugging
+
+EXAMPLES:
+  npx w3wallets metamask                    # Download MetaMask
+  npx w3wallets mm bp pjs                   # Download all wallets (short)
+  npx w3wallets --list                      # List available aliases
+  npx w3wallets -o ./extensions metamask    # Custom output directory
+  npx w3wallets --force mm                  # Force re-download
+```
+
+</details>
 
 #### 2. Wrap your fixture with `withWallets`
 

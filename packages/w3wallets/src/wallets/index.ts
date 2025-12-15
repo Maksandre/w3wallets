@@ -26,7 +26,7 @@ export const metamask = createWallet({
  */
 export const polkadotJS = createWallet({
   name: "polkadotJS",
-  extensionDir: "polkadotJS",
+  extensionDir: "polkadotjs",
   WalletClass: PolkadotJS,
 });
 

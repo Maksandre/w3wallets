@@ -115,8 +115,9 @@ function ensureWalletExtensionExists(
   walletName: string,
 ): void {
   if (!fs.existsSync(path.join(walletPath, "manifest.json"))) {
+    const cliAlias = walletName.toLowerCase();
     throw new Error(
-      `Cannot find ${walletName}. Please download it via 'npx w3wallets ${walletName}'.`,
+      `Cannot find ${walletName}. Please download it via 'npx w3wallets ${cliAlias}'.`,
     );
   }
 }

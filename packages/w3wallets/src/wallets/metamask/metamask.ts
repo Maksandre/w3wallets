@@ -1,95 +1,171 @@
-import { expect, type Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { Wallet } from "../../core/wallet";
 import type { NetworkSettings } from "./types";
 
 export class Metamask extends Wallet {
-  private defaultPassword = "11111111";
+  private defaultPassword = "TestPassword123!";
 
-  async gotoOnboardPage(): Promise<void> {
-    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
+  async gotoOnboardPage() {
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/home.html#onboarding/welcome`,
+    );
+    await expect(
+      this.page.getByRole("button", { name: "I have an existing wallet" }),
+    ).toBeVisible();
   }
 
   /**
-   *
-   * @param mnemonic 12-word mnemonic seed phrase
+   * Onboard MetaMask with a mnemonic phrase
+   * @param mnemonic - 12 or 24 word recovery phrase
+   * @param password - Optional password (defaults to TestPassword123!)
    */
-  async onboard(mnemonic: string, password = this.defaultPassword) {
-    await this.page.getByTestId("onboarding-import-wallet").click();
-    await this.page.getByTestId("onboarding-import-with-srp-button").click();
+  async onboard(mnemonic: string, password?: string) {
+    const pwd = password ?? this.defaultPassword;
+
+    // Step 1: Click "I have an existing wallet"
     await this.page
-      .getByTestId("srp-input-import__srp-note")
-      .pressSequentially(mnemonic, { delay: 20 });
-    await this.page.getByRole("button", { name: "Continue" }).click();
-    ////// Password
-    await this.page.getByTestId("create-password-new-input").fill(password);
-    await this.page.getByTestId("create-password-confirm-input").fill(password);
-    await this.page.getByTestId("create-password-terms").click();
-    await this.page.getByTestId("create-password-submit").click();
-    ////// Help us improve
-    await this.page.getByTestId("metametrics-i-agree").click();
-
-    ////// Complete
-    await this.page.getByTestId("onboarding-complete-done").click();
-
-    await this.clickTopRightCornerToCloseAllTheMarketingBullshit();
-  }
-
-  // NOTE: No address option anymore
-  async switchAccount(accountName: { name: string }): Promise<void>;
-  // async switchAccount(accountAddress: { address: string }): Promise<void>;
-  async switchAccount(accountNameOrAddress: { name: string }) {
-    await this.page.getByTestId("account-menu-icon").click();
-
-    await this.page
-      .getByText(accountNameOrAddress.name, { exact: true })
+      .getByRole("button", { name: "I have an existing wallet" })
       .click();
-  }
 
-  async importAccount(privateKey: string) {
-    await this.page.getByTestId("account-menu-icon").click();
-    await this.page.getByTestId("account-list-add-wallet-button").click();
-    await this.page.getByTestId("add-wallet-modal-import-account").click();
-    await this.page.locator("#private-key-box").fill(privateKey);
-    await this.page.getByTestId("import-account-confirm-button").click();
-    await this.page.getByRole("button", { name: "Back" }).click();
-  }
-
-  async addAccount(accountName?: string) {
-    await this.page.getByTestId("account-menu-icon").click();
+    // Step 2: Click "Import using Secret Recovery Phrase"
     await this.page
-      .getByTestId("multichain-account-menu-popover-action-button")
+      .getByRole("button", { name: "Import using Secret Recovery Phrase" })
       .click();
+
+    // Step 3: Type mnemonic (must use keyboard.type due to security)
+    const textbox = this.page.getByRole("textbox");
+    await textbox.click();
+    await this.page.keyboard.type(mnemonic, { delay: 5 });
+
+    // Step 4: Wait for Continue button to be enabled and click
+    const continueBtn = this.page.getByTestId("import-srp-confirm");
+    await continueBtn.click();
+
+    // Step 5: Fill password fields
+    const passwordInputs = this.page.locator('input[type="password"]');
+    await passwordInputs.nth(0).fill(pwd);
+    await passwordInputs.nth(1).fill(pwd);
+
+    // Step 6: Check the terms checkbox
+    await this.page.getByRole("checkbox").click();
+
+    // Step 7: Click "Create password"
+    await this.page.getByRole("button", { name: "Create password" }).click();
+
+    // Step 8: Handle "Help improve MetaMask" screen
+    const metametricsBtn = this.page.getByTestId("metametrics-i-agree");
+    await metametricsBtn.waitFor({ state: "visible", timeout: 30000 });
+    await metametricsBtn.click();
+
+    // Step 9: Handle "Your wallet is ready!" screen
+    const openWalletBtn = this.page.getByRole("button", {
+      name: /open wallet/i,
+    });
+    await openWalletBtn.waitFor({ state: "visible", timeout: 30000 });
+    await openWalletBtn.click();
+
+    // Step 10: Navigate to sidepanel page
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/sidepanel.html`,
+    );
+
+    // Wait for main wallet page to be ready (account options menu visible)
     await this.page
-      .getByTestId("multichain-account-menu-popover-add-account")
+      .getByTestId("account-options-menu-button")
+      .waitFor({ state: "visible", timeout: 30000 });
+  }
+
+  async approve() {
+    // MetaMask connection flow may have multiple steps:
+    // 1. "Connect" button to approve account access
+    // 2. "Confirm" button for transactions
+
+    await this.page
+      .getByTestId("confirm-btn")
+      .or(this.page.getByTestId("confirm-footer-button"))
+      .or(this.page.getByTestId("page-container-footer-next"))
+      .or(this.page.getByRole("button", { name: /confirm/i }))
       .click();
-    if (accountName) {
-      await this.page.locator("#account-name").fill(accountName);
-    }
-    await this.page.getByTestId("submit-add-account-with-name").click();
+
+    await this.page
+      .getByTestId("account-options-menu-button")
+      .waitFor({ state: "visible", timeout: 30000 });
   }
 
-  async getAccountName() {
-    const accountSelect = this.page.getByTestId("account-menu-icon");
-    await expect(accountSelect).toBeVisible();
-    const text = await accountSelect.textContent();
-    if (!text) throw Error("Cannot get account name");
-    return text;
+  async deny() {
+    // Try different cancel/reject button selectors
+    const cancelBtn = this.page
+      .getByTestId("cancel-btn")
+      .or(this.page.getByTestId("confirm-footer-cancel-button"))
+      .or(this.page.getByTestId("page-container-footer-cancel"))
+      .or(this.page.getByRole("button", { name: /cancel|reject/i }));
+
+    await cancelBtn.first().click();
   }
 
-  async connectToNetwork(
-    networkName: string,
-    networkType: "Popular" | "Custom" = "Popular",
-  ) {
+  /**
+   * Lock the MetaMask wallet
+   */
+  async lock() {
+    // Navigate to home first
+    await this.page.getByTestId("account-options-menu-button").click();
+
+    // Click "Lock MetaMask" menu item
+    await this.page.locator("text=Lock MetaMask").click();
+  }
+
+  /**
+   * Unlock MetaMask with password
+   */
+  async unlock(password?: string) {
+    const pwd = password ?? this.defaultPassword;
+
+    const passwordInput = this.page.getByTestId("unlock-password");
+    await passwordInput.fill(pwd);
+
+    await this.page.getByTestId("unlock-submit").click();
+  }
+
+  /**
+   * Switch to an existing network in MetaMask
+   * @param networkName - Name of the network to switch to (e.g., "Ethereum Mainnet", "Sepolia")
+   */
+  async switchNetwork(networkName: string, networkType: "Popular" | "Custom" = "Popular",) {
+    // Click the network picker button
     await this.page.getByTestId("sort-by-networks").click();
-    await this.page
-      .getByRole("tab", { name: networkType, exact: true })
-      .click();
-
-    const additionalNetwork = this.page
-      .getByTestId("additional-network-item")
-      .getByText(networkName);
-
+    if (networkType === 'Custom') {
+      await this.page.getByRole("tab", {name: "Custom"}).click();
+    }
     await this.page.getByText(networkName).click();
+
+    // Wait for the network list to appear and click the desired network
+    await expect(this.page.getByTestId("sort-by-networks")).toHaveText(networkName);
+  }
+
+  async switchAccount(accountName: string) {
+    // Click the network picker button
+    await this.page.getByTestId("account-menu-icon").click();
+    await this.page.getByText(accountName, {exact: true}).click();
+  }
+
+  /**
+   * Add a custom network to MetaMask
+   */
+  async addNetwork(network: NetworkSettings) {
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/home.html#settings/networks/add-network`,
+    );
+
+    await this.page.getByTestId("network-form-network-name").fill(network.name);
+    await this.page.getByTestId("network-form-rpc-url").fill(network.rpc);
+    await this.page
+      .getByTestId("network-form-chain-id")
+      .fill(network.chainId.toString());
+    await this.page
+      .getByTestId("network-form-ticker-input")
+      .fill(network.currencySymbol);
+
+    await this.page.getByRole("button", { name: /save/i }).click();
   }
 
   async addCustomNetwork(settings: NetworkSettings) {
@@ -124,39 +200,16 @@ export class Metamask extends Wallet {
     await this.page.keyboard.press("Escape");
   }
 
-  async approve() {
-    const p = await this.page.context().newPage();
-    await p.goto(`chrome-extension://${this.extensionId}/notification.html`);
-    await p
-      .locator(
-        '[data-testid="confirm-footer-button"], [data-testid="confirm-btn"], [data-testid="page-container-footer-next"], [data-testid="confirmation-submit-button"]',
-      )
-      .click();
-
-    // Check page is empty (action performed)
-    await p.waitForSelector(".multichain-app-header", {
-      timeout: 10000,
-    });
-
-    await p.close();
+  async importAccount(privateKey: string) {
+    await this.page.getByTestId("account-menu-icon").click();
+    await this.page.getByTestId("account-list-add-wallet-button").click();
+    await this.page.getByTestId("add-wallet-modal-import-account").click();
+    await this.page.locator("#private-key-box").fill(privateKey);
+    await this.page.getByTestId("import-account-confirm-button").click();
+    await this.page.getByRole("button", { name: "Back" }).click();
   }
 
-  async deny() {
-    return this.usingNotificationPage((p) =>
-      p.getByTestId("cancel-btn").click(),
-    );
-  }
-
-  private async usingNotificationPage(action: (p: Page) => Promise<unknown>) {
-    const p = await this.page.context().newPage();
-    await p.goto(`chrome-extension://${this.extensionId}/notification.html`);
-    await action(p);
-    await p.close();
-  }
-
-  private async clickTopRightCornerToCloseAllTheMarketingBullshit() {
-    await this.page.waitForTimeout(500);
-    await this.page.keyboard.press("Escape");
-    await this.page.mouse.click(1000, 10);
+  async accountNameIs(accountName: string) {
+    await expect(this.page.getByTestId("account-menu-icon")).toContainText(accountName);
   }
 }

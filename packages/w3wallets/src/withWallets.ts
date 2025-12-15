@@ -82,6 +82,10 @@ export function withWallets<const T extends readonly WalletConfig[]>(
         await sleep(1000);
       }
 
+
+      // Close all pages opened automatically by extensions
+      await Promise.all(context.pages().map((page) => page.close()));
+
       await use(context);
       await context.close();
     },

@@ -55,6 +55,6 @@
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.50.1"
+    "@playwright/test": "^1.57.0"
   }
 }

@@ -6,6 +6,7 @@ import { WagmiProvider, type State } from "wagmi";
 import { createAppKit } from "@reown/appkit/react";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { mainnet, sepolia, hardhat } from "@reown/appkit/networks";
+import { PolkadotWalletProvider } from "@/lib/polkadot";
 
 // WalletConnect project ID
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "demo";
@@ -55,7 +56,9 @@ export function Providers({
   return (
     // @ts-expect-error - wagmiAdapter.wagmiConfig type mismatch with WagmiProvider
     <WagmiProvider config={wagmiAdapter.wagmiConfig} initialState={initialState}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <PolkadotWalletProvider>{children}</PolkadotWalletProvider>
+      </QueryClientProvider>
     </WagmiProvider>
   );
 }

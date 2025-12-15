@@ -6,8 +6,8 @@ const test = withWallets(base, polkadotJS);
 
 test.beforeEach(async ({ polkadotJS, page }) => {
   await polkadotJS.onboard(config.substrateSeed);
-  await page.goto("http://localhost:3000");
-  await page.getByRole("button", { name: "Polkadot" }).click();
+  await page.goto("http://localhost:3001/polkadot");
+  await page.getByRole("button", { name: "Polkadot.js" }).click();
   await polkadotJS.selectAccount("Test");
   await polkadotJS.approve();
 });

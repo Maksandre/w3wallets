@@ -24,6 +24,9 @@ sleep 2
 echo "Deploying contracts..."
 forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
 
-# Start Next.js dev server (foreground to keep script running)
+# Build and start Next.js production server
+echo "Building Next.js..."
+next build
+
 echo "Starting Next.js..."
-next dev -p 3001
+next start -p 3001

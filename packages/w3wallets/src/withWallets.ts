@@ -74,6 +74,10 @@ export function withWallets<const T extends readonly WalletConfig[]>(
         args: [
           `--disable-extensions-except=${extensionPaths.join(",")}`,
           `--load-extension=${extensionPaths.join(",")}`,
+          "--no-sandbox",
+          "--disable-gpu",
+          "--disable-dev-shm-usage",
+          "--disable-software-rasterizer",
         ],
       });
 

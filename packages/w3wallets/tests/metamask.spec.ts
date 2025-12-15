@@ -108,11 +108,9 @@ test("Can connect to existing network", async ({ metamask }) => {
   await metamask.switchNetwork("Arbitrum");
 });
 
-test("Can connect to existing testnet", async ({
-  metamask,
-}) => {
+test("Can connect to existing testnet", async ({ metamask }) => {
   await metamask.enableTestNetworks();
-  await metamask.switchNetwork("MegaETH Testnet", 'Custom');
+  await metamask.switchNetwork("MegaETH Testnet", "Custom");
 });
 
 test("Can unlock after lock", async ({ metamask }) => {

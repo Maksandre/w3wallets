@@ -130,22 +130,27 @@ export class Metamask extends Wallet {
    * Switch to an existing network in MetaMask
    * @param networkName - Name of the network to switch to (e.g., "Ethereum Mainnet", "Sepolia")
    */
-  async switchNetwork(networkName: string, networkType: "Popular" | "Custom" = "Popular",) {
+  async switchNetwork(
+    networkName: string,
+    networkType: "Popular" | "Custom" = "Popular",
+  ) {
     // Click the network picker button
     await this.page.getByTestId("sort-by-networks").click();
-    if (networkType === 'Custom') {
-      await this.page.getByRole("tab", {name: "Custom"}).click();
+    if (networkType === "Custom") {
+      await this.page.getByRole("tab", { name: "Custom" }).click();
     }
     await this.page.getByText(networkName).click();
 
     // Wait for the network list to appear and click the desired network
-    await expect(this.page.getByTestId("sort-by-networks")).toHaveText(networkName);
+    await expect(this.page.getByTestId("sort-by-networks")).toHaveText(
+      networkName,
+    );
   }
 
   async switchAccount(accountName: string) {
     // Click the network picker button
     await this.page.getByTestId("account-menu-icon").click();
-    await this.page.getByText(accountName, {exact: true}).click();
+    await this.page.getByText(accountName, { exact: true }).click();
   }
 
   /**
@@ -210,6 +215,8 @@ export class Metamask extends Wallet {
   }
 
   async accountNameIs(accountName: string) {
-    await expect(this.page.getByTestId("account-menu-icon")).toContainText(accountName);
+    await expect(this.page.getByTestId("account-menu-icon")).toContainText(
+      accountName,
+    );
   }
 }

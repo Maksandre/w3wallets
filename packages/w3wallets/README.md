@@ -73,20 +73,10 @@ Install the required wallets into Chromium using `withWallets`.
 
 ```ts
 // your-fixture.ts
-import { withWallets } from "w3wallets";
+import { withWallets, metamask, backpack, polkadotJS } from "w3wallets";
 import { test as base } from "@playwright/test";
 
-export const test = withWallets(
-  base,
-  "backpack",
-  "polkadotJS",
-).extend<BaseFixture>({
-  magic: (_, use) => use(42),
-});
-
-type BaseFixture = {
-  magic: number;
-};
+export const test = withWallets(base, metamask, backpack, polkadotJS);
 
 export { expect } from "@playwright/test";
 ```
@@ -100,12 +90,18 @@ Most commonly, you will use the following methods:
 3. `deny`: for actions that reject or cancel operations
 
 ```ts
-import { test } from "./your-fixture";
+import { test, expect } from "./your-fixture";
 
-test("Can use wallet", async ({ page, backpack }) => {
-  const privateKey =
-    "4wDJd9Ds5ueTdS95ReAZGSBVkjMcNKbgZk47xcmqzpUJjCt7VoB2Cs7hqwXWRnopzXqE4mCP6BEDHCYrFttEcBw2";
+test("Can connect MetaMask to dApp", async ({ page, metamask }) => {
+  const mnemonic =
+    "test test test test test test test test test test test junk";
 
-  await backpack.onboard("Eclipse", privateKey);
+  await metamask.onboard(mnemonic);
+  await page.goto("https://your-dapp.com");
+
+  await page.getByRole("button", { name: "Connect Wallet" }).click();
+  await metamask.approve();
+
+  await expect(page.getByText("Connected")).toBeVisible();
 });
 ```

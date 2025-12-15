@@ -125,7 +125,9 @@ function printList() {
   for (const { name, short, id } of CANONICAL_ALIASES) {
     console.log(`  ${name.padEnd(12)} ${short.padEnd(7)} ${id}`);
   }
-  console.log("\nYou can also download any extension by ID or Chrome Web Store URL.\n");
+  console.log(
+    "\nYou can also download any extension by ID or Chrome Web Store URL.\n",
+  );
 }
 
 /**
@@ -202,14 +204,18 @@ function parseArgs(args) {
       CLI_OPTIONS.debug = true;
     } else if (arg.startsWith("-")) {
       console.error(`Error: Unknown option "${arg}"`);
-      console.error('Use --help for usage information');
+      console.error("Use --help for usage information");
       process.exit(1);
     } else {
       // It's a target (alias, ID, or URL)
       const parsed = parseExtensionTarget(arg);
       if (!parsed) {
-        console.error(`Error: "${arg}" is not a valid alias, extension ID, or URL`);
-        console.error("Use --list to see available aliases, or provide a 32-character extension ID");
+        console.error(
+          `Error: "${arg}" is not a valid alias, extension ID, or URL`,
+        );
+        console.error(
+          "Use --list to see available aliases, or provide a 32-character extension ID",
+        );
         process.exit(1);
       }
       CLI_OPTIONS.targets.push(parsed);
@@ -236,7 +242,9 @@ if (CLI_OPTIONS.list) {
 // Validate we have targets
 if (CLI_OPTIONS.targets.length === 0) {
   console.error("Error: No extension targets specified");
-  console.error('Use --help for usage information or --list to see available aliases');
+  console.error(
+    "Use --help for usage information or --list to see available aliases",
+  );
   process.exit(1);
 }
 
@@ -361,7 +369,9 @@ function fetchUrl(
           lastProgressUpdate = now;
           const percent = Math.round((downloadedBytes / contentLength) * 100);
           const progressBar = createProgressBar(percent);
-          process.stdout.write(`\r  ${progressBar} ${percent}% (${formatBytes(downloadedBytes)})`);
+          process.stdout.write(
+            `\r  ${progressBar} ${percent}% (${formatBytes(downloadedBytes)})`,
+          );
         }
       });
 
@@ -376,7 +386,11 @@ function fetchUrl(
 
     req.on("timeout", () => {
       req.destroy();
-      reject(new Error(`Request timed out after ${REQUEST_TIMEOUT_MS}ms: ${targetUrl}`));
+      reject(
+        new Error(
+          `Request timed out after ${REQUEST_TIMEOUT_MS}ms: ${targetUrl}`,
+        ),
+      );
     });
 
     req.on("error", (err) => {
@@ -509,8 +523,14 @@ function parseZipCentralDirectory(zipBuffer, outFolder) {
     }
 
     // Validate: ZIP64 extended sizes not supported
-    if (compSize === ZIP64_MARKER || unCompSize === ZIP64_MARKER || localHeaderOffset === ZIP64_MARKER) {
-      throw new Error(`ZIP64 extended information not supported for file: ${filename}`);
+    if (
+      compSize === ZIP64_MARKER ||
+      unCompSize === ZIP64_MARKER ||
+      localHeaderOffset === ZIP64_MARKER
+    ) {
+      throw new Error(
+        `ZIP64 extended information not supported for file: ${filename}`,
+      );
     }
 
     files.push({
@@ -533,8 +553,13 @@ function parseZipCentralDirectory(zipBuffer, outFolder) {
 
     // Security: validate path to prevent directory traversal attacks
     const outPath = path.join(resolvedOutFolder, filename);
-    if (!outPath.startsWith(resolvedOutFolder + path.sep) && outPath !== resolvedOutFolder) {
-      throw new Error(`Path traversal detected, refusing to extract: ${filename}`);
+    if (
+      !outPath.startsWith(resolvedOutFolder + path.sep) &&
+      outPath !== resolvedOutFolder
+    ) {
+      throw new Error(
+        `Path traversal detected, refusing to extract: ${filename}`,
+      );
     }
 
     if (filename.endsWith("/")) {

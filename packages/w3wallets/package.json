@@ -30,8 +30,7 @@
   ],
   "bin": "./src/scripts/download.js",
   "scripts": {
-    "start:dapp": "yarn workspace @w3wallets/test-app start:all",
-    "download-wallets": "npx w3wallets polkadotJS metamask",
+    "download-wallets": "npx w3wallets pjs mm",
     "test": "npx playwright test --project=local --workers=2",
     "test:ci": "npx playwright test --project=ci",
     "build": "tsup",

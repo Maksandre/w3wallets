@@ -18,7 +18,7 @@ jobs:
     name: "Playwright Tests"
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.50.1-noble
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
     env:
       NEXT_PUBLIC_WC_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WC_PROJECT_ID }}
     steps:
@@ -35,11 +35,14 @@ jobs:
       - name: ⚙️ Install dependencies
         run: yarn install --immutable
 
+      - name: 🔧 Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
       - name: 🌐 Start UI
         run: |
-          yarn start:ui &
+          yarn start:dapp &
           echo "Waiting for Next.js to be ready..."
-          until curl --silent --fail http://localhost:3000 > /dev/null; do
+          until curl --silent --fail http://localhost:3001 > /dev/null; do
             sleep 2
           done
           echo "Next.js is ready!"

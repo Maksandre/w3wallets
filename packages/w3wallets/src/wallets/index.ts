@@ -1,16 +1,6 @@
 import { createWallet } from "../core/types";
-import { Backpack } from "./backpack";
 import { Metamask } from "./metamask";
 import { PolkadotJS } from "./polkadot-js";
-
-/**
- * Pre-built Backpack wallet configuration.
- */
-export const backpack = createWallet({
-  name: "backpack",
-  extensionDir: "backpack",
-  WalletClass: Backpack,
-});
 
 /**
  * Pre-built MetaMask wallet configuration.
@@ -31,5 +21,5 @@ export const polkadotJS = createWallet({
 });
 
 // Export classes for advanced usage / extending
-export { Backpack, Metamask, PolkadotJS };
+export { Metamask, PolkadotJS };
 export type { NetworkSettings } from "./metamask";

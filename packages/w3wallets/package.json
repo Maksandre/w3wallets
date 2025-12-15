@@ -16,12 +16,10 @@
   "keywords": [
     "e2e",
     "playwright",
-    "backpack",
     "metamask",
     "testing",
     "ethereum",
-    "polkadot",
-    "eclipse"
+    "polkadot"
   ],
   "license": "MIT",
   "publishConfig": {
@@ -33,7 +31,7 @@
   "bin": "./src/scripts/download.js",
   "scripts": {
     "start:dapp": "yarn workspace @w3wallets/test-app start:all",
-    "download-wallets": "npx w3wallets backpack polkadotJS metamask",
+    "download-wallets": "npx w3wallets polkadotJS metamask",
     "test": "npx playwright test --project=local --workers=2",
     "test:ci": "npx playwright test --project=ci",
     "build": "tsup",

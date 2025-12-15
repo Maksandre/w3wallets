@@ -15,24 +15,23 @@ npm install -D w3wallets
 
 ## Getting Started
 
-`MetaMask`, `Backpack`, and `Polkadot{.js}` wallets are currently supported.
+`MetaMask` and `Polkadot{.js}` wallets are currently supported.
 
 <p align="center">
   <img src="https://images.ctfassets.net/clixtyxoaeas/1ezuBGezqfIeifWdVtwU4c/d970d4cdf13b163efddddd5709164d2e/MetaMask-icon-Fox.svg" alt="Metamask Logo" width="60"/>
-  <img src="https://raw.githubusercontent.com/coral-xyz/backpack/refs/heads/master/assets/backpack.png" alt="Backpack Logo" width="60"/>
   <img src="https://polkadot.js.org/logo.svg" alt="Polkadot JS Logo" width="60"/>
 </p>
 
 #### 1. Download wallets
 
 ```sh
-npx w3wallets metamask backpack polkadotjs
+npx w3wallets metamask polkadotjs
 ```
 
 Short aliases are also supported:
 
 ```sh
-npx w3wallets mm bp pjs
+npx w3wallets mm pjs
 ```
 
 The unzipped files are stored in the `.w3wallets/<wallet-name>` directory. Add `.w3wallets` to `.gitignore`.
@@ -45,8 +44,8 @@ USAGE:
   npx w3wallets [OPTIONS] <targets...>
 
 TARGETS:
-  Alias name      Known wallet alias (metamask, backpack, polkadotjs)
-  Short alias     Short form (mm, bp, pjs)
+  Alias name      Known wallet alias (metamask, polkadotjs)
+  Short alias     Short form (mm, pjs)
   Extension ID    32-character Chrome extension ID
   URL             Chrome Web Store URL
 
@@ -59,7 +58,7 @@ OPTIONS:
 
 EXAMPLES:
   npx w3wallets metamask                    # Download MetaMask
-  npx w3wallets mm bp pjs                   # Download all wallets (short)
+  npx w3wallets mm pjs                      # Download all wallets (short)
   npx w3wallets --list                      # List available aliases
   npx w3wallets -o ./extensions metamask    # Custom output directory
   npx w3wallets --force mm                  # Force re-download
@@ -73,10 +72,10 @@ Install the required wallets into Chromium using `withWallets`.
 
 ```ts
 // your-fixture.ts
-import { withWallets, metamask, backpack, polkadotJS } from "w3wallets";
+import { withWallets, metamask, polkadotJS } from "w3wallets";
 import { test as base } from "@playwright/test";
 
-export const test = withWallets(base, metamask, backpack, polkadotJS);
+export const test = withWallets(base, metamask, polkadotJS);
 
 export { expect } from "@playwright/test";
 ```

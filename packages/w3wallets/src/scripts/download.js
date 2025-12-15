@@ -4,8 +4,8 @@
  * Downloads and extracts Chrome extensions from the Chrome Web Store.
  *
  * Usage:
- *    npx w3wallets metamask backpack      # Download by alias
- *    npx w3wallets mm bp pjs              # Short aliases
+ *    npx w3wallets metamask polkadotjs    # Download by alias
+ *    npx w3wallets mm pjs                 # Short aliases
  *    npx w3wallets <extension-id>         # Download by extension ID
  *    npx w3wallets --help                 # Show help
  */
@@ -19,10 +19,6 @@ const zlib = require("zlib");
 // 1. Known aliases -> extension IDs (case-insensitive lookup)
 // ---------------------------------------------------------------------
 const EXTENSION_REGISTRY = {
-  // Backpack wallet
-  backpack: "aflkmfhebedbjioipglgcbcmnbpgliof",
-  bp: "aflkmfhebedbjioipglgcbcmnbpgliof",
-
   // MetaMask wallet
   metamask: "nkbihfbeogaeaoehlefnkodbefgpgknn",
   mm: "nkbihfbeogaeaoehlefnkodbefgpgknn",
@@ -34,14 +30,12 @@ const EXTENSION_REGISTRY = {
 
 // Human-readable names for display
 const EXTENSION_NAMES = {
-  aflkmfhebedbjioipglgcbcmnbpgliof: "Backpack",
   nkbihfbeogaeaoehlefnkodbefgpgknn: "MetaMask",
   mopnmbcafieddcagagdcbnhejhlodfdd: "Polkadot.js",
 };
 
 // Canonical aliases for listing
 const CANONICAL_ALIASES = [
-  { name: "backpack", short: "bp", id: "aflkmfhebedbjioipglgcbcmnbpgliof" },
   { name: "metamask", short: "mm", id: "nkbihfbeogaeaoehlefnkodbefgpgknn" },
   { name: "polkadotjs", short: "pjs", id: "mopnmbcafieddcagagdcbnhejhlodfdd" },
 ];
@@ -95,8 +89,8 @@ USAGE:
   npx w3wallets [OPTIONS] <targets...>
 
 TARGETS:
-  Alias name      Known wallet alias (e.g., metamask, backpack)
-  Short alias     Short form (e.g., mm, bp, pjs)
+  Alias name      Known wallet alias (e.g., metamask, polkadotjs)
+  Short alias     Short form (e.g., mm, pjs)
   Extension ID    32-character Chrome extension ID
   URL             Chrome Web Store URL
 
@@ -109,7 +103,7 @@ OPTIONS:
 
 EXAMPLES:
   npx w3wallets metamask                    # Download MetaMask
-  npx w3wallets mm bp                       # Download using short aliases
+  npx w3wallets mm pjs                      # Download using short aliases
   npx w3wallets --list                      # List available aliases
   npx w3wallets -o ./extensions metamask    # Custom output directory
   npx w3wallets --force mm                  # Force re-download

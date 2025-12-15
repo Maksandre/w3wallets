@@ -1,8 +1,8 @@
 export { withWallets } from "./withWallets";
 
 // Pre-built wallet configs
-export { backpack, metamask, polkadotJS } from "./wallets";
-export { Backpack, Metamask, PolkadotJS } from "./wallets";
+export { metamask, polkadotJS } from "./wallets";
+export { Metamask, PolkadotJS } from "./wallets";
 
 // Helper for creating custom wallet configs
 export { createWallet } from "./core/types";

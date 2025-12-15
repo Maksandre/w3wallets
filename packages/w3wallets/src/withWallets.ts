@@ -25,11 +25,11 @@ function sleep(ms: number): Promise<void> {
  *
  * @example
  * ```ts
- * import { withWallets, metamask, backpack } from "w3wallets";
+ * import { withWallets, metamask, polkadotJS } from "w3wallets";
  *
- * const test = withWallets(base, metamask, backpack);
+ * const test = withWallets(base, metamask, polkadotJS);
  *
- * test("can connect", async ({ metamask, backpack }) => {
+ * test("can connect", async ({ metamask, polkadotJS }) => {
  *   await metamask.onboard(mnemonic);
  * });
  * ```

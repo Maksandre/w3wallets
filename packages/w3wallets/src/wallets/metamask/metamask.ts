@@ -6,12 +6,10 @@ export class Metamask extends Wallet {
   private defaultPassword = "TestPassword123!";
 
   async gotoOnboardPage() {
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/home.html`,
-    );
+    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
     await expect(
       this.page.getByRole("button", { name: "I have an existing wallet" }),
-    ).toBeVisible({timeout: 15000});
+    ).toBeVisible({ timeout: 15000 });
   }
 
   /**
@@ -36,7 +34,12 @@ export class Metamask extends Wallet {
     // Step 3: Type mnemonic (must use keyboard.type due to security)
     const textbox = this.page.getByRole("textbox");
     await textbox.click();
-    await this.page.keyboard.type(mnemonic, { delay: 5 });
+
+    for (const word of mnemonic.split(" ")) {
+      await this.page.keyboard.type(word);
+      await this.page.keyboard.type(' ');
+      await this.page.waitForTimeout(30);
+    }
 
     // Step 4: Wait for Continue button to be enabled and click
     const continueBtn = this.page.getByTestId("import-srp-confirm");

@@ -74,10 +74,6 @@ export function withWallets<const T extends readonly WalletConfig[]>(
         args: [
           `--disable-extensions-except=${extensionPaths.join(",")}`,
           `--load-extension=${extensionPaths.join(",")}`,
-          "--no-sandbox",
-          "--disable-gpu",
-          "--disable-dev-shm-usage",
-          "--disable-software-rasterizer",
         ],
       });
 
@@ -85,9 +81,6 @@ export function withWallets<const T extends readonly WalletConfig[]>(
       while (context.serviceWorkers().length < extensionPaths.length) {
         await sleep(1000);
       }
-
-      // Close all pages opened automatically by extensions
-      await Promise.all(context.pages().map((page) => page.close()));
 
       await use(context);
       await context.close();
@@ -212,7 +205,6 @@ async function initializeExtension<T extends IWallet>(
 
   const page = await context.newPage();
   const extension = new ExtensionClass(page, expectedExtensionId);
-  await extension.gotoOnboardPage();
 
   return extension;
 }

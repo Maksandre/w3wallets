@@ -1823,7 +1823,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.57.0":
+"@playwright/test@npm:1.57.0":
   version: 1.57.0
   resolution: "@playwright/test@npm:1.57.0"
   dependencies:
@@ -13865,7 +13865,7 @@ __metadata:
   dependencies:
     "@arethetypeswrong/cli": "npm:^0.17.2"
     "@changesets/cli": "npm:^2.27.11"
-    "@playwright/test": "npm:^1.57.0"
+    "@playwright/test": "npm:1.57.0"
     "@types/node": "npm:^22.10.5"
     dotenv: "npm:^16.4.7"
     prettier: "npm:^3.4.2"

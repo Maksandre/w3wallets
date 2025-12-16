@@ -46,7 +46,7 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.2",
     "@changesets/cli": "^2.27.11",
-    "@playwright/test": "^1.57.0",
+    "@playwright/test": "1.57.0",
     "@types/node": "^22.10.5",
     "dotenv": "^16.4.7",
     "prettier": "^3.4.2",

@@ -21,6 +21,7 @@ export class Metamask extends Wallet {
    */
   async onboard(mnemonic: string, password?: string) {
     const pwd = password ?? this.defaultPassword;
+    await this.gotoOnboardPage();
 
     // Step 1: Click "I have an existing wallet"
     await this.page

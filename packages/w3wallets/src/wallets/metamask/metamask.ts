@@ -7,11 +7,11 @@ export class Metamask extends Wallet {
 
   async gotoOnboardPage() {
     await this.page.goto(
-      `chrome-extension://${this.extensionId}/home.html#onboarding/welcome`,
+      `chrome-extension://${this.extensionId}/home.html`,
     );
     await expect(
       this.page.getByRole("button", { name: "I have an existing wallet" }),
-    ).toBeVisible();
+    ).toBeVisible({timeout: 15000});
   }
 
   /**

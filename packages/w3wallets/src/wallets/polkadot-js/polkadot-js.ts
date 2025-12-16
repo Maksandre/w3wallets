@@ -12,6 +12,7 @@ export class PolkadotJS extends Wallet {
   }
 
   async onboard(seed: string, password?: string, name?: string) {
+    await this.gotoOnboardPage();
     await this.page
       .getByRole("button", { name: "Understood, let me continue" })
       .click();
@@ -39,12 +40,13 @@ export class PolkadotJS extends Wallet {
   }
 
   async selectAccount(accountId: string) {
-    await this.page
+    const cb = this.page
       .locator(".accountWichCheckbox")
       .filter({ hasText: accountId })
       .locator(".accountTree-checkbox")
-      .locator("span")
-      .check();
+      .locator("span");
+
+    await cb.check().catch(() => cb.check());
   }
 
   async enterPassword(password?: string) {

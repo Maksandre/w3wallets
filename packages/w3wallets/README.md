@@ -93,7 +93,7 @@ import { test, expect } from "./your-fixture";
 
 test("Can connect MetaMask to dApp", async ({ page, metamask }) => {
   const mnemonic =
-    "test test test test test test test test test test test junk";
+    "set your seed phrase test test test test test test test junk";
 
   await metamask.onboard(mnemonic);
   await page.goto("https://your-dapp.com");
@@ -104,3 +104,20 @@ test("Can connect MetaMask to dApp", async ({ page, metamask }) => {
   await expect(page.getByText("Connected")).toBeVisible();
 });
 ```
+
+## Configuration
+
+Configure library behavior via environment variables:
+
+| Variable                   | Description                                                               | Default     |
+| -------------------------- | ------------------------------------------------------------------------- | ----------- |
+| `W3WALLETS_ACTION_TIMEOUT` | Timeout (ms) for all wallet actions (click, fill, navigation, assertions) | `undefined` |
+
+Example:
+
+```sh
+# In .env or CI environment
+W3WALLETS_ACTION_TIMEOUT=60000
+```
+
+This only affects w3wallets library code. Your own Playwright configuration remains independent.

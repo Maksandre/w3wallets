@@ -1,13 +1,28 @@
 "use client";
 
-import { useAccount, useConnect, useDisconnect, type Connector } from "wagmi";
+import { useEffect } from "react";
+import {
+  useAccount,
+  useConnect,
+  useDisconnect,
+  useSwitchChain,
+  type Connector,
+} from "wagmi";
 import { useAppKit } from "@reown/appkit/react";
 
 export function WalletConnect() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chain } = useAccount();
   const { connectors, connect } = useConnect();
   const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
   const { open } = useAppKit();
+
+  // Auto-switch to Anvil when connected but on a different chain
+  useEffect(() => {
+    if (isConnected && chain?.id !== 31337) {
+      switchChain({ chainId: 31337 });
+    }
+  }, [isConnected, chain?.id, switchChain]);
 
   if (isConnected) {
     return (

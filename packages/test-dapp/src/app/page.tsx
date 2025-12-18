@@ -8,11 +8,10 @@ import {
   NftSection,
   SignMessageSection,
 } from "@/components";
-import { localHardhat } from "@/config/wagmi";
 
 export default function Home() {
   const chainId = useChainId();
-  const isHardhat = chainId === localHardhat.id;
+  const isAnvil = chainId === 31337;
 
   return (
     <main className="min-h-screen p-8 bg-gray-50">
@@ -31,13 +30,14 @@ export default function Home() {
           <NetworkInfo />
         </section>
 
-        {/* Token Sections - Only visible on Hardhat */}
-        {isHardhat && (
+        {/* Token Sections - Only visible on Anvil */}
+        {isAnvil && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* ERC-20 Section */}
             <section className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-semibold mb-4">
-                TestToken <span className="text-gray-500 font-normal">(ERC-20)</span>
+                TestToken{" "}
+                <span className="text-gray-500 font-normal">(ERC-20)</span>
               </h2>
               <TokenSection />
             </section>
@@ -45,7 +45,8 @@ export default function Home() {
             {/* ERC-721 Section */}
             <section className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-semibold mb-4">
-                TestNFT <span className="text-gray-500 font-normal">(ERC-721)</span>
+                TestNFT{" "}
+                <span className="text-gray-500 font-normal">(ERC-721)</span>
               </h2>
               <NftSection />
             </section>

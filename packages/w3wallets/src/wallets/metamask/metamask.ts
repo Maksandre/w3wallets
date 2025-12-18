@@ -51,14 +51,10 @@ export class Metamask extends Wallet {
     await passwordInputs.nth(1).fill(pwd);
 
     // Step 6: Check the terms checkbox
-    await this.page
-      .getByRole("checkbox")
-      .click();
+    await this.page.getByRole("checkbox").click();
 
     // Step 7: Click "Create password"
-    await this.page
-      .getByRole("button", { name: "Create password" })
-      .click();
+    await this.page.getByRole("button", { name: "Create password" }).click();
 
     // Step 8: Handle "Help improve MetaMask" screen
     const metametricsBtn = this.page.getByTestId("metametrics-i-agree");
@@ -105,14 +101,10 @@ export class Metamask extends Wallet {
    */
   async lock() {
     // Navigate to home first
-    await this.page
-      .getByTestId("account-options-menu-button")
-      .click();
+    await this.page.getByTestId("account-options-menu-button").click();
 
     // Click "Lock MetaMask" menu item
-    await this.page
-      .locator("text=Lock MetaMask")
-      .click();
+    await this.page.locator("text=Lock MetaMask").click();
   }
 
   /**
@@ -124,9 +116,7 @@ export class Metamask extends Wallet {
     const passwordInput = this.page.getByTestId("unlock-password");
     await passwordInput.fill(pwd);
 
-    await this.page
-      .getByTestId("unlock-submit")
-      .click();
+    await this.page.getByTestId("unlock-submit").click();
   }
 
   /**
@@ -138,17 +128,11 @@ export class Metamask extends Wallet {
     networkType: "Popular" | "Custom" = "Popular",
   ) {
     // Click the network picker button
-    await this.page
-      .getByTestId("sort-by-networks")
-      .click();
+    await this.page.getByTestId("sort-by-networks").click();
     if (networkType === "Custom") {
-      await this.page
-        .getByRole("tab", { name: "Custom" })
-        .click();
+      await this.page.getByRole("tab", { name: "Custom" }).click();
     }
-    await this.page
-      .getByText(networkName)
-      .click();
+    await this.page.getByText(networkName).click();
 
     // Wait for the network list to appear and click the desired network
     await expect(this.page.getByTestId("sort-by-networks")).toHaveText(
@@ -158,12 +142,8 @@ export class Metamask extends Wallet {
 
   async switchAccount(accountName: string) {
     // Click the network picker button
-    await this.page
-      .getByTestId("account-menu-icon")
-      .click();
-    await this.page
-      .getByText(accountName, { exact: true })
-      .click();
+    await this.page.getByTestId("account-menu-icon").click();
+    await this.page.getByText(accountName, { exact: true }).click();
   }
 
   /**
@@ -174,12 +154,8 @@ export class Metamask extends Wallet {
       `chrome-extension://${this.extensionId}/home.html#settings/networks/add-network`,
     );
 
-    await this.page
-      .getByTestId("network-form-network-name")
-      .fill(network.name);
-    await this.page
-      .getByTestId("network-form-rpc-url")
-      .fill(network.rpc);
+    await this.page.getByTestId("network-form-network-name").fill(network.name);
+    await this.page.getByTestId("network-form-rpc-url").fill(network.rpc);
     await this.page
       .getByTestId("network-form-chain-id")
       .fill(network.chainId.toString());
@@ -187,18 +163,12 @@ export class Metamask extends Wallet {
       .getByTestId("network-form-ticker-input")
       .fill(network.currencySymbol);
 
-    await this.page
-      .getByRole("button", { name: /save/i })
-      .click();
+    await this.page.getByRole("button", { name: /save/i }).click();
   }
 
   async addCustomNetwork(settings: NetworkSettings) {
-    await this.page
-      .getByTestId("account-options-menu-button")
-      .click();
-    await this.page
-      .getByTestId("global-menu-networks")
-      .click();
+    await this.page.getByTestId("account-options-menu-button").click();
+    await this.page.getByTestId("global-menu-networks").click();
     await this.page
       .getByRole("button", { name: "Add a custom network" })
       .click();
@@ -212,30 +182,16 @@ export class Metamask extends Wallet {
       .getByTestId("network-form-ticker-input")
       .fill(settings.currencySymbol);
 
-    await this.page
-      .getByTestId("test-add-rpc-drop-down")
-      .click();
-    await this.page
-      .getByRole("button", { name: "Add RPC URL" })
-      .click();
-    await this.page
-      .getByTestId("rpc-url-input-test")
-      .fill(settings.rpc);
-    await this.page
-      .getByRole("button", { name: "Add URL" })
-      .click();
-    await this.page
-      .getByRole("button", { name: "Save" })
-      .click();
+    await this.page.getByTestId("test-add-rpc-drop-down").click();
+    await this.page.getByRole("button", { name: "Add RPC URL" }).click();
+    await this.page.getByTestId("rpc-url-input-test").fill(settings.rpc);
+    await this.page.getByRole("button", { name: "Add URL" }).click();
+    await this.page.getByRole("button", { name: "Save" }).click();
   }
 
   async enableTestNetworks() {
-    await this.page
-      .getByTestId("account-options-menu-button")
-      .click();
-    await this.page
-      .getByTestId("global-menu-networks")
-      .click();
+    await this.page.getByTestId("account-options-menu-button").click();
+    await this.page.getByTestId("global-menu-networks").click();
     await this.page
       .locator("text=Show test networks >> xpath=following-sibling::label")
       .click();
@@ -243,24 +199,12 @@ export class Metamask extends Wallet {
   }
 
   async importAccount(privateKey: string) {
-    await this.page
-      .getByTestId("account-menu-icon")
-      .click();
-    await this.page
-      .getByTestId("account-list-add-wallet-button")
-      .click();
-    await this.page
-      .getByTestId("add-wallet-modal-import-account")
-      .click();
-    await this.page
-      .locator("#private-key-box")
-      .fill(privateKey);
-    await this.page
-      .getByTestId("import-account-confirm-button")
-      .click();
-    await this.page
-      .getByRole("button", { name: "Back" })
-      .click();
+    await this.page.getByTestId("account-menu-icon").click();
+    await this.page.getByTestId("account-list-add-wallet-button").click();
+    await this.page.getByTestId("add-wallet-modal-import-account").click();
+    await this.page.locator("#private-key-box").fill(privateKey);
+    await this.page.getByTestId("import-account-confirm-button").click();
+    await this.page.getByRole("button", { name: "Back" }).click();
   }
 
   async accountNameIs(accountName: string) {

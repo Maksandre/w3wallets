@@ -152,7 +152,9 @@ export class EthereumPage {
    * Verify wallet connection status
    * @param status - Expected status ("connected" or "disconnected")
    */
-  async assertConnectionStatus(status: "connected" | "disconnected"): Promise<void> {
+  async assertConnectionStatus(
+    status: "connected" | "disconnected",
+  ): Promise<void> {
     await expect(this.locators.connectionStatus).toHaveText(status);
   }
 
@@ -218,14 +220,14 @@ export class EthereumPage {
    * Get the current token balance as text
    */
   async getTokenBalance(): Promise<string> {
-    return await this.locators.tokenBalance.textContent() || "0";
+    return (await this.locators.tokenBalance.textContent()) || "0";
   }
 
   /**
    * Get the current NFT balance as text
    */
   async getNftBalance(): Promise<string> {
-    return await this.locators.nftBalance.textContent() || "0";
+    return (await this.locators.nftBalance.textContent()) || "0";
   }
 
   /**

@@ -3,7 +3,9 @@ import { withWallets, metamask } from "../../src";
 import config from "../utils/config";
 import { EthereumPage } from "../POM";
 
-const metamaskTest = withWallets(base, metamask).extend<{ethereumPage: EthereumPage}>({
+const metamaskTest = withWallets(base, metamask).extend<{
+  ethereumPage: EthereumPage;
+}>({
   metamask: async ({ metamask }, use) => {
     await metamask.onboard(config.ethMnemonic);
 

@@ -145,7 +145,7 @@ export class PolkadotPage {
       .locator('input[type="radio"][name="account"]')
       .filter({
         has: this.page.locator(
-          `code[data-testid="account-address"]:has-text("${accountAddress}")`
+          `code[data-testid="account-address"]:has-text("${accountAddress}")`,
         ),
       });
     await expect(radio).toBeChecked();

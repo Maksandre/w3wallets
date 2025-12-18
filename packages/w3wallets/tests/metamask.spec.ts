@@ -5,36 +5,27 @@ import { EthereumPage } from "./POM";
 const password = "TestPassword123!";
 
 metamaskTest.describe("Metamask connect", () => {
-  metamaskTest(
-    "Can connect to dApp and approve",
-    async ({ ethereumPage }) => {
-      await ethereumPage.assertConnectionStatus("connected");
-    },
-  );
+  metamaskTest("Can connect to dApp and approve", async ({ ethereumPage }) => {
+    await ethereumPage.assertConnectionStatus("connected");
+  });
 
-  metamaskTest(
-    "Can deny connection request",
-    async ({ page, metamask }) => {
-      const ethereumPage = new EthereumPage(page);
-      await ethereumPage.goto();
+  metamaskTest("Can deny connection request", async ({ page, metamask }) => {
+    const ethereumPage = new EthereumPage(page);
+    await ethereumPage.goto();
 
-      await ethereumPage.connectMetaMask();
-      await metamask.deny();
+    await ethereumPage.connectMetaMask();
+    await metamask.deny();
 
-      await ethereumPage.assertConnectionStatus("disconnected");
-    },
-  );
+    await ethereumPage.assertConnectionStatus("disconnected");
+  });
 
-  metamaskTest(
-    "Can disconnect from dApp",
-    async ({ ethereumPage }) => {
-      await ethereumPage.assertConnectionStatus("connected");
+  metamaskTest("Can disconnect from dApp", async ({ ethereumPage }) => {
+    await ethereumPage.assertConnectionStatus("connected");
 
-      await ethereumPage.disconnectWallet();
+    await ethereumPage.disconnectWallet();
 
-      await ethereumPage.assertConnectionStatus("disconnected");
-    },
-  );
+    await ethereumPage.assertConnectionStatus("disconnected");
+  });
 });
 
 metamaskTest.describe("Metamask: Message", () => {

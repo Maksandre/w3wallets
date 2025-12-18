@@ -6,9 +6,9 @@ import {
   mintTokens,
 } from "./utils/erc20";
 
-  // Test addresses from the first two Ethereum accounts
-  const RECIPIENT_ADDRESS = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"; // Second account from mnemonic
-  const SPENDER_ADDRESS = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"; // Third account from mnemonic
+// Test addresses from the first two Ethereum accounts
+const RECIPIENT_ADDRESS = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"; // Second account from mnemonic
+const SPENDER_ADDRESS = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"; // Third account from mnemonic
 
 metamaskTest.describe("Metamask: ERC-20", () => {
   metamaskTest.beforeEach(async () => {

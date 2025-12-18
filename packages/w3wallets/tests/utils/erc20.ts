@@ -71,7 +71,7 @@ export function getTestWalletAddress(): Address {
 }
 
 function getWalletClient(privateKey?: string) {
-  const key = privateKey ?? config.ethPrivateKeys[0];
+  const key = privateKey ?? config.account1.privateKey;
   const account = privateKeyToAccount(key as `0x${string}`);
   return createWalletClient({
     account,

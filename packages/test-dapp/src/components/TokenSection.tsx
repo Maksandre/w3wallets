@@ -102,7 +102,11 @@ export function TokenSection() {
         args: [transferRecipient as Address, parsedAmount],
       });
       if (publicClient) {
-        await publicClient.waitForTransactionReceipt({ hash });
+        const receipt = await publicClient.waitForTransactionReceipt({ hash });
+        if (receipt.status === "reverted") {
+          setTransferStatus("error");
+          return;
+        }
       }
       await refetchBalance();
       setTransferStatus("success");

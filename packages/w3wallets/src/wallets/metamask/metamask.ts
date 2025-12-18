@@ -74,9 +74,6 @@ export class Metamask extends Wallet {
     await this.page.goto(
       `chrome-extension://${this.extensionId}/sidepanel.html`,
     );
-
-    // Wait for main wallet page to be ready (account options menu visible)
-    await this._waitWalletStable();
   }
 
   async approve() {
@@ -90,8 +87,6 @@ export class Metamask extends Wallet {
       .or(this.page.getByTestId("page-container-footer-next"))
       .or(this.page.getByRole("button", { name: /confirm/i }))
       .click();
-
-    await this._waitWalletStable();
   }
 
   async deny() {
@@ -272,11 +267,5 @@ export class Metamask extends Wallet {
     await expect(this.page.getByTestId("account-menu-icon")).toContainText(
       accountName,
     );
-  }
-
-  private async _waitWalletStable() {
-    await this.page
-      .getByTestId("account-options-menu-button")
-      .waitFor({ state: "visible" });
   }
 }

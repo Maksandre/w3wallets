@@ -1,83 +1,109 @@
-import { test as base, expect } from "@playwright/test";
-import { withWallets } from "../src/withWallets";
 import config from "./utils/config";
-import { sleep } from "./utils/sleep";
+import { metamaskTest, expect } from "./fixtures/metamask-fixture";
+import { EthereumPage } from "./POM";
 
-const test = withWallets(base, "metamask");
+const password = "TestPassword123!";
 
-test.beforeEach(async ({ metamask }) => {
-  await metamask.onboard(config.ethMnemonic);
+metamaskTest.describe("Metamask connect", () => {
+  metamaskTest("Can connect to dApp and approve", async ({ ethereumPage }) => {
+    await ethereumPage.assertConnectionStatus("connected");
+  });
+
+  metamaskTest("Can deny connection request", async ({ page, metamask }) => {
+    const ethereumPage = new EthereumPage(page);
+    await ethereumPage.goto();
+
+    await ethereumPage.connectMetaMask();
+    await metamask.deny();
+
+    await ethereumPage.assertConnectionStatus("disconnected");
+  });
+
+  metamaskTest("Can disconnect from dApp", async ({ ethereumPage }) => {
+    await ethereumPage.assertConnectionStatus("connected");
+
+    await ethereumPage.disconnectWallet();
+
+    await ethereumPage.assertConnectionStatus("disconnected");
+  });
 });
 
-test.describe("Metamask", () => {
-  test("Can connect the Metamask wallet", async ({ page, metamask }) => {
-    await page.goto("http://localhost:3000");
-    await page.getByRole("button", { name: "MetaMask" }).click();
-    await metamask.approve();
-    await expect(page.getByText("status: connected")).toBeVisible();
+metamaskTest.describe("Metamask: Message", () => {
+  metamaskTest(
+    "Can sign message and approve",
+    async ({ ethereumPage, metamask }) => {
+      await ethereumPage.signMessage("Hello, Web3!");
+      await metamask.approve();
 
-    await page.getByRole("button", { name: "Disconnect" }).click();
-    await expect(page.getByText("status: connected")).toBeHidden();
+      await ethereumPage.assertSignatureSuccess();
+    },
+  );
+
+  metamaskTest(
+    "Can deny signature request",
+    async ({ ethereumPage, metamask }) => {
+      await ethereumPage.signMessage("I will deny this");
+      await metamask.deny();
+
+      await ethereumPage.assertSignatureError();
+    },
+  );
+});
+
+metamaskTest.describe("Metamask: inside", async () => {
+  metamaskTest(
+    "Can import account and switch between accounts",
+    async ({ metamask }) => {
+      await metamask.accountNameIs("Account 1");
+      await metamask.importAccount(config.account2.privateKey);
+      await metamask.accountNameIs("Imported Account");
+
+      await metamask.switchAccount("Account 1");
+      await metamask.accountNameIs("Account 1");
+    },
+  );
+
+  metamaskTest("Can connect to existing network", async ({ metamask }) => {
+    await metamask.switchNetwork("Arbitrum");
   });
 
-  test("Can switch to existing network", async ({ metamask }) => {
-    await metamask.connectToNetwork("Arbitrum");
-  });
-
-  test("Can switch to existing test network", async ({ metamask }) => {
+  metamaskTest("Can connect to existing testnet", async ({ metamask }) => {
     await metamask.enableTestNetworks();
-    await metamask.connectToNetwork("Mega Testnet", "Custom");
+    await metamask.switchNetwork("MegaETH Testnet", "Custom");
   });
 
-  test("Can connect to custom network", async ({ metamask }) => {
-    await metamask.addCustomNetwork({
-      chainId: 998,
-      name: "Hyper",
-      rpc: "https://rpc.hyperliquid-testnet.xyz/evm",
-      currencySymbol: "HYPE",
-    });
+  metamaskTest("Can unlock after lock", async ({ metamask }) => {
+    await metamask.lock();
+    await metamask.unlock(password);
+
+    await expect(
+      metamask.page.getByTestId("account-options-menu-button"),
+    ).toBeVisible();
   });
 
-  test("Can import account and switch between accounts", async ({
-    metamask,
-  }) => {
-    const getAccountName = async () => {
-      await sleep(2000);
-      return metamask.getAccountName();
-    };
-    const currentAccount1 = await getAccountName();
+  metamaskTest(
+    "Can add a custom network and switch account",
+    async ({ metamask }) => {
+      await metamask.addCustomNetwork({
+        chainId: 123420001114,
+        currencySymbol: "CAMP",
+        name: "Basecamp",
+        rpc: "https://rpc-campnetwork.xyz",
+      });
+    },
+  );
 
-    await metamask.importAccount(config.ethPrivateKeys[1]);
-    const currentAccount2 = await getAccountName();
-    expect(currentAccount2).not.toEqual(currentAccount1);
-
-    await metamask.switchAccount({ name: "Account 1" });
-    const currentAccount3 = await getAccountName();
-    expect(currentAccount3).toEqual("Account 1");
-  });
-
-  test("Can add a custom network and switch account", async ({ metamask }) => {
-    await metamask.addCustomNetwork({
-      chainId: 123420001114,
-      currencySymbol: "CAMP",
-      name: "Basecamp",
-      rpc: "https://rpc-campnetwork.xyz",
-    });
-
-    await metamask.importAccount(config.ethPrivateKeys[1]);
-    await metamask.switchAccount({ name: "Account 1" });
-  });
-
-  test("Can add a custom network and an existing network", async ({
-    metamask,
-  }) => {
-    await metamask.addCustomNetwork({
-      chainId: 123420001114,
-      currencySymbol: "CAMP",
-      name: "Basecamp",
-      rpc: "https://rpc-campnetwork.xyz",
-    });
-    await metamask.enableTestNetworks();
-    await metamask.connectToNetwork("Mega Testnet", "Custom");
-  });
+  metamaskTest(
+    "Can add a custom network and an existing network",
+    async ({ metamask }) => {
+      await metamask.addCustomNetwork({
+        chainId: 123420001114,
+        currencySymbol: "CAMP",
+        name: "Basecamp",
+        rpc: "https://rpc-campnetwork.xyz",
+      });
+      await metamask.enableTestNetworks();
+      await metamask.switchNetwork("MegaETH Testnet", "Custom");
+    },
+  );
 });

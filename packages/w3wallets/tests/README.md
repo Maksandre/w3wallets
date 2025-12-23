@@ -16,7 +16,7 @@ npx playwright install chromium
 3. Download wallet extensions
 
 ```sh
-npx w3wallets backpack polkadotJS
+npx w3wallets polkadotJS metamask
 ```
 
 4. Start UI

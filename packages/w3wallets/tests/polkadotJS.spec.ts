@@ -1,13 +1,13 @@
 import { test as base, expect } from "@playwright/test";
-import { withWallets } from "../src/withWallets";
+import { withWallets, polkadotJS } from "../src";
 import config from "./utils/config";
 
-const test = withWallets(base, "polkadotJS");
+const test = withWallets(base, polkadotJS);
 
 test.beforeEach(async ({ polkadotJS, page }) => {
   await polkadotJS.onboard(config.substrateSeed);
-  await page.goto("http://localhost:3000");
-  await page.getByRole("button", { name: "Polkadot" }).click();
+  await page.goto("http://localhost:3001/polkadot");
+  await page.getByRole("button", { name: "Polkadot.js" }).click();
   await polkadotJS.selectAccount("Test");
   await polkadotJS.approve();
 });

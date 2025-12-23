@@ -3,24 +3,32 @@ dotenv.config();
 
 const getConfig = () => {
   const {
-    ETHEREUM_PRIVATE_KEY,
-    ETHEREUM_MNEMONIC,
+    ETHEREUM_PRIVATE_KEY1,
+    ETHEREUM_PRIVATE_KEY2,
+    ETHEREUM_MNEMONIC1,
+    ETHEREUM_MNEMONIC2,
     SUBSTRATE_SEED,
-    ECLIPSE_PRIVATE_KEY,
   } = process.env;
 
   if (
-    !ETHEREUM_PRIVATE_KEY ||
+    !ETHEREUM_PRIVATE_KEY1 ||
+    !ETHEREUM_PRIVATE_KEY2 ||
     !SUBSTRATE_SEED ||
-    !ECLIPSE_PRIVATE_KEY ||
-    !ETHEREUM_MNEMONIC
+    !ETHEREUM_MNEMONIC1 ||
+    !ETHEREUM_MNEMONIC2
   )
     throw Error("Did you forget to set .env?");
 
   return {
-    ethPrivateKeys: ETHEREUM_PRIVATE_KEY.split(","),
-    ethMnemonic: ETHEREUM_MNEMONIC,
-    eclipsePrivateKey: ECLIPSE_PRIVATE_KEY,
+    account1: {
+      mnemonic: ETHEREUM_MNEMONIC1,
+      privateKey: ETHEREUM_PRIVATE_KEY1,
+    },
+    account2: {
+      mnemonic: ETHEREUM_MNEMONIC2,
+      privateKey: ETHEREUM_PRIVATE_KEY2,
+    },
+    ethMnemonic: ETHEREUM_MNEMONIC1,
     substrateSeed: SUBSTRATE_SEED,
     baseURL: "http://127.0.0.1:3000",
   };

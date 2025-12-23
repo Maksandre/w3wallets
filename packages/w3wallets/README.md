@@ -15,21 +15,56 @@ npm install -D w3wallets
 
 ## Getting Started
 
-`MetaMask`, `Backpack`, and `Polkadot{.js}` wallets are currently supported.
+`MetaMask` and `Polkadot{.js}` wallets are currently supported.
 
 <p align="center">
   <img src="https://images.ctfassets.net/clixtyxoaeas/1ezuBGezqfIeifWdVtwU4c/d970d4cdf13b163efddddd5709164d2e/MetaMask-icon-Fox.svg" alt="Metamask Logo" width="60"/>
-  <img src="https://raw.githubusercontent.com/coral-xyz/backpack/refs/heads/master/assets/backpack.png" alt="Backpack Logo" width="60"/>
   <img src="https://polkadot.js.org/logo.svg" alt="Polkadot JS Logo" width="60"/>
 </p>
 
 #### 1. Download wallets
 
 ```sh
-npx w3wallets backpack polkadotJS
+npx w3wallets metamask polkadotjs
 ```
 
-The unzipped files should be stored in the `.w3wallets/<wallet-name>` directory. Add them to `.gitignore`.
+Short aliases are also supported:
+
+```sh
+npx w3wallets mm pjs
+```
+
+The unzipped files are stored in the `.w3wallets/<wallet-name>` directory. Add `.w3wallets` to `.gitignore`.
+
+<details>
+<summary>CLI Options</summary>
+
+```
+USAGE:
+  npx w3wallets [OPTIONS] <targets...>
+
+TARGETS:
+  Alias name      Known wallet alias (metamask, polkadotjs)
+  Short alias     Short form (mm, pjs)
+  Extension ID    32-character Chrome extension ID
+  URL             Chrome Web Store URL
+
+OPTIONS:
+  -h, --help      Show help message
+  -l, --list      List available wallet aliases
+  -o, --output    Output directory (default: .w3wallets)
+  -f, --force     Force re-download even if already exists
+  --debug         Save raw .crx file for debugging
+
+EXAMPLES:
+  npx w3wallets metamask                    # Download MetaMask
+  npx w3wallets mm pjs                      # Download all wallets (short)
+  npx w3wallets --list                      # List available aliases
+  npx w3wallets -o ./extensions metamask    # Custom output directory
+  npx w3wallets --force mm                  # Force re-download
+```
+
+</details>
 
 #### 2. Wrap your fixture with `withWallets`
 
@@ -37,20 +72,10 @@ Install the required wallets into Chromium using `withWallets`.
 
 ```ts
 // your-fixture.ts
-import { withWallets } from "w3wallets";
+import { withWallets, metamask, polkadotJS } from "w3wallets";
 import { test as base } from "@playwright/test";
 
-export const test = withWallets(
-  base,
-  "backpack",
-  "polkadotJS",
-).extend<BaseFixture>({
-  magic: (_, use) => use(42),
-});
-
-type BaseFixture = {
-  magic: number;
-};
+export const test = withWallets(base, metamask, polkadotJS);
 
 export { expect } from "@playwright/test";
 ```
@@ -64,12 +89,35 @@ Most commonly, you will use the following methods:
 3. `deny`: for actions that reject or cancel operations
 
 ```ts
-import { test } from "./your-fixture";
+import { test, expect } from "./your-fixture";
 
-test("Can use wallet", async ({ page, backpack }) => {
-  const privateKey =
-    "4wDJd9Ds5ueTdS95ReAZGSBVkjMcNKbgZk47xcmqzpUJjCt7VoB2Cs7hqwXWRnopzXqE4mCP6BEDHCYrFttEcBw2";
+test("Can connect MetaMask to dApp", async ({ page, metamask }) => {
+  const mnemonic =
+    "set your seed phrase test test test test test test test junk";
 
-  await backpack.onboard("Eclipse", privateKey);
+  await metamask.onboard(mnemonic);
+  await page.goto("https://your-dapp.com");
+
+  await page.getByRole("button", { name: "Connect Wallet" }).click();
+  await metamask.approve();
+
+  await expect(page.getByText("Connected")).toBeVisible();
 });
 ```
+
+## Configuration
+
+Configure library behavior via environment variables:
+
+| Variable                   | Description                                                               | Default     |
+| -------------------------- | ------------------------------------------------------------------------- | ----------- |
+| `W3WALLETS_ACTION_TIMEOUT` | Timeout (ms) for all wallet actions (click, fill, navigation, assertions) | `undefined` |
+
+Example:
+
+```sh
+# In .env or CI environment
+W3WALLETS_ACTION_TIMEOUT=60000
+```
+
+This only affects w3wallets library code. Your own Playwright configuration remains independent.

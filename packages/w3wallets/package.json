@@ -1,7 +1,7 @@
 {
   "name": "w3wallets",
   "description": "browser wallets for playwright",
-  "version": "0.10.2",
+  "version": "1.0.0-beta.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/Maksandre/w3wallets",
@@ -16,12 +16,10 @@
   "keywords": [
     "e2e",
     "playwright",
-    "backpack",
     "metamask",
     "testing",
     "ethereum",
-    "polkadot",
-    "eclipse"
+    "polkadot"
   ],
   "license": "MIT",
   "publishConfig": {
@@ -32,8 +30,7 @@
   ],
   "bin": "./src/scripts/download.js",
   "scripts": {
-    "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
-    "download-wallets": "npx w3wallets backpack polkadotJS metamask",
+    "download-wallets": "npx w3wallets pjs mm",
     "test": "npx playwright test --project=local --workers=2",
     "test:ci": "npx playwright test --project=ci",
     "build": "tsup",
@@ -49,7 +46,7 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.2",
     "@changesets/cli": "^2.27.11",
-    "@playwright/test": "^1.50.1",
+    "@playwright/test": "1.57.0",
     "@types/node": "^22.10.5",
     "dotenv": "^16.4.7",
     "prettier": "^3.4.2",
@@ -58,6 +55,6 @@
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.50.1"
+    "@playwright/test": "^1.57.0"
   }
 }

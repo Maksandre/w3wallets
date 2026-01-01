@@ -5,12 +5,10 @@
     "packages/*"
   ],
   "scripts": {
-    "start:chain": "yarn workspace @w3wallets/test-contract local-node",
-    "start:polkadot": "yarn workspace @w3wallets/test-app chopsticks",
-    "start:ui": "yarn workspace @w3wallets/test-app buildAndStart",
-    "deploy:contract": "yarn workspace w3wallets deploy",
+    "start:anvil": "yarn workspace @w3wallets/test-dapp anvil",
+    "start:dapp": "yarn workspace @w3wallets/test-dapp start:all",
+    "deploy": "yarn workspace @w3wallets/test-dapp deploy",
     "build": "yarn workspace w3wallets build",
-    "typegen": "yarn workspace @w3wallets/test-app typegen",
     "download-wallets": "yarn workspace w3wallets download-wallets",
     "test": "yarn workspace w3wallets test"
   },

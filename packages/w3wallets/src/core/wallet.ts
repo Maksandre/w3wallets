@@ -5,7 +5,7 @@ import { config } from "../config";
 export abstract class Wallet implements IWallet {
   constructor(
     public readonly page: Page,
-    protected readonly extensionId: string,
+    public readonly extensionId: string,
   ) {
     if (config.actionTimeout) {
       page.setDefaultTimeout(config.actionTimeout);

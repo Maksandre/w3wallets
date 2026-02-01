@@ -1,13 +1,20 @@
 import { test as base, expect } from "@playwright/test";
-import { withWallets, metamask } from "../../src";
-import config from "../utils/config";
+import { withWallets } from "../../src";
+import cachedMetamask from "../wallets-cache/default.cache";
 import { EthereumPage } from "../POM";
 
-const metamaskTest = withWallets(base, metamask).extend<{
+const metamaskTest = withWallets(base, cachedMetamask).extend<{
   ethereumPage: EthereumPage;
 }>({
   metamask: async ({ metamask }, use) => {
-    await metamask.onboard(config.ethMnemonic);
+    await metamask.unlock();
+    await metamask.page
+      .getByRole("button", { name: "Open wallet" })
+      .click({ timeout: 10000 });
+    // Navigate to sidepanel (same as onboard() does at the end)
+    await metamask.page.goto(
+      `chrome-extension://${metamask.extensionId}/sidepanel.html`,
+    );
 
     await use(metamask);
   },

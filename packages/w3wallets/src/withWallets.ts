@@ -12,6 +12,9 @@ import type {
   WalletConfig,
   WalletFixturesFromConfigs,
 } from "./core/types";
+import { isCachedConfig } from "./cache/types";
+import { findCacheDir } from "./cache/buildCache";
+import { CACHE_DIR } from "./cache/constants";
 
 // TODO: with new CLI this directory can be overwritten with -o argument
 const W3WALLETS_DIR = ".w3wallets";
@@ -38,6 +41,17 @@ export function withWallets<const T extends readonly WalletConfig[]>(
   test: typeof base,
   ...wallets: T
 ) {
+  // Check for mixed cached/non-cached wallets
+  const cachedCount = wallets.filter((w) => isCachedConfig(w)).length;
+  if (cachedCount > 0 && cachedCount < wallets.length) {
+    throw new Error(
+      "Mixing cached and non-cached wallet configs is not supported. " +
+        "All wallets must be either cached (via prepareWallet) or non-cached.",
+    );
+  }
+
+  const useCachedContext = cachedCount > 0;
+
   // Validate and build extension paths + IDs
   const extensionInfo = wallets.map((w) => {
     const extPath = path.join(process.cwd(), W3WALLETS_DIR, w.extensionDir);
@@ -68,6 +82,21 @@ export function withWallets<const T extends readonly WalletConfig[]>(
 
       cleanUserDataDir(userDataDir);
 
+      if (useCachedContext) {
+        // For cached configs, copy the cache directory as the user data dir
+        // Currently only single-wallet cached configs are supported
+        const wallet = wallets[0]!;
+        const cacheDir = findCacheDir(wallet.name);
+        if (!cacheDir) {
+          throw new Error(
+            `Cache not found for wallet "${wallet.name}". ` +
+              `Searched in: ${path.join(process.cwd(), CACHE_DIR)}\n` +
+              `Run 'npx w3wallets cache' to build the cache first.`,
+          );
+        }
+        fs.cpSync(cacheDir, userDataDir, { recursive: true });
+      }
+
       const context = await chromium.launchPersistentContext(userDataDir, {
         headless: testInfo.project.use.headless ?? true,
         channel: "chromium",
@@ -96,13 +125,25 @@ export function withWallets<const T extends readonly WalletConfig[]>(
       { context }: { context: BrowserContext },
       use: (instance: IWallet) => Promise<void>,
     ) => {
-      const instance = await initializeExtension(
-        context,
-        wallet.WalletClass,
-        info.id,
-        wallet.name,
-      );
-      await use(instance);
+      if (isCachedConfig(wallet)) {
+        // Cached wallet: find existing extension page instead of creating new one
+        const instance = await findCachedExtension(
+          context,
+          wallet.WalletClass,
+          info.id,
+          wallet.name,
+          wallet.homeUrl,
+        );
+        await use(instance);
+      } else {
+        const instance = await initializeExtension(
+          context,
+          wallet.WalletClass,
+          info.id,
+          wallet.name,
+        );
+        await use(instance);
+      }
     };
   }
 
@@ -175,6 +216,46 @@ function getExtensionId(extensionPath: string): string {
   }
 
   return extensionId;
+}
+
+/**
+ * Finds an existing extension page for a cached wallet.
+ * Since the browser profile is restored from cache, the extension is already set up.
+ */
+async function findCachedExtension<T extends IWallet>(
+  context: BrowserContext,
+  ExtensionClass: new (page: Page, extensionId: string) => T,
+  expectedExtensionId: string,
+  walletName: string,
+  homeUrl?: string,
+): Promise<T> {
+  const expectedUrl = `chrome-extension://${expectedExtensionId}/`;
+  const worker = context
+    .serviceWorkers()
+    .find((w) => w.url().startsWith(expectedUrl));
+
+  if (!worker) {
+    const availableIds = context
+      .serviceWorkers()
+      .map((w) => w.url().split("/")[2])
+      .filter(Boolean);
+
+    throw new Error(
+      `Service worker for ${walletName} (ID: ${expectedExtensionId}) not found in cached context. ` +
+        `Available extension IDs: [${availableIds.join(", ")}]. ` +
+        `Try rebuilding the cache with 'npx w3wallets cache --force'.`,
+    );
+  }
+
+  const page = await context.newPage();
+  if (homeUrl) {
+    await page.goto(
+      `chrome-extension://${expectedExtensionId}/${homeUrl}`,
+    );
+  }
+  const extension = new ExtensionClass(page, expectedExtensionId);
+
+  return extension;
 }
 
 /**

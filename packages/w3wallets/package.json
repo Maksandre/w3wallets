@@ -31,7 +31,7 @@
   "bin": "./src/scripts/download.js",
   "scripts": {
     "download-wallets": "npx w3wallets pjs mm",
-    "test": "npx playwright test --project=local --workers=2",
+    "test": "npx playwright test --project=local",
     "test:ci": "npx playwright test --project=ci",
     "build": "tsup",
     "clean": "rm -rf dist",

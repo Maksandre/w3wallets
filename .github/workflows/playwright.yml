@@ -55,6 +55,10 @@ jobs:
       - name: 🖨 Copy test envs
         run: cp packages/w3wallets/.env.example packages/w3wallets/.env
 
+      - name: 🗄️ Build wallet cache
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1280x800x24' npx w3wallets cache tests/wallets-cache/
+        working-directory: packages/w3wallets
+
       - name: 🧪 Run tests
         run: xvfb-run --auto-servernum --server-args='-screen 0 1280x800x24' yarn test:ci
 

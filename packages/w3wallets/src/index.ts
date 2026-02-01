@@ -10,6 +10,10 @@ export { createWallet } from "./core/types";
 // Configuration
 export { config } from "./config";
 
+// Cache
+export { prepareWallet, isCachedConfig } from "./cache";
+export type { SetupFn, CachedWalletConfig } from "./cache";
+
 // Types
 export type { IWallet, WalletConfig, Network } from "./core/types";
 export type { NetworkSettings } from "./wallets/metamask";

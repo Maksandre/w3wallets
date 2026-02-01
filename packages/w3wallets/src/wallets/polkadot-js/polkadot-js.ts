@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import { Wallet } from "../../core/wallet";
+import { config } from "../../config";
 
 export class PolkadotJS extends Wallet {
   private defaultPassword = "11111111";
@@ -8,7 +9,7 @@ export class PolkadotJS extends Wallet {
     await this.page.goto(`chrome-extension://${this.extensionId}/index.html`);
     await expect(
       this.page.getByText("Before we start, just a couple of notes"),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: config.expectTimeout });
   }
 
   async onboard(seed: string, password?: string, name?: string) {

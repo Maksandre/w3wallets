@@ -1,7 +1,7 @@
 {
   "name": "w3wallets",
   "description": "browser wallets for playwright",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/Maksandre/w3wallets",
@@ -46,7 +46,7 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.2",
     "@changesets/cli": "^2.27.11",
-    "@playwright/test": "1.57.0",
+    "@playwright/test": "1.58.1",
     "@types/node": "^22.10.5",
     "dotenv": "^16.4.7",
     "prettier": "^3.4.2",

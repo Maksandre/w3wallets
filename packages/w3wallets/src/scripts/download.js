@@ -218,8 +218,31 @@ function parseArgs(args) {
   }
 }
 
-// Parse command line arguments
-parseArgs(process.argv.slice(2));
+// Check if first arg is "cache" — delegate to compiled cache script
+const rawArgs = process.argv.slice(2);
+if (rawArgs[0] === "cache") {
+  const { execFileSync } = require("child_process");
+  const cacheScript = path.join(__dirname, "..", "..", "dist", "scripts", "cache.js");
+
+  if (!fs.existsSync(cacheScript)) {
+    console.error(
+      "Error: Cache script not found. Make sure w3wallets is built (run: npx tsup).",
+    );
+    process.exit(1);
+  }
+
+  try {
+    execFileSync(process.execPath, [cacheScript, ...rawArgs.slice(1)], {
+      stdio: "inherit",
+    });
+  } catch (err) {
+    process.exit(err.status || 1);
+  }
+  process.exit(0);
+}
+
+// Parse command line arguments for download mode
+parseArgs(rawArgs);
 
 // Handle --help
 if (CLI_OPTIONS.help) {

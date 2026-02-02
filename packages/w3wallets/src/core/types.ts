@@ -26,6 +26,8 @@ export interface WalletConfig<
    * that don't have a `key` field in their manifest.
    */
   extensionId?: string;
+  /** Path to the extension's home page (e.g. "home.html"), used for cached wallets */
+  homeUrl?: string;
 }
 
 /**

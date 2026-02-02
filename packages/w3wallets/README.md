@@ -105,6 +105,65 @@ test("Can connect MetaMask to dApp", async ({ page, metamask }) => {
 });
 ```
 
+## Caching
+
+Wallet onboarding can be slow. Caching lets you run the setup once and reuse the browser profile across tests.
+
+#### 1. Create a setup file
+
+Create a `*.cache.ts` file in a `wallets-cache/` directory (default):
+
+```ts
+// wallets-cache/default.cache.ts
+import { prepareWallet, metamask } from "w3wallets";
+
+export default prepareWallet(metamask, async (wallet, page) => {
+  await wallet.onboard("your seed phrase ...", "YourPassword123!");
+});
+```
+
+#### 2. Build the cache
+
+```sh
+npx w3wallets cache
+```
+
+<details>
+<summary>CLI Options</summary>
+
+```
+USAGE:
+  npx w3wallets cache [OPTIONS] [directory]
+
+OPTIONS:
+  -f, --force   Force rebuild even if cache exists
+  --headed      Run browser in headed mode
+  directory     Directory containing *.cache.{ts,js} files (default: ./wallets-cache/)
+```
+
+</details>
+
+The cached profiles are stored in `.w3wallets/cache/`. The `.w3wallets` directory should already be in `.gitignore`.
+
+#### 3. Use cached wallets in tests
+
+Import the setup and pass it to `withWallets`:
+
+```ts
+import { test as base, expect } from "@playwright/test";
+import { withWallets } from "w3wallets";
+import cachedMetamask from "./wallets-cache/default.cache";
+
+const test = withWallets(base, cachedMetamask);
+
+test("wallet is ready", async ({ metamask }) => {
+  await metamask.unlock("YourPassword123!");
+  // wallet is already onboarded
+});
+```
+
+> **Note:** All wallets in a test must be either all cached or all non-cached.
+
 ## Configuration
 
 Configure library behavior via environment variables:

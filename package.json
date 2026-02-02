@@ -10,7 +10,8 @@
     "deploy": "yarn workspace @w3wallets/test-dapp deploy",
     "build": "yarn workspace w3wallets build",
     "download-wallets": "yarn workspace w3wallets download-wallets",
-    "test": "yarn workspace w3wallets test"
+    "test": "yarn workspace w3wallets test",
+    "test:ci": "yarn workspace w3wallets test:ci"
   },
   "packageManager": "yarn@4.6.0",
   "dependencies": {

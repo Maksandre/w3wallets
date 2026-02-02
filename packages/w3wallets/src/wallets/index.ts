@@ -9,6 +9,7 @@ export const metamask = createWallet({
   name: "metamask",
   extensionDir: "metamask",
   WalletClass: Metamask,
+  homeUrl: "home.html",
 });
 
 /**
@@ -18,6 +19,7 @@ export const polkadotJS = createWallet({
   name: "polkadotJS",
   extensionDir: "polkadotjs",
   WalletClass: PolkadotJS,
+  homeUrl: "index.html",
 });
 
 // Export classes for advanced usage / extending

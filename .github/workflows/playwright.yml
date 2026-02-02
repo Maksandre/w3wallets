@@ -18,7 +18,7 @@ jobs:
     name: "Playwright Tests"
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      image: mcr.microsoft.com/playwright:v1.58.1-noble
     env:
       NEXT_PUBLIC_WC_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WC_PROJECT_ID }}
     steps:
@@ -55,8 +55,16 @@ jobs:
       - name: 🖨 Copy test envs
         run: cp packages/w3wallets/.env.example packages/w3wallets/.env
 
+      - name: 🔨 Build w3wallets
+        run: yarn build
+        working-directory: packages/w3wallets
+
+      - name: 🗄️ Build wallet cache
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1280x800x24' npx w3wallets cache tests/wallets-cache/
+        working-directory: packages/w3wallets
+
       - name: 🧪 Run tests
-        run: xvfb-run --auto-servernum --server-args='-screen 0 1280x800x24' yarn test
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1280x800x24' yarn test:ci
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4

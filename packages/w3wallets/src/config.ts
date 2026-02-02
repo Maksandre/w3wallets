@@ -12,4 +12,14 @@ export const config = {
     const value = process.env.W3WALLETS_ACTION_TIMEOUT;
     return value ? parseInt(value, 10) : undefined;
   },
+
+  /**
+   * Timeout for expect assertions like toBeVisible, toContainText.
+   * Set via W3WALLETS_EXPECT_TIMEOUT env variable.
+   * @default undefined (uses Playwright's default of 5000ms)
+   */
+  get expectTimeout(): number | undefined {
+    const value = process.env.W3WALLETS_EXPECT_TIMEOUT;
+    return value ? parseInt(value, 10) : undefined;
+  },
 };

@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import { Wallet } from "../../core/wallet";
+import { config } from "../../config";
 import type { NetworkSettings } from "./types";
 
 export class Metamask extends Wallet {
@@ -9,7 +10,7 @@ export class Metamask extends Wallet {
     await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
     await expect(
       this.page.getByRole("button", { name: "I have an existing wallet" }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: config.expectTimeout });
   }
 
   /**
@@ -137,6 +138,7 @@ export class Metamask extends Wallet {
     // Wait for the network list to appear and click the desired network
     await expect(this.page.getByTestId("sort-by-networks")).toHaveText(
       networkName,
+      { timeout: config.expectTimeout },
     );
   }
 
@@ -210,6 +212,7 @@ export class Metamask extends Wallet {
   async accountNameIs(accountName: string) {
     await expect(this.page.getByTestId("account-menu-icon")).toContainText(
       accountName,
+      { timeout: config.expectTimeout },
     );
   }
 }

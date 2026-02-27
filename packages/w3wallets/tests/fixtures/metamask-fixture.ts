@@ -8,9 +8,6 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
 }>({
   metamask: async ({ metamask }, use) => {
     await metamask.unlock();
-    await metamask.page
-      .getByRole("button", { name: "Open wallet" })
-      .click({ timeout: 10000 });
     // Navigate to sidepanel (same as onboard() does at the end)
     await metamask.page.goto(
       `chrome-extension://${metamask.extensionId}/sidepanel.html`,

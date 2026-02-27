@@ -1,6 +1,5 @@
 import path from "path";
 import fs from "fs";
-import crypto from "crypto";
 import {
   test as base,
   type BrowserContext,
@@ -15,13 +14,10 @@ import type {
 import { isCachedConfig } from "./cache/types";
 import { findCacheDir } from "./cache/buildCache";
 import { CACHE_DIR } from "./cache/constants";
+import { sleep, getExtensionId } from "./core/utils";
 
 // TODO: with new CLI this directory can be overwritten with -o argument
 const W3WALLETS_DIR = ".w3wallets";
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 /**
  * Extends Playwright test with wallet fixtures.
@@ -106,9 +102,13 @@ export function withWallets<const T extends readonly WalletConfig[]>(
         ],
       });
 
-      // Wait for all service workers to initialize
+      // Wait for all extension service workers to initialize.
+      // Use event-based waiting with a polling fallback.
       while (context.serviceWorkers().length < extensionPaths.length) {
-        await sleep(1000);
+        await Promise.race([
+          context.waitForEvent("serviceworker", { timeout: 30000 }),
+          sleep(500),
+        ]);
       }
 
       await use(context);
@@ -173,49 +173,6 @@ function ensureWalletExtensionExists(
       `Cannot find ${walletName}. Please download it via 'npx w3wallets ${cliAlias}'.`,
     );
   }
-}
-
-/**
- * Derives the Chrome extension ID.
- *
- * Chrome uses different sources depending on what's available:
- * 1. If manifest.json has a `key` field → ID derived from that key
- * 2. Otherwise → ID derived from the absolute path
- *
- * The algorithm is the same in both cases:
- * 1. SHA256 hash the input (public key bytes or path string)
- * 2. Take first 16 bytes of the hash
- * 3. Encode using a custom base32 alphabet (a-p)
- */
-function getExtensionId(extensionPath: string): string {
-  const absolutePath = path.resolve(extensionPath);
-  const manifestPath = path.join(absolutePath, "manifest.json");
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-
-  let dataToHash: Buffer;
-
-  if (manifest.key) {
-    // Use the public key from manifest
-    dataToHash = Buffer.from(manifest.key, "base64");
-  } else {
-    // Use the absolute path (Chrome's fallback for unpacked extensions)
-    dataToHash = Buffer.from(absolutePath);
-  }
-
-  const hash = crypto.createHash("sha256").update(dataToHash).digest();
-
-  // Chrome uses a custom base32 alphabet: 'a' to 'p' (16 chars)
-  // Each character encodes 4 bits (nibble), so 16 bytes = 32 chars
-  const ALPHABET = "abcdefghijklmnop";
-  let extensionId = "";
-
-  for (let i = 0; i < 16; i++) {
-    const byte = hash[i]!;
-    extensionId += ALPHABET[(byte >> 4) & 0xf];
-    extensionId += ALPHABET[byte & 0xf];
-  }
-
-  return extensionId;
 }
 
 /**

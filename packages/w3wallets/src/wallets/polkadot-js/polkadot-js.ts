@@ -45,9 +45,9 @@ export class PolkadotJS extends Wallet {
       .locator(".accountWichCheckbox")
       .filter({ hasText: accountId })
       .locator(".accountTree-checkbox")
-      .locator("span");
+      .locator('input[type="checkbox"]');
 
-    await cb.check().catch(() => cb.check());
+    await cb.check();
   }
 
   async enterPassword(password?: string) {

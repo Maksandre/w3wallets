@@ -14,3 +14,6 @@ package-lock.json
 
 # testing
 test.spec.ts
+
+# playwright
+.playwright-cli

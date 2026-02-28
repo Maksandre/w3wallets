@@ -20,7 +20,7 @@ async function waitForStorageStable(
 ): Promise<number | null> {
   const TIMEOUT = 60000;
   const POLL_INTERVAL = 5000;
-  const STABLE_CHECKS_REQUIRED = 4;
+  const STABLE_CHECKS_REQUIRED = 2;
   const start = Date.now();
   let lastKeyCount = -1;
   let stableCount = 0;
@@ -146,6 +146,11 @@ export async function buildCacheForSetup(
   const page = await context.newPage();
   const wallet = new config.WalletClass(page, extensionId);
   await config.setupFn(wallet, page);
+
+  // Save a screenshot after setup for debugging (e.g. CI failures).
+  const screenshotPath = path.join(cacheDir, "setup-result.png");
+  await page.screenshot({ path: screenshotPath });
+  console.log(`  Screenshot saved: ${screenshotPath}`);
 
   // Wait for the extension to persist its state to chrome.storage.local.
   // MV3 extensions write to storage asynchronously after onboarding.

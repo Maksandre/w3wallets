@@ -269,7 +269,12 @@ export class Metamask extends Wallet {
    * Lock the MetaMask wallet
    */
   async lock() {
-    // Navigate to home first
+    // Navigate to home.html to ensure the main wallet UI is visible.
+    // Sidepanel may show notification overlays (e.g., Solana account removal)
+    // that block access to the settings menu.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/home.html`,
+    );
     await this.page.getByTestId("account-options-menu-button").click();
 
     // Click "Lock MetaMask" menu item
@@ -281,6 +286,11 @@ export class Metamask extends Wallet {
    */
   async unlock(password?: string) {
     const pwd = password ?? this.defaultPassword;
+
+    // Navigate to home.html to show the lock screen reliably.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/home.html`,
+    );
 
     const passwordInput = this.page.getByTestId("unlock-password");
     await passwordInput.fill(pwd);

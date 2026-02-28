@@ -49,7 +49,10 @@ async function waitForStorageStable(
     }
 
     if (stableCount >= STABLE_CHECKS_REQUIRED) {
+      // Dump all key names for debugging
+      const bodyText = await helperPage.textContent("body");
       console.log(`  Storage stabilized at ${keyCount} keys`);
+      console.log(`  Storage keys: ${bodyText}`);
       return keyCount;
     }
 
@@ -58,6 +61,11 @@ async function waitForStorageStable(
     );
   }
 
+  // Dump keys even on timeout
+  try {
+    const bodyText = await helperPage.textContent("body");
+    console.log(`  Storage keys at timeout: ${bodyText}`);
+  } catch {}
   console.log(`  Storage stabilization timed out after ${TIMEOUT / 1000}s`);
   return null;
 }
@@ -158,7 +166,9 @@ export async function buildCacheForSetup(
     fs.writeFileSync(
       helperJs,
       `chrome.storage.local.get(null, (data) => {
-        document.title = "done:" + Object.keys(data).length;
+        const keys = Object.keys(data).sort();
+        document.title = "done:" + keys.length;
+        document.body.textContent = JSON.stringify(keys);
       });`,
     );
     fs.writeFileSync(

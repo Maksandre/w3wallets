@@ -147,23 +147,16 @@ export async function buildCacheForSetup(
   const wallet = new config.WalletClass(page, extensionId);
   await config.setupFn(wallet, page);
 
-  // Navigate to home.html to trigger full UI initialization (token list
-  // fetches, network state, etc.). MetaMask's TokenListController lazily
-  // fetches token data for 7 chains from token.api.cx.metamask.io.
-  // We wait for these specific API responses before proceeding to ensure
-  // all storageService keys get written. If the API calls don't arrive
-  // within 60s we proceed anyway (the stabilization loop will still catch up).
-  const tokenApiPromise = page.waitForResponse(
-    (resp) =>
-      resp.url().includes("token.api.cx.metamask.io") && resp.status() === 200,
-    { timeout: 60_000 },
-  ).catch(() => null);
-
-  await page.goto(`chrome-extension://${extensionId}/home.html`);
-  await tokenApiPromise;
-  // Give MetaMask extra time to process all chain fetches and write to storage
-  await page.waitForLoadState("networkidle");
-  await sleep(5000);
+  // Keep home.html open to let MetaMask's service worker complete all
+  // background work (TokenListController fetches token data for 7 chains
+  // from token.api.cx.metamask.io). These fetches happen in the MV3
+  // service worker and are triggered by the home.html UI initialization.
+  // In CI, these can take 30-60s to complete and persist to storage.
+  // We wait 30s here to give the service worker time before starting
+  // the stabilization loop, which would otherwise prematurely stabilize
+  // at 61 keys (missing the 7 token list cache keys).
+  console.log("  Waiting 30s for extension background tasks...");
+  await sleep(30_000);
 
   // Wait for the extension to persist its state to chrome.storage.local.
   // MV3 extensions write to storage asynchronously after onboarding.

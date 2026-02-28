@@ -88,7 +88,8 @@ export class Metamask extends Wallet {
 
   /**
    * Dismiss MetaMask promotional popups (e.g., "Transaction Shield")
-   * that may overlay the confirmation UI.
+   * that may overlay the confirmation UI. If the popup can't be dismissed,
+   * callers should use { force: true } to click through the overlay.
    */
   async dismissPopups() {
     // Detect the popup by its characteristic text content.
@@ -98,7 +99,6 @@ export class Metamask extends Wallet {
     }
 
     // Try multiple selectors for the X close button.
-    // MetaMask promotional modals use varying close button markup.
     const closeSelectors = [
       'button[aria-label="Close"]',
       '[data-testid="popover-close"]',
@@ -114,7 +114,9 @@ export class Metamask extends Wallet {
           .first()
           .waitFor({ state: "hidden", timeout: 3_000 })
           .catch(() => {});
-        return;
+        if (!(await popup.first().isVisible().catch(() => false))) {
+          return;
+        }
       }
     }
 
@@ -124,25 +126,6 @@ export class Metamask extends Wallet {
       .first()
       .waitFor({ state: "hidden", timeout: 2_000 })
       .catch(() => {});
-
-    // If popup is still visible, try clicking outside the modal overlay
-    if (await popup.first().isVisible().catch(() => false)) {
-      // Click at coordinates outside the modal (top-left corner of page)
-      await this.page.mouse.click(10, 10);
-      await popup
-        .first()
-        .waitFor({ state: "hidden", timeout: 2_000 })
-        .catch(() => {});
-    }
-
-    // Last resort: remove the modal overlay via JavaScript
-    if (await popup.first().isVisible().catch(() => false)) {
-      await this.page.evaluate(() => {
-        document
-          .querySelectorAll('[class*="modal"], [class*="popover"]')
-          .forEach((el) => el.remove());
-      });
-    }
   }
 
   async approve() {
@@ -174,16 +157,15 @@ export class Metamask extends Wallet {
     await this.dismissPopups();
 
     // Wait for the confirm button — the notification may not be registered yet.
-    // If it times out, a popup may have reappeared — dismiss and retry.
+    await confirmBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+
+    // Try normal click first. If an overlay blocks it (e.g. Transaction Shield
+    // popup that we couldn't dismiss), fall back to force-clicking through it.
     try {
-      await confirmBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+      await confirmBtn.first().click({ timeout: 5_000 });
     } catch {
-      await this.dismissPopups();
-      await confirmBtn
-        .first()
-        .waitFor({ state: "visible", timeout: 15_000 });
+      await confirmBtn.first().click({ force: true });
     }
-    await confirmBtn.click();
   }
 
   async deny() {
@@ -209,16 +191,15 @@ export class Metamask extends Wallet {
     await this.dismissPopups();
 
     // Wait for the cancel button — the notification may not be registered yet.
-    // If it times out, a popup may have reappeared — dismiss and retry.
+    await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+
+    // Try normal click first. If an overlay blocks it (e.g. Transaction Shield
+    // popup that we couldn't dismiss), fall back to force-clicking through it.
     try {
-      await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+      await cancelBtn.first().click({ timeout: 5_000 });
     } catch {
-      await this.dismissPopups();
-      await cancelBtn
-        .first()
-        .waitFor({ state: "visible", timeout: 15_000 });
+      await cancelBtn.first().click({ force: true });
     }
-    await cancelBtn.first().click();
   }
 
   /**

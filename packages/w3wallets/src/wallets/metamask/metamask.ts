@@ -93,26 +93,30 @@ export class Metamask extends Wallet {
     // Use exact name match to avoid hitting confirmation queue nav buttons
     // ("Previous Confirmation" / "Next Confirmation").
 
-    // Navigate to sidepanel.html to ensure we have the latest notification state.
+    const confirmBtn = this.page
+      .getByTestId("confirm-btn")
+      .or(this.page.getByTestId("confirm-footer-button"))
+      .or(this.page.getByTestId("page-container-footer-next"))
+      .or(this.page.getByRole("button", { name: /^confirm$/i }));
+
+    // Try the current page first (fast path).
+    if (await confirmBtn.first().isVisible().catch(() => false)) {
+      await confirmBtn.click();
+      return;
+    }
+
+    // Navigate to sidepanel.html to refresh notification state.
     // In headless CI, sidepanel.html can go stale and show a blank page.
     await this.page.goto(
       `chrome-extension://${this.extensionId}/sidepanel.html`,
     );
 
-    await this.page
-      .getByTestId("confirm-btn")
-      .or(this.page.getByTestId("confirm-footer-button"))
-      .or(this.page.getByTestId("page-container-footer-next"))
-      .or(this.page.getByRole("button", { name: /^confirm$/i }))
-      .click();
+    // Wait for the confirm button — the notification may not be registered yet.
+    await confirmBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+    await confirmBtn.click();
   }
 
   async deny() {
-    // Navigate to sidepanel.html to ensure we have the latest notification state.
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/sidepanel.html`,
-    );
-
     // Try different cancel/reject button selectors
     const cancelBtn = this.page
       .getByTestId("cancel-btn")
@@ -120,6 +124,19 @@ export class Metamask extends Wallet {
       .or(this.page.getByTestId("page-container-footer-cancel"))
       .or(this.page.getByRole("button", { name: /cancel|reject/i }));
 
+    // Try the current page first (fast path).
+    if (await cancelBtn.first().isVisible().catch(() => false)) {
+      await cancelBtn.first().click();
+      return;
+    }
+
+    // Navigate to sidepanel.html to refresh notification state.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/sidepanel.html`,
+    );
+
+    // Wait for the cancel button — the notification may not be registered yet.
+    await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
     await cancelBtn.first().click();
   }
 

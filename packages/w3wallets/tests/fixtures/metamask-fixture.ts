@@ -35,6 +35,10 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
       `chrome-extension://${metamask.extensionId}/home.html`,
     );
 
+    // Disable the "Transaction Shield" promotional popup by setting the
+    // internal MetaMask storage flag before navigating to sidepanel.
+    await metamask.disableShieldPopup();
+
     // Wait for MetaMask main UI to be ready
     await expect(
       metamask.page.getByTestId("account-options-menu-button"),
@@ -44,10 +48,6 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
     await metamask.page.goto(
       `chrome-extension://${metamask.extensionId}/sidepanel.html`,
     );
-
-    // Dismiss promotional popups (e.g., "Transaction Shield") that
-    // MetaMask may show on first sidepanel load after cache restore.
-    await metamask.dismissPopups();
 
     // Dismiss any queued notifications (e.g., Tron account removal)
     // that MetaMask may show on first load after cache restore

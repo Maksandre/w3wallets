@@ -192,31 +192,29 @@ export class Metamask extends Wallet {
   }
 
   /**
-   * Navigate to a MetaMask page that shows pending notifications.
-   * Tries notification.html first (no promotional popups), falls back
-   * to sidepanel.html if the confirmation doesn't appear.
+   * Disable MetaMask's "Transaction Shield" promotional popup by setting the
+   * internal storage flag that marks it as already interacted with.
+   * Must be called on a chrome-extension:// page (e.g., home.html).
    */
-  private async navigateToConfirmation(
-    btnLocator: import("@playwright/test").Locator,
-  ) {
-    // Try notification.html first — it shows pending confirmations
-    // without the Transaction Shield promotional popup.
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/notification.html`,
-    );
-    const found = await btnLocator
-      .first()
-      .waitFor({ state: "visible", timeout: 8_000 })
-      .then(() => true)
-      .catch(() => false);
-    if (found) return;
-
-    // Fall back to sidepanel.html
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/sidepanel.html`,
-    );
-    await this.dismissPopups();
-    await btnLocator.first().waitFor({ state: "visible", timeout: 30_000 });
+  async disableShieldPopup() {
+    await this.page.evaluate(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const storage = (globalThis as any).chrome;
+      return new Promise<void>((resolve) => {
+        storage.storage.local.get("data", (result: Record<string, unknown>) => {
+          const data = result.data as Record<string, unknown> | undefined;
+          if (!data) {
+            resolve();
+            return;
+          }
+          const appState =
+            (data.AppStateController as Record<string, unknown>) || {};
+          appState.showShieldEntryModalOnce = null;
+          data.AppStateController = appState;
+          storage.storage.local.set({ data }, () => resolve());
+        });
+      });
+    });
   }
 
   async approve() {
@@ -232,56 +230,24 @@ export class Metamask extends Wallet {
       .or(this.page.getByTestId("page-container-footer-next"))
       .or(this.page.getByRole("button", { name: /^confirm$/i }));
 
-    // Try the current page first — wait briefly for the notification to arrive
-    // via MetaMask's service worker, avoiding a full page navigation.
-    const fastVisible = await confirmBtn
-      .first()
-      .waitFor({ state: "visible", timeout: 3_000 })
-      .then(() => true)
-      .catch(() => false);
-
-    if (fastVisible) {
+    // Try the current page first (fast path).
+    if (await confirmBtn.first().isVisible().catch(() => false)) {
       await confirmBtn.click();
       return;
     }
 
-    // Navigate to a confirmation page.
-    await this.navigateToConfirmation(confirmBtn);
+    // Navigate to sidepanel.html to refresh notification state.
+    // In headless CI, sidepanel.html can go stale and show a blank page.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/sidepanel.html`,
+    );
 
-    // If a popup overlay is still blocking, click via JavaScript to bypass it.
-    // JS element.click() fires directly on the element regardless of overlays.
-    const hasOverlay = await this.page
-      .getByText(/Transaction Shield|free trial/i)
-      .first()
-      .isVisible()
-      .catch(() => false);
-    if (hasOverlay) {
-      await this.page.evaluate(() => {
-        const btn =
-          document.querySelector<HTMLElement>(
-            '[data-testid="confirm-footer-button"]',
-          ) ??
-          document.querySelector<HTMLElement>(
-            '[data-testid="confirm-btn"]',
-          ) ??
-          document.querySelector<HTMLElement>(
-            '[data-testid="page-container-footer-next"]',
-          );
-        if (btn) {
-          btn.click();
-          return;
-        }
-        // Fallback: find button by accessible text (matches getByRole pattern)
-        for (const b of document.querySelectorAll("button")) {
-          if (/^confirm$/i.test(b.textContent?.trim() || "")) {
-            (b as HTMLElement).click();
-            return;
-          }
-        }
-      });
-    } else {
-      await confirmBtn.click();
-    }
+    // Dismiss any promotional popups before waiting for confirm button.
+    await this.dismissPopups();
+
+    // Wait for the confirm button — the notification may not be registered yet.
+    await confirmBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+    await confirmBtn.click();
   }
 
   async deny() {
@@ -292,71 +258,23 @@ export class Metamask extends Wallet {
       .or(this.page.getByTestId("page-container-footer-cancel"))
       .or(this.page.getByRole("button", { name: /cancel|reject/i }));
 
-    // Try the current page first — wait briefly for the notification to arrive.
-    const fastVisible = await cancelBtn
-      .first()
-      .waitFor({ state: "visible", timeout: 3_000 })
-      .then(() => true)
-      .catch(() => false);
-
-    if (fastVisible) {
+    // Try the current page first (fast path).
+    if (await cancelBtn.first().isVisible().catch(() => false)) {
       await cancelBtn.first().click();
       return;
     }
 
-    // Navigate to notification.html first (no promotional popups),
-    // fall back to sidepanel.html if needed.
+    // Navigate to sidepanel.html to refresh notification state.
     await this.page.goto(
-      `chrome-extension://${this.extensionId}/notification.html`,
+      `chrome-extension://${this.extensionId}/sidepanel.html`,
     );
-    let found = await cancelBtn
-      .first()
-      .waitFor({ state: "visible", timeout: 8_000 })
-      .then(() => true)
-      .catch(() => false);
 
-    if (!found) {
-      await this.page.goto(
-        `chrome-extension://${this.extensionId}/sidepanel.html`,
-      );
-      await this.dismissPopups();
-      await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
-      found = true;
-    }
+    // Dismiss any promotional popups before waiting for cancel button.
+    await this.dismissPopups();
 
-    // If a popup overlay is still blocking, click via JavaScript to bypass it.
-    const hasOverlay = await this.page
-      .getByText(/Transaction Shield|free trial/i)
-      .first()
-      .isVisible()
-      .catch(() => false);
-    if (hasOverlay) {
-      await this.page.evaluate(() => {
-        const btn =
-          document.querySelector<HTMLElement>(
-            '[data-testid="confirm-footer-cancel-button"]',
-          ) ??
-          document.querySelector<HTMLElement>(
-            '[data-testid="cancel-btn"]',
-          ) ??
-          document.querySelector<HTMLElement>(
-            '[data-testid="page-container-footer-cancel"]',
-          );
-        if (btn) {
-          btn.click();
-          return;
-        }
-        // Fallback: find button by accessible text (matches getByRole pattern)
-        for (const b of document.querySelectorAll("button")) {
-          if (/^(cancel|reject)$/i.test(b.textContent?.trim() || "")) {
-            (b as HTMLElement).click();
-            return;
-          }
-        }
-      });
-    } else {
-      await cancelBtn.first().click();
-    }
+    // Wait for the cancel button — the notification may not be registered yet.
+    await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+    await cancelBtn.first().click();
   }
 
   /**

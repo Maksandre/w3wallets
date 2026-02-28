@@ -100,14 +100,17 @@ export class Metamask extends Wallet {
       .or(this.page.getByRole("button", { name: /^confirm$/i }));
 
     // Wait for the confirm button to appear. If the page is blank (e.g.,
-    // sidepanel.html failed to render), reload once to recover.
+    // sidepanel.html fails to render in headless CI), fall back to home.html
+    // which reliably renders the confirmation UI.
     const visible = await confirmBtn
       .first()
       .isVisible({ timeout: 5_000 })
       .catch(() => false);
 
     if (!visible) {
-      await this.page.reload();
+      await this.page.goto(
+        `chrome-extension://${this.extensionId}/home.html`,
+      );
       await confirmBtn
         .first()
         .waitFor({ state: "visible", timeout: 30_000 });
@@ -132,6 +135,30 @@ export class Metamask extends Wallet {
       .or(this.page.getByTestId("confirm-footer-cancel-button"))
       .or(this.page.getByTestId("page-container-footer-cancel"))
       .or(this.page.getByRole("button", { name: /cancel|reject/i }));
+
+    // If the page is blank (sidepanel.html fails in headless CI),
+    // fall back to home.html which reliably renders the confirmation UI.
+    const visible = await cancelBtn
+      .first()
+      .isVisible({ timeout: 5_000 })
+      .catch(() => false);
+
+    if (!visible) {
+      await this.page.goto(
+        `chrome-extension://${this.extensionId}/home.html`,
+      );
+      await cancelBtn
+        .first()
+        .waitFor({ state: "visible", timeout: 30_000 });
+    }
+
+    // Dismiss promotional popups that may overlay the UI.
+    const popupCloseBtn = this.page.locator('button[aria-label="Close"]');
+    if (
+      await popupCloseBtn.isVisible({ timeout: 1_000 }).catch(() => false)
+    ) {
+      await popupCloseBtn.click();
+    }
 
     await cancelBtn.first().click();
   }

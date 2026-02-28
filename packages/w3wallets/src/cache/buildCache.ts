@@ -21,16 +21,9 @@ async function waitForStorageStable(
   const TIMEOUT = 120_000;
   const POLL_INTERVAL = 5_000;
   const STABLE_CHECKS_REQUIRED = 6;
-  // Wait before starting polls to let async network requests (e.g. token list
-  // fetches) begin writing to storage. Without this, the algorithm can declare
-  // stability at 61 keys before MetaMask's TokenListController finishes
-  // fetching token data for each chain.
-  const INITIAL_WAIT = 15_000;
   const start = Date.now();
   let lastKeyCount = -1;
   let stableCount = 0;
-
-  await sleep(INITIAL_WAIT);
 
   while (Date.now() - start < TIMEOUT) {
     await sleep(POLL_INTERVAL);
@@ -154,6 +147,14 @@ export async function buildCacheForSetup(
   const wallet = new config.WalletClass(page, extensionId);
   await config.setupFn(wallet, page);
 
+  // Navigate back to home.html to trigger full UI initialization including
+  // token list fetches, then wait on that page for network requests to complete.
+  console.log(`  Navigating to home.html to trigger token list fetches...`);
+  await page.goto(`chrome-extension://${extensionId}/home.html`);
+  // Wait for the page to be fully loaded and MetaMask's async initialization
+  await page.waitForLoadState("networkidle");
+  await sleep(5000);
+
   // Wait for the extension to persist its state to chrome.storage.local.
   // MV3 extensions write to storage asynchronously after onboarding.
   // We inject a tiny helper page into the extension to read the key count,
@@ -165,7 +166,9 @@ export async function buildCacheForSetup(
     fs.writeFileSync(
       helperJs,
       `chrome.storage.local.get(null, (data) => {
-        document.title = "done:" + Object.keys(data).length;
+        const keys = Object.keys(data).sort();
+        document.title = "done:" + keys.length;
+        document.body.textContent = JSON.stringify(keys);
       });`,
     );
     fs.writeFileSync(
@@ -177,6 +180,10 @@ export async function buildCacheForSetup(
     const helperUrl = `chrome-extension://${extensionId}/_w3wallets_helper.html`;
 
     await waitForStorageStable(helperPage, helperUrl);
+
+    // Log keys for diagnostics
+    const bodyText = await helperPage.textContent("body");
+    console.log(`  Storage keys: ${bodyText}`);
 
     await helperPage.close();
     fs.unlinkSync(helperJs);

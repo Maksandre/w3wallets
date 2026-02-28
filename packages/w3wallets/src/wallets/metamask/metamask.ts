@@ -32,18 +32,29 @@ export class Metamask extends Wallet {
       .getByRole("button", { name: "Import using Secret Recovery Phrase" })
       .click();
 
-    // Step 3: Type mnemonic (must use keyboard.type due to security)
-    const textbox = this.page.getByRole("textbox");
-    await textbox.click();
+    // Step 3: Type mnemonic into the SRP input.
+    // MetaMask 13.18+ uses an SRP input that starts as a textarea and
+    // transitions to individual word fields after the first Space/Enter.
+    // We click the textarea to focus it, type the first word, then press
+    // Space to trigger the word field creation. Subsequent words are typed
+    // into the focused word field that MetaMask creates.
+    const srpTextarea = this.page.getByTestId("srp-input-import__srp-note");
+    await srpTextarea.click();
 
-    for (const word of mnemonic.split(" ")) {
-      await this.page.keyboard.type(word);
-      await this.page.keyboard.type(" ");
-      await this.page.waitForTimeout(30);
+    const words = mnemonic.split(" ");
+    for (let i = 0; i < words.length; i++) {
+      await this.page.keyboard.type(words[i]!, { delay: 5 });
+      if (i < words.length - 1) {
+        await this.page.keyboard.press("Space");
+        // Wait for MetaMask to process the word and create/focus the next input
+        await this.page.waitForTimeout(100);
+      }
     }
 
-    // Step 4: Wait for Continue button to be enabled and click
+    // Step 4: Wait for Continue button to be enabled and click.
+    // MetaMask validates the full mnemonic (BIP39 checksum) before enabling.
     const continueBtn = this.page.getByTestId("import-srp-confirm");
+    await expect(continueBtn).toBeEnabled({ timeout: config.expectTimeout });
     await continueBtn.click();
 
     // Step 5: Fill password fields
@@ -67,7 +78,11 @@ export class Metamask extends Wallet {
     });
     await openWalletBtn.click();
 
-    // Step 10: Navigate to sidepanel page
+    // Step 10: Navigate to home page to trigger full UI initialization
+    // (token list fetches, network state, etc.), then to sidepanel.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/home.html`,
+    );
     await this.page.goto(
       `chrome-extension://${this.extensionId}/sidepanel.html`,
     );

@@ -40,26 +40,7 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
 
     // Dismiss promotional popups (e.g., "Transaction Shield") that
     // MetaMask may show on first sidepanel load after cache restore.
-    // These modals have an X close button. Use multiple strategies to find it.
-    const shieldPopup = metamask.page.getByText("Transaction Shield");
-    if (
-      await shieldPopup.isVisible({ timeout: 3_000 }).catch(() => false)
-    ) {
-      // Click the X button — it's in the header area of the modal
-      const closeBtn = metamask.page.locator(
-        'button[aria-label="Close"]',
-      );
-      if (await closeBtn.isVisible({ timeout: 1_000 }).catch(() => false)) {
-        await closeBtn.click();
-      } else {
-        // Fallback: press Escape to close the modal
-        await metamask.page.keyboard.press("Escape");
-      }
-      // Wait for the popup to disappear
-      await shieldPopup
-        .waitFor({ state: "hidden", timeout: 3_000 })
-        .catch(() => {});
-    }
+    await metamask.dismissPopups();
 
     // Dismiss any queued notifications (e.g., Tron account removal)
     // that MetaMask may show on first load after cache restore

@@ -90,17 +90,58 @@ export class Metamask extends Wallet {
    * Dismiss MetaMask promotional popups (e.g., "Transaction Shield")
    * that may overlay the confirmation UI.
    */
-  private async dismissPopups() {
-    const closeBtn = this.page.locator('button[aria-label="Close"]');
-    if (await closeBtn.isVisible({ timeout: 1_000 }).catch(() => false)) {
-      await closeBtn.click();
+  async dismissPopups() {
+    // Detect the popup by its characteristic text content.
+    const popup = this.page.getByText(/Transaction Shield|free trial/i);
+    if (!(await popup.first().isVisible({ timeout: 2_000 }).catch(() => false))) {
       return;
     }
-    // Some popups don't have aria-label — try pressing Escape
-    const popup = this.page.getByText("Transaction Shield");
-    if (await popup.isVisible().catch(() => false)) {
-      await this.page.keyboard.press("Escape");
-      await popup.waitFor({ state: "hidden", timeout: 3_000 }).catch(() => {});
+
+    // Try multiple selectors for the X close button.
+    // MetaMask promotional modals use varying close button markup.
+    const closeSelectors = [
+      'button[aria-label="Close"]',
+      '[data-testid="popover-close"]',
+      '.mm-modal-content-header button',
+      'button.mm-button-icon',
+    ];
+
+    for (const selector of closeSelectors) {
+      const btn = this.page.locator(selector).first();
+      if (await btn.isVisible({ timeout: 500 }).catch(() => false)) {
+        await btn.click();
+        await popup
+          .first()
+          .waitFor({ state: "hidden", timeout: 3_000 })
+          .catch(() => {});
+        return;
+      }
+    }
+
+    // Fallback: try pressing Escape
+    await this.page.keyboard.press("Escape");
+    await popup
+      .first()
+      .waitFor({ state: "hidden", timeout: 2_000 })
+      .catch(() => {});
+
+    // If popup is still visible, try clicking outside the modal overlay
+    if (await popup.first().isVisible().catch(() => false)) {
+      // Click at coordinates outside the modal (top-left corner of page)
+      await this.page.mouse.click(10, 10);
+      await popup
+        .first()
+        .waitFor({ state: "hidden", timeout: 2_000 })
+        .catch(() => {});
+    }
+
+    // Last resort: remove the modal overlay via JavaScript
+    if (await popup.first().isVisible().catch(() => false)) {
+      await this.page.evaluate(() => {
+        document
+          .querySelectorAll('[class*="modal"], [class*="popover"]')
+          .forEach((el) => el.remove());
+      });
     }
   }
 
@@ -133,7 +174,15 @@ export class Metamask extends Wallet {
     await this.dismissPopups();
 
     // Wait for the confirm button — the notification may not be registered yet.
-    await confirmBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+    // If it times out, a popup may have reappeared — dismiss and retry.
+    try {
+      await confirmBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+    } catch {
+      await this.dismissPopups();
+      await confirmBtn
+        .first()
+        .waitFor({ state: "visible", timeout: 15_000 });
+    }
     await confirmBtn.click();
   }
 
@@ -160,7 +209,15 @@ export class Metamask extends Wallet {
     await this.dismissPopups();
 
     // Wait for the cancel button — the notification may not be registered yet.
-    await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+    // If it times out, a popup may have reappeared — dismiss and retry.
+    try {
+      await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+    } catch {
+      await this.dismissPopups();
+      await cancelBtn
+        .first()
+        .waitFor({ state: "visible", timeout: 15_000 });
+    }
     await cancelBtn.first().click();
   }
 

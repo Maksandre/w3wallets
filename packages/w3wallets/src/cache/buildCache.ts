@@ -147,18 +147,17 @@ export async function buildCacheForSetup(
   const wallet = new config.WalletClass(page, extensionId);
   await config.setupFn(wallet, page);
 
-  // Navigate back to home.html to trigger full UI initialization including
-  // token list fetches, then wait on that page for network requests to complete.
-  console.log(`  Navigating to home.html to trigger token list fetches...`);
+  // Navigate to home.html to trigger full UI initialization (token list
+  // fetches, network state, etc.) and wait for all network requests to settle.
+  // Without this, MetaMask's TokenListController won't fetch token data for
+  // each chain, resulting in missing storageService keys.
   await page.goto(`chrome-extension://${extensionId}/home.html`);
-  // Wait for the page to be fully loaded and MetaMask's async initialization
   await page.waitForLoadState("networkidle");
-  await sleep(5000);
 
   // Wait for the extension to persist its state to chrome.storage.local.
   // MV3 extensions write to storage asynchronously after onboarding.
   // We inject a tiny helper page into the extension to read the key count,
-  // then poll until it stabilizes (no new keys for 2 consecutive checks).
+  // then poll until it stabilizes (no new keys for several consecutive checks).
   try {
     const extDir = path.join(process.cwd(), W3WALLETS_DIR, config.extensionDir);
     const helperJs = path.join(extDir, "_w3wallets_helper.js");
@@ -166,9 +165,7 @@ export async function buildCacheForSetup(
     fs.writeFileSync(
       helperJs,
       `chrome.storage.local.get(null, (data) => {
-        const keys = Object.keys(data).sort();
-        document.title = "done:" + keys.length;
-        document.body.textContent = JSON.stringify(keys);
+        document.title = "done:" + Object.keys(data).length;
       });`,
     );
     fs.writeFileSync(
@@ -180,10 +177,6 @@ export async function buildCacheForSetup(
     const helperUrl = `chrome-extension://${extensionId}/_w3wallets_helper.html`;
 
     await waitForStorageStable(helperPage, helperUrl);
-
-    // Log keys for diagnostics
-    const bodyText = await helperPage.textContent("body");
-    console.log(`  Storage keys: ${bodyText}`);
 
     await helperPage.close();
     fs.unlinkSync(helperJs);

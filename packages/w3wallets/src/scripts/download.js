@@ -222,7 +222,14 @@ function parseArgs(args) {
 const rawArgs = process.argv.slice(2);
 if (rawArgs[0] === "cache") {
   const { execFileSync } = require("child_process");
-  const cacheScript = path.join(__dirname, "..", "..", "dist", "scripts", "cache.js");
+  const cacheScript = path.join(
+    __dirname,
+    "..",
+    "..",
+    "dist",
+    "scripts",
+    "cache.js",
+  );
 
   if (!fs.existsSync(cacheScript)) {
     console.error(

@@ -152,11 +152,7 @@ export async function buildCacheForSetup(
   // We inject a tiny helper page into the extension to read the key count,
   // then poll until it stabilizes (no new keys for 2 consecutive checks).
   try {
-    const extDir = path.join(
-      process.cwd(),
-      W3WALLETS_DIR,
-      config.extensionDir,
-    );
+    const extDir = path.join(process.cwd(), W3WALLETS_DIR, config.extensionDir);
     const helperJs = path.join(extDir, "_w3wallets_helper.js");
     const helperHtml = path.join(extDir, "_w3wallets_helper.html");
     fs.writeFileSync(

@@ -206,9 +206,7 @@ async function findCachedExtension<T extends IWallet>(
 
   const page = await context.newPage();
   if (homeUrl) {
-    await page.goto(
-      `chrome-extension://${expectedExtensionId}/${homeUrl}`,
-    );
+    await page.goto(`chrome-extension://${expectedExtensionId}/${homeUrl}`);
   }
   const extension = new ExtensionClass(page, expectedExtensionId);
 

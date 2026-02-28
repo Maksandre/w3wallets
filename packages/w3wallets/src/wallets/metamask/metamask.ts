@@ -237,64 +237,66 @@ export class Metamask extends Wallet {
     await this.page.waitForTimeout(1_000);
   }
 
-  async approve() {
-    // MetaMask connection flow may have multiple steps:
-    // 1. "Connect" button to approve account access
-    // 2. "Confirm" button for transactions
-    // Use exact name match to avoid hitting confirmation queue nav buttons
-    // ("Previous Confirmation" / "Next Confirmation").
+  /**
+   * Wait for a target button while handling the Transaction Shield popup.
+   * Uses Promise.race so we react to whichever appears first: the popup or the button.
+   * If the popup appears, we dismiss it and then wait for the button.
+   */
+  private async waitAndClickButton(
+    btnLocator: ReturnType<typeof this.page.getByTestId>,
+  ) {
+    // Try the current page first (fast path).
+    if (await btnLocator.first().isVisible().catch(() => false)) {
+      await btnLocator.first().click();
+      return;
+    }
 
+    // Navigate to sidepanel.html to refresh notification state.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/sidepanel.html`,
+    );
+
+    // Race between the target button appearing and the popup appearing.
+    // This avoids the issue where dismissPopups() returns early (popup not
+    // visible within 2s) and then the popup appears later, blocking the button.
+    const popup = this.page.getByText(/Transaction Shield|free trial/i);
+    const result = await Promise.race([
+      btnLocator
+        .first()
+        .waitFor({ state: "visible", timeout: 30_000 })
+        .then(() => "button" as const),
+      popup
+        .first()
+        .waitFor({ state: "visible", timeout: 30_000 })
+        .then(() => "popup" as const),
+    ]);
+
+    if (result === "popup") {
+      await this.dismissPopups();
+      await btnLocator.first().waitFor({ state: "visible", timeout: 30_000 });
+    }
+
+    await btnLocator.first().click();
+  }
+
+  async approve() {
     const confirmBtn = this.page
       .getByTestId("confirm-btn")
       .or(this.page.getByTestId("confirm-footer-button"))
       .or(this.page.getByTestId("page-container-footer-next"))
       .or(this.page.getByRole("button", { name: /^confirm$/i }));
 
-    // Try the current page first (fast path).
-    if (await confirmBtn.first().isVisible().catch(() => false)) {
-      await confirmBtn.click();
-      return;
-    }
-
-    // Navigate to sidepanel.html to refresh notification state.
-    // In headless CI, sidepanel.html can go stale and show a blank page.
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/sidepanel.html`,
-    );
-
-    // Dismiss any promotional popups before waiting for confirm button.
-    await this.dismissPopups();
-
-    // Wait for the confirm button — the notification may not be registered yet.
-    await confirmBtn.first().waitFor({ state: "visible", timeout: 30_000 });
-    await confirmBtn.click();
+    await this.waitAndClickButton(confirmBtn);
   }
 
   async deny() {
-    // Try different cancel/reject button selectors
     const cancelBtn = this.page
       .getByTestId("cancel-btn")
       .or(this.page.getByTestId("confirm-footer-cancel-button"))
       .or(this.page.getByTestId("page-container-footer-cancel"))
       .or(this.page.getByRole("button", { name: /cancel|reject/i }));
 
-    // Try the current page first (fast path).
-    if (await cancelBtn.first().isVisible().catch(() => false)) {
-      await cancelBtn.first().click();
-      return;
-    }
-
-    // Navigate to sidepanel.html to refresh notification state.
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/sidepanel.html`,
-    );
-
-    // Dismiss any promotional popups before waiting for cancel button.
-    await this.dismissPopups();
-
-    // Wait for the cancel button — the notification may not be registered yet.
-    await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
-    await cancelBtn.first().click();
+    await this.waitAndClickButton(cancelBtn);
   }
 
   /**

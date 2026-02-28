@@ -148,11 +148,22 @@ export async function buildCacheForSetup(
   await config.setupFn(wallet, page);
 
   // Navigate to home.html to trigger full UI initialization (token list
-  // fetches, network state, etc.) and wait for all network requests to settle.
-  // Without this, MetaMask's TokenListController won't fetch token data for
-  // each chain, resulting in missing storageService keys.
+  // fetches, network state, etc.). MetaMask's TokenListController lazily
+  // fetches token data for 7 chains from token.api.cx.metamask.io.
+  // We wait for these specific API responses before proceeding to ensure
+  // all storageService keys get written. If the API calls don't arrive
+  // within 60s we proceed anyway (the stabilization loop will still catch up).
+  const tokenApiPromise = page.waitForResponse(
+    (resp) =>
+      resp.url().includes("token.api.cx.metamask.io") && resp.status() === 200,
+    { timeout: 60_000 },
+  ).catch(() => null);
+
   await page.goto(`chrome-extension://${extensionId}/home.html`);
+  await tokenApiPromise;
+  // Give MetaMask extra time to process all chain fetches and write to storage
   await page.waitForLoadState("networkidle");
+  await sleep(5000);
 
   // Wait for the extension to persist its state to chrome.storage.local.
   // MV3 extensions write to storage asynchronously after onboarding.

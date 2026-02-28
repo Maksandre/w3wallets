@@ -80,7 +80,11 @@ export class Metamask extends Wallet {
 
     // Step 10: Navigate to home page to trigger full UI initialization
     // (token list fetches, network state, etc.), then to sidepanel.
-    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
+    // Wait for networkidle so MetaMask's TokenListController can finish
+    // fetching token data for all chains before we navigate away.
+    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`, {
+      waitUntil: "networkidle",
+    });
     await this.page.goto(
       `chrome-extension://${this.extensionId}/sidepanel.html`,
     );

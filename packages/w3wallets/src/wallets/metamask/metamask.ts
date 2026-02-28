@@ -79,11 +79,11 @@ export class Metamask extends Wallet {
     await openWalletBtn.click();
 
     // Step 10: Navigate to home page to trigger full UI initialization
-    // (token list fetches, network state, etc.).
-    // Do NOT navigate away from home.html here — the caller (buildCache or
-    // test fixture) is responsible for navigating to sidepanel.html after
-    // the extension has finished all background work (token fetches, etc.).
+    // (token list fetches, network state, etc.), then to sidepanel.
     await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/sidepanel.html`,
+    );
   }
 
   async approve() {

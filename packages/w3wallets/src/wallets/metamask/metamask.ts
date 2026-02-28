@@ -88,8 +88,7 @@ export class Metamask extends Wallet {
 
   /**
    * Dismiss MetaMask promotional popups (e.g., "Transaction Shield")
-   * that may overlay the confirmation UI. If the popup can't be dismissed,
-   * callers should use { force: true } to click through the overlay.
+   * that may overlay the confirmation UI.
    */
   async dismissPopups() {
     // Detect the popup by its characteristic text content.
@@ -98,7 +97,7 @@ export class Metamask extends Wallet {
       return;
     }
 
-    // Try multiple selectors for the X close button.
+    // Try multiple CSS selectors for the X close button.
     const closeSelectors = [
       'button[aria-label="Close"]',
       '[data-testid="popover-close"]',
@@ -120,8 +119,72 @@ export class Metamask extends Wallet {
       }
     }
 
-    // Fallback: try pressing Escape
+    // Try Playwright's accessible name locator (pierces shadow DOM).
+    const closeByRole = this.page.getByRole("button", { name: /close/i });
+    if (
+      await closeByRole.first().isVisible({ timeout: 1_000 }).catch(() => false)
+    ) {
+      await closeByRole.first().click();
+      await popup
+        .first()
+        .waitFor({ state: "hidden", timeout: 3_000 })
+        .catch(() => {});
+      if (!(await popup.first().isVisible().catch(() => false))) {
+        return;
+      }
+    }
+
+    // Try pressing Escape
     await this.page.keyboard.press("Escape");
+    await popup
+      .first()
+      .waitFor({ state: "hidden", timeout: 2_000 })
+      .catch(() => {});
+    if (!(await popup.first().isVisible().catch(() => false))) {
+      return;
+    }
+
+    // Final fallback: use JavaScript to find and click the close button
+    // within the popup modal, or hide the popup overlay entirely.
+    await this.page.evaluate(() => {
+      // Find the modal root by walking up from the "Transaction Shield" text
+      let modal: HTMLElement | null = null;
+      const walk = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+      );
+      while (walk.nextNode()) {
+        const text = walk.currentNode.textContent || "";
+        if (
+          text.includes("Transaction Shield") ||
+          text.includes("free trial")
+        ) {
+          let el = walk.currentNode.parentElement;
+          while (el && el !== document.body) {
+            const style = getComputedStyle(el);
+            if (style.position === "fixed" || style.position === "absolute") {
+              modal = el;
+            }
+            el = el.parentElement;
+          }
+          break;
+        }
+      }
+      if (!modal) return;
+
+      // Look for close buttons (SVG icon buttons, × text, or empty buttons)
+      const buttons = modal.querySelectorAll("button");
+      for (const btn of buttons) {
+        const text = btn.textContent?.trim() || "";
+        if (btn.querySelector("svg") || text === "×" || text === "") {
+          (btn as HTMLElement).click();
+          return;
+        }
+      }
+
+      // If no close button found, hide the modal overlay
+      modal.style.display = "none";
+    });
     await popup
       .first()
       .waitFor({ state: "hidden", timeout: 2_000 })
@@ -178,7 +241,17 @@ export class Metamask extends Wallet {
           document.querySelector<HTMLElement>(
             '[data-testid="page-container-footer-next"]',
           );
-        btn?.click();
+        if (btn) {
+          btn.click();
+          return;
+        }
+        // Fallback: find button by accessible text (matches getByRole pattern)
+        for (const b of document.querySelectorAll("button")) {
+          if (/^confirm$/i.test(b.textContent?.trim() || "")) {
+            (b as HTMLElement).click();
+            return;
+          }
+        }
       });
     } else {
       await confirmBtn.click();
@@ -228,7 +301,17 @@ export class Metamask extends Wallet {
           document.querySelector<HTMLElement>(
             '[data-testid="page-container-footer-cancel"]',
           );
-        btn?.click();
+        if (btn) {
+          btn.click();
+          return;
+        }
+        // Fallback: find button by accessible text (matches getByRole pattern)
+        for (const b of document.querySelectorAll("button")) {
+          if (/^(cancel|reject)$/i.test(b.textContent?.trim() || "")) {
+            (b as HTMLElement).click();
+            return;
+          }
+        }
       });
     } else {
       await cancelBtn.first().click();

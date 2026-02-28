@@ -211,35 +211,6 @@ export class Metamask extends Wallet {
   }
 
   /**
-   * Disable MetaMask's "Transaction Shield" promotional popup by setting the
-   * internal storage flag that marks it as already interacted with.
-   * Must be called on a chrome-extension:// page (e.g., sidepanel.html).
-   *
-   * Uses addScriptTag instead of page.evaluate to bypass LavaMoat's scuttling
-   * of setInterval (which Playwright's evaluate transport depends on).
-   */
-  async disableShieldPopup() {
-    await this.page.addScriptTag({
-      content: `
-        (function() {
-          var chr = window.chrome;
-          if (!chr || !chr.storage || !chr.storage.local) return;
-          chr.storage.local.get("data", function(result) {
-            var data = result.data;
-            if (!data) return;
-            var appState = data.AppStateController || {};
-            appState.showShieldEntryModalOnce = null;
-            data.AppStateController = appState;
-            chr.storage.local.set({ data: data });
-          });
-        })();
-      `,
-    });
-    // Wait for the async chrome.storage.local write to complete.
-    await this.page.waitForTimeout(1_000);
-  }
-
-  /**
    * Wait for a target button while handling the Transaction Shield popup.
    * Uses Promise.race so we react to whichever appears first: the popup or the button.
    * If the popup appears, we dismiss it and then wait for the button.

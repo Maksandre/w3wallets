@@ -198,18 +198,19 @@ export class Metamask extends Wallet {
       return;
     }
 
+    // MetaMask uses different pages for showing pending approvals:
+    // - notification.html: renders the approval dialog directly
+    // - sidepanel.html: auto-navigates to confirmation routes
+    // Try notification.html first as it's the standard approval page,
+    // then fall back to sidepanel.html.
+    const notificationUrl = `chrome-extension://${this.extensionId}/notification.html`;
     const sidepanelUrl = `chrome-extension://${this.extensionId}/sidepanel.html`;
     const popup = this.page.getByText(/Transaction Shield|free trial/i);
 
-    // Retry loop: MetaMask's service worker may not have registered the
-    // pending approval yet when we navigate. Reload up to 3 times to give
-    // it time to surface the confirmation UI.
-    for (let attempt = 0; attempt < 3; attempt++) {
-      await this.page.goto(sidepanelUrl);
+    const pages = [notificationUrl, sidepanelUrl, notificationUrl];
+    for (const pageUrl of pages) {
+      await this.page.goto(pageUrl);
 
-      // Race between the target button, the popup, and a short timeout.
-      // The short timeout lets us retry navigation if the confirmation
-      // hasn't appeared yet (e.g., personal_sign takes time to register).
       const result = await Promise.race([
         btnLocator
           .first()
@@ -228,19 +229,16 @@ export class Metamask extends Wallet {
 
       if (result === "popup") {
         await this.dismissPopups();
-        // After dismissing, wait for the button to appear.
         await btnLocator
           .first()
           .waitFor({ state: "visible", timeout: 30_000 });
         await btnLocator.first().click();
         return;
       }
-
-      // "timeout" — confirmation not yet available, retry after a brief pause.
     }
 
-    // Final attempt: wait longer for the button.
-    await this.page.goto(sidepanelUrl);
+    // Final attempt with a longer timeout.
+    await this.page.goto(notificationUrl);
     await btnLocator.first().waitFor({ state: "visible", timeout: 30_000 });
     await btnLocator.first().click();
   }

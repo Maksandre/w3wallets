@@ -159,12 +159,29 @@ export class Metamask extends Wallet {
     // Wait for the confirm button — the notification may not be registered yet.
     await confirmBtn.first().waitFor({ state: "visible", timeout: 30_000 });
 
-    // Try normal click first. If an overlay blocks it (e.g. Transaction Shield
-    // popup that we couldn't dismiss), fall back to force-clicking through it.
-    try {
-      await confirmBtn.first().click({ timeout: 5_000 });
-    } catch {
-      await confirmBtn.first().click({ force: true });
+    // If a popup overlay is still blocking, click via JavaScript to bypass it.
+    // JS element.click() fires directly on the element regardless of overlays.
+    const hasOverlay = await this.page
+      .getByText(/Transaction Shield|free trial/i)
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (hasOverlay) {
+      await this.page.evaluate(() => {
+        const btn =
+          document.querySelector<HTMLElement>(
+            '[data-testid="confirm-footer-button"]',
+          ) ??
+          document.querySelector<HTMLElement>(
+            '[data-testid="confirm-btn"]',
+          ) ??
+          document.querySelector<HTMLElement>(
+            '[data-testid="page-container-footer-next"]',
+          );
+        btn?.click();
+      });
+    } else {
+      await confirmBtn.click();
     }
   }
 
@@ -193,12 +210,28 @@ export class Metamask extends Wallet {
     // Wait for the cancel button — the notification may not be registered yet.
     await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
 
-    // Try normal click first. If an overlay blocks it (e.g. Transaction Shield
-    // popup that we couldn't dismiss), fall back to force-clicking through it.
-    try {
-      await cancelBtn.first().click({ timeout: 5_000 });
-    } catch {
-      await cancelBtn.first().click({ force: true });
+    // If a popup overlay is still blocking, click via JavaScript to bypass it.
+    const hasOverlay = await this.page
+      .getByText(/Transaction Shield|free trial/i)
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (hasOverlay) {
+      await this.page.evaluate(() => {
+        const btn =
+          document.querySelector<HTMLElement>(
+            '[data-testid="confirm-footer-cancel-button"]',
+          ) ??
+          document.querySelector<HTMLElement>(
+            '[data-testid="cancel-btn"]',
+          ) ??
+          document.querySelector<HTMLElement>(
+            '[data-testid="page-container-footer-cancel"]',
+          );
+        btn?.click();
+      });
+    } else {
+      await cancelBtn.first().click();
     }
   }
 

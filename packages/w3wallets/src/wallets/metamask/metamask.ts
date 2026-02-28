@@ -97,34 +97,23 @@ export class Metamask extends Wallet {
       return;
     }
 
-    // Try multiple CSS selectors for the X close button.
-    const closeSelectors = [
-      'button[aria-label="Close"]',
-      '[data-testid="popover-close"]',
-      '.mm-modal-content-header button',
-      'button.mm-button-icon',
-    ];
-
-    for (const selector of closeSelectors) {
-      const btn = this.page.locator(selector).first();
-      if (await btn.isVisible({ timeout: 500 }).catch(() => false)) {
-        await btn.click();
-        await popup
-          .first()
-          .waitFor({ state: "hidden", timeout: 3_000 })
-          .catch(() => {});
-        if (!(await popup.first().isVisible().catch(() => false))) {
-          return;
-        }
+    // Try the exact data-testid for the shield modal close button first.
+    const shieldClose = this.page.getByTestId("shield-entry-modal-close-button");
+    if (await shieldClose.isVisible({ timeout: 1_000 }).catch(() => false)) {
+      await shieldClose.click();
+      await popup
+        .first()
+        .waitFor({ state: "hidden", timeout: 3_000 })
+        .catch(() => {});
+      if (!(await popup.first().isVisible().catch(() => false))) {
+        return;
       }
     }
 
-    // Try Playwright's accessible name locator (pierces shadow DOM).
-    const closeByRole = this.page.getByRole("button", { name: /close/i });
-    if (
-      await closeByRole.first().isVisible({ timeout: 1_000 }).catch(() => false)
-    ) {
-      await closeByRole.first().click();
+    // Try aria-label (lowercase "close" as MetaMask uses it).
+    const closeByAria = this.page.locator('button[aria-label="close"]').first();
+    if (await closeByAria.isVisible({ timeout: 500 }).catch(() => false)) {
+      await closeByAria.click();
       await popup
         .first()
         .waitFor({ state: "hidden", timeout: 3_000 })
@@ -144,66 +133,51 @@ export class Metamask extends Wallet {
       return;
     }
 
-    // Final fallback: use JavaScript to find and click the close button
-    // within the popup modal, hide it, AND set the MetaMask storage flag
-    // to prevent the popup from reappearing on subsequent navigations.
-    await this.page.evaluate(() => {
-      // Set the MetaMask storage flag to disable the Transaction Shield popup.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const chr = (window as any).chrome;
-      if (chr?.storage?.local) {
-        chr.storage.local.get(
-          "data",
-          (result: Record<string, unknown>) => {
-            const data = result.data as Record<string, unknown> | undefined;
-            if (!data) return;
-            const appState =
-              (data.AppStateController as Record<string, unknown>) || {};
-            appState.showShieldEntryModalOnce = null;
-            data.AppStateController = appState;
-            chr.storage.local.set({ data });
-          },
-        );
-      }
-
-      // Find the modal root by walking up from the "Transaction Shield" text
-      let modal: HTMLElement | null = null;
-      const walk = document.createTreeWalker(
-        document.body,
-        NodeFilter.SHOW_TEXT,
-      );
-      while (walk.nextNode()) {
-        const text = walk.currentNode.textContent || "";
-        if (
-          text.includes("Transaction Shield") ||
-          text.includes("free trial")
-        ) {
-          let el = walk.currentNode.parentElement;
-          while (el && el !== document.body) {
-            const style = getComputedStyle(el);
-            if (style.position === "fixed" || style.position === "absolute") {
-              modal = el;
-            }
-            el = el.parentElement;
-          }
-          break;
-        }
-      }
-      if (!modal) return;
-
-      // Look for close buttons (SVG icon buttons, × text, or empty buttons)
-      const buttons = modal.querySelectorAll("button");
-      for (const btn of buttons) {
-        const text = btn.textContent?.trim() || "";
-        if (btn.querySelector("svg") || text === "×" || text === "") {
-          (btn as HTMLElement).click();
+    // Final fallback: use JavaScript to click the close button and hide the modal.
+    // Wrapped in try/catch because LavaMoat may block page.evaluate() on
+    // MetaMask extension pages by scuttling setInterval.
+    try {
+      await this.page.evaluate(() => {
+        // Click the close button by data-testid
+        const closeBtn = document.querySelector(
+          '[data-testid="shield-entry-modal-close-button"]',
+        ) as HTMLElement | null;
+        if (closeBtn) {
+          closeBtn.click();
           return;
         }
-      }
 
-      // If no close button found, hide the modal overlay
-      modal.style.display = "none";
-    });
+        // Find and hide the modal overlay
+        let modal: HTMLElement | null = null;
+        const walk = document.createTreeWalker(
+          document.body,
+          NodeFilter.SHOW_TEXT,
+        );
+        while (walk.nextNode()) {
+          const text = walk.currentNode.textContent || "";
+          if (
+            text.includes("Transaction Shield") ||
+            text.includes("free trial")
+          ) {
+            let el = walk.currentNode.parentElement;
+            while (el && el !== document.body) {
+              const style = getComputedStyle(el);
+              if (
+                style.position === "fixed" ||
+                style.position === "absolute"
+              ) {
+                modal = el;
+              }
+              el = el.parentElement;
+            }
+            break;
+          }
+        }
+        if (modal) modal.style.display = "none";
+      });
+    } catch {
+      // LavaMoat may block evaluate; continue without it
+    }
     await popup
       .first()
       .waitFor({ state: "hidden", timeout: 2_000 })

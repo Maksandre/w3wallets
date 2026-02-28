@@ -20,7 +20,7 @@ async function waitForStorageStable(
 ): Promise<number | null> {
   const TIMEOUT = 60000;
   const POLL_INTERVAL = 5000;
-  const STABLE_CHECKS_REQUIRED = 2;
+  const STABLE_CHECKS_REQUIRED = 4;
   const start = Date.now();
   let lastKeyCount = -1;
   let stableCount = 0;

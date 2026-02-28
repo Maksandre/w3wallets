@@ -59,15 +59,6 @@ jobs:
         run: yarn build
         working-directory: packages/w3wallets
 
-      - name: 🔍 Verify cache script
-        run: |
-          echo "=== cache.js contains home.html? ==="
-          grep -c "home.html" dist/scripts/cache.js || echo "NOT FOUND"
-          grep -c "networkidle" dist/scripts/cache.js || echo "NOT FOUND"
-          echo "=== TIMEOUT value ==="
-          grep "TIMEOUT" dist/scripts/cache.js | head -3
-        working-directory: packages/w3wallets
-
       - name: 🗄️ Build wallet cache
         run: xvfb-run --auto-servernum --server-args='-screen 0 1280x800x24' npx w3wallets cache tests/wallets-cache/
         working-directory: packages/w3wallets

@@ -59,6 +59,18 @@ jobs:
         run: yarn build
         working-directory: packages/w3wallets
 
+      - name: 🔍 Debug browser info
+        run: |
+          echo "=== System chromium ==="
+          which chromium-browser 2>/dev/null && chromium-browser --version 2>/dev/null || echo "no system chromium-browser"
+          which chromium 2>/dev/null && chromium --version 2>/dev/null || echo "no system chromium"
+          which google-chrome 2>/dev/null && google-chrome --version 2>/dev/null || echo "no google-chrome"
+          which google-chrome-stable 2>/dev/null && google-chrome-stable --version 2>/dev/null || echo "no google-chrome-stable"
+          echo "=== Playwright browsers ==="
+          ls /ms-playwright/ 2>/dev/null || echo "no /ms-playwright"
+          echo "=== Playwright chromium version ==="
+          /ms-playwright/chromium-*/chrome-linux/chrome --version 2>/dev/null || echo "could not get version"
+
       - name: 🗄️ Build wallet cache
         run: xvfb-run --auto-servernum --server-args='-screen 0 1280x800x24' npx w3wallets cache tests/wallets-cache/ --force
         working-directory: packages/w3wallets

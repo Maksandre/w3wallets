@@ -40,16 +40,13 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
       metamask.page.getByTestId("account-options-menu-button"),
     ).toBeVisible({ timeout: 30_000 });
 
-    // Navigate to sidepanel, then disable the Transaction Shield popup.
-    // LavaMoat blocks page.evaluate() on home.html but allows it on sidepanel.html.
-    // Disabling the popup via storage flag then reloading sidepanel prevents it from appearing.
+    // Navigate to sidepanel and dismiss any promotional popups (e.g., Transaction Shield).
+    // dismissPopups() also sets a MetaMask storage flag to prevent the popup from
+    // reappearing on subsequent sidepanel navigations during approve/deny calls.
     await metamask.page.goto(
       `chrome-extension://${metamask.extensionId}/sidepanel.html`,
     );
-    await metamask.disableShieldPopup();
-    await metamask.page.goto(
-      `chrome-extension://${metamask.extensionId}/sidepanel.html`,
-    );
+    await metamask.dismissPopups();
 
     // Dismiss any queued notifications (e.g., Tron account removal)
     // that MetaMask may show on first load after cache restore

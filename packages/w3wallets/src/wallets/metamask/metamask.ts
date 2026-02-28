@@ -145,8 +145,27 @@ export class Metamask extends Wallet {
     }
 
     // Final fallback: use JavaScript to find and click the close button
-    // within the popup modal, or hide the popup overlay entirely.
+    // within the popup modal, hide it, AND set the MetaMask storage flag
+    // to prevent the popup from reappearing on subsequent navigations.
     await this.page.evaluate(() => {
+      // Set the MetaMask storage flag to disable the Transaction Shield popup.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const chr = (window as any).chrome;
+      if (chr?.storage?.local) {
+        chr.storage.local.get(
+          "data",
+          (result: Record<string, unknown>) => {
+            const data = result.data as Record<string, unknown> | undefined;
+            if (!data) return;
+            const appState =
+              (data.AppStateController as Record<string, unknown>) || {};
+            appState.showShieldEntryModalOnce = null;
+            data.AppStateController = appState;
+            chr.storage.local.set({ data });
+          },
+        );
+      }
+
       // Find the modal root by walking up from the "Transaction Shield" text
       let modal: HTMLElement | null = null;
       const walk = document.createTreeWalker(

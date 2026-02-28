@@ -86,6 +86,24 @@ export class Metamask extends Wallet {
     );
   }
 
+  /**
+   * Dismiss MetaMask promotional popups (e.g., "Transaction Shield")
+   * that may overlay the confirmation UI.
+   */
+  private async dismissPopups() {
+    const closeBtn = this.page.locator('button[aria-label="Close"]');
+    if (await closeBtn.isVisible({ timeout: 1_000 }).catch(() => false)) {
+      await closeBtn.click();
+      return;
+    }
+    // Some popups don't have aria-label — try pressing Escape
+    const popup = this.page.getByText("Transaction Shield");
+    if (await popup.isVisible().catch(() => false)) {
+      await this.page.keyboard.press("Escape");
+      await popup.waitFor({ state: "hidden", timeout: 3_000 }).catch(() => {});
+    }
+  }
+
   async approve() {
     // MetaMask connection flow may have multiple steps:
     // 1. "Connect" button to approve account access
@@ -111,6 +129,9 @@ export class Metamask extends Wallet {
       `chrome-extension://${this.extensionId}/sidepanel.html`,
     );
 
+    // Dismiss any promotional popups before waiting for confirm button.
+    await this.dismissPopups();
+
     // Wait for the confirm button — the notification may not be registered yet.
     await confirmBtn.first().waitFor({ state: "visible", timeout: 30_000 });
     await confirmBtn.click();
@@ -134,6 +155,9 @@ export class Metamask extends Wallet {
     await this.page.goto(
       `chrome-extension://${this.extensionId}/sidepanel.html`,
     );
+
+    // Dismiss any promotional popups before waiting for cancel button.
+    await this.dismissPopups();
 
     // Wait for the cancel button — the notification may not be registered yet.
     await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });

@@ -213,25 +213,27 @@ export class Metamask extends Wallet {
   /**
    * Disable MetaMask's "Transaction Shield" promotional popup by setting the
    * internal storage flag that marks it as already interacted with.
-   * Must be called on a chrome-extension:// page (e.g., home.html).
+   * Must be called on a chrome-extension:// page (e.g., sidepanel.html).
+   *
+   * Uses addScriptTag instead of page.evaluate to bypass LavaMoat's scuttling
+   * of setInterval (which Playwright's evaluate transport depends on).
    */
   async disableShieldPopup() {
-    // Synchronous evaluate to avoid LavaMoat blocking setInterval
-    // (Playwright uses setInterval to poll async evaluate results, but
-    // LavaMoat scuttles setInterval on MetaMask extension pages).
-    await this.page.evaluate(() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const chr = (window as any).chrome;
-      if (!chr?.storage?.local) return;
-      chr.storage.local.get("data", (result: Record<string, unknown>) => {
-        const data = result.data as Record<string, unknown> | undefined;
-        if (!data) return;
-        const appState =
-          (data.AppStateController as Record<string, unknown>) || {};
-        appState.showShieldEntryModalOnce = null;
-        data.AppStateController = appState;
-        chr.storage.local.set({ data });
-      });
+    await this.page.addScriptTag({
+      content: `
+        (function() {
+          var chr = window.chrome;
+          if (!chr || !chr.storage || !chr.storage.local) return;
+          chr.storage.local.get("data", function(result) {
+            var data = result.data;
+            if (!data) return;
+            var appState = data.AppStateController || {};
+            appState.showShieldEntryModalOnce = null;
+            data.AppStateController = appState;
+            chr.storage.local.set({ data: data });
+          });
+        })();
+      `,
     });
     // Wait for the async chrome.storage.local write to complete.
     await this.page.waitForTimeout(1_000);

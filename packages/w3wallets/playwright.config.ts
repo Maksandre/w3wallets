@@ -32,7 +32,7 @@ export default defineConfig({
   projects: [
     {
       name: "local",
-      use: { ...devices["Desktop Chrome"], headless: false },
+      use: { ...devices["Desktop Chrome"], headless: true },
     },
     {
       name: "ci",

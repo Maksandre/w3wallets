@@ -90,16 +90,15 @@ export class Metamask extends Wallet {
     // MetaMask connection flow may have multiple steps:
     // 1. "Connect" button to approve account access
     // 2. "Confirm" button for transactions
-    // The footer confirm button may take time to appear in the confirmation
-    // queue view, so wait for it explicitly.
+    // Use exact name match to avoid hitting confirmation queue nav buttons
+    // ("Previous Confirmation" / "Next Confirmation").
 
-    const confirmBtn = this.page
+    await this.page
       .getByTestId("confirm-btn")
       .or(this.page.getByTestId("confirm-footer-button"))
-      .or(this.page.getByTestId("page-container-footer-next"));
-
-    await confirmBtn.waitFor({ state: "visible", timeout: config.expectTimeout });
-    await confirmBtn.click();
+      .or(this.page.getByTestId("page-container-footer-next"))
+      .or(this.page.getByRole("button", { name: /^confirm$/i }))
+      .click();
   }
 
   async deny() {

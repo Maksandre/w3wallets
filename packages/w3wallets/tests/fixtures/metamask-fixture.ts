@@ -8,7 +8,27 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
 }>({
   metamask: async ({ metamask }, use) => {
     await metamask.unlock();
-    // Wait for MetaMask to fully unlock before navigating
+
+    // After cache restore, MetaMask may re-show onboarding completion screens.
+    // Handle "Help improve MetaMask" (metametrics) and "Your wallet is ready!"
+    // screens before expecting the main wallet UI.
+    const metametricsBtn = metamask.page.getByTestId("metametrics-i-agree");
+    if (
+      await metametricsBtn.isVisible({ timeout: 3_000 }).catch(() => false)
+    ) {
+      await metametricsBtn.click();
+    }
+
+    const openWalletBtn = metamask.page.getByRole("button", {
+      name: /open wallet/i,
+    });
+    if (
+      await openWalletBtn.isVisible({ timeout: 3_000 }).catch(() => false)
+    ) {
+      await openWalletBtn.click();
+    }
+
+    // Wait for MetaMask main UI to be ready
     await expect(
       metamask.page.getByTestId("account-options-menu-button"),
     ).toBeVisible({ timeout: 30_000 });

@@ -18,12 +18,19 @@ async function waitForStorageStable(
   helperPage: Page,
   helperUrl: string,
 ): Promise<number | null> {
-  const TIMEOUT = 60000;
-  const POLL_INTERVAL = 5000;
+  const TIMEOUT = 120_000;
+  const POLL_INTERVAL = 5_000;
   const STABLE_CHECKS_REQUIRED = 6;
+  // Wait before starting polls to let async network requests (e.g. token list
+  // fetches) begin writing to storage. Without this, the algorithm can declare
+  // stability at 61 keys before MetaMask's TokenListController finishes
+  // fetching token data for each chain.
+  const INITIAL_WAIT = 15_000;
   const start = Date.now();
   let lastKeyCount = -1;
   let stableCount = 0;
+
+  await sleep(INITIAL_WAIT);
 
   while (Date.now() - start < TIMEOUT) {
     await sleep(POLL_INTERVAL);
@@ -49,10 +56,7 @@ async function waitForStorageStable(
     }
 
     if (stableCount >= STABLE_CHECKS_REQUIRED) {
-      // Dump all key names for debugging
-      const bodyText = await helperPage.textContent("body");
       console.log(`  Storage stabilized at ${keyCount} keys`);
-      console.log(`  Storage keys: ${bodyText}`);
       return keyCount;
     }
 
@@ -61,11 +65,6 @@ async function waitForStorageStable(
     );
   }
 
-  // Dump keys even on timeout
-  try {
-    const bodyText = await helperPage.textContent("body");
-    console.log(`  Storage keys at timeout: ${bodyText}`);
-  } catch {}
   console.log(`  Storage stabilization timed out after ${TIMEOUT / 1000}s`);
   return null;
 }
@@ -166,9 +165,7 @@ export async function buildCacheForSetup(
     fs.writeFileSync(
       helperJs,
       `chrome.storage.local.get(null, (data) => {
-        const keys = Object.keys(data).sort();
-        document.title = "done:" + keys.length;
-        document.body.textContent = JSON.stringify(keys);
+        document.title = "done:" + Object.keys(data).length;
       });`,
     );
     fs.writeFileSync(

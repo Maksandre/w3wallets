@@ -35,16 +35,18 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
       `chrome-extension://${metamask.extensionId}/home.html`,
     );
 
-    // Disable the "Transaction Shield" promotional popup by setting the
-    // internal MetaMask storage flag before navigating to sidepanel.
-    await metamask.disableShieldPopup();
-
     // Wait for MetaMask main UI to be ready
     await expect(
       metamask.page.getByTestId("account-options-menu-button"),
     ).toBeVisible({ timeout: 30_000 });
 
-    // Navigate to sidepanel for MetaMask's notification/approval UI
+    // Navigate to sidepanel, then disable the Transaction Shield popup.
+    // LavaMoat blocks page.evaluate() on home.html but allows it on sidepanel.html.
+    // Disabling the popup via storage flag then reloading sidepanel prevents it from appearing.
+    await metamask.page.goto(
+      `chrome-extension://${metamask.extensionId}/sidepanel.html`,
+    );
+    await metamask.disableShieldPopup();
     await metamask.page.goto(
       `chrome-extension://${metamask.extensionId}/sidepanel.html`,
     );

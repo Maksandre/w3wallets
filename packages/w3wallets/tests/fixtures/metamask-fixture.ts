@@ -28,6 +28,13 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
       await openWalletBtn.click();
     }
 
+    // Navigate to home.html explicitly to ensure we reach the main wallet UI.
+    // After cache restore, MetaMask may show notification screens instead of
+    // the main UI. Navigating to home.html forces the wallet home view.
+    await metamask.page.goto(
+      `chrome-extension://${metamask.extensionId}/home.html`,
+    );
+
     // Wait for MetaMask main UI to be ready
     await expect(
       metamask.page.getByTestId("account-options-menu-button"),

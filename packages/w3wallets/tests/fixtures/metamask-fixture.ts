@@ -8,10 +8,22 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
 }>({
   metamask: async ({ metamask }, use) => {
     await metamask.unlock();
+    // Wait for MetaMask to fully unlock before navigating
+    await expect(
+      metamask.page.getByTestId("account-options-menu-button"),
+    ).toBeVisible({ timeout: 30_000 });
+
     // Navigate to sidepanel for MetaMask's notification/approval UI
     await metamask.page.goto(
       `chrome-extension://${metamask.extensionId}/sidepanel.html`,
     );
+
+    // Dismiss any queued notifications (e.g., Tron account removal)
+    // that MetaMask may show on first load after cache restore
+    const rejectAllBtn = metamask.page.getByText("Reject all");
+    if (await rejectAllBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await rejectAllBtn.click();
+    }
 
     await use(metamask);
   },

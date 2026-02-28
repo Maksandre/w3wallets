@@ -133,6 +133,12 @@ export class Metamask extends Wallet {
     await passwordInput.fill(pwd);
 
     await this.page.getByTestId("unlock-submit").click();
+
+    // Wait for MetaMask to finish unlocking (lock screen disappears)
+    await this.page.waitForSelector('[data-testid="unlock-password"]', {
+      state: "hidden",
+      timeout: 30_000,
+    });
   }
 
   /**

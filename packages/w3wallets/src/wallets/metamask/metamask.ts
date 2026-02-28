@@ -191,6 +191,34 @@ export class Metamask extends Wallet {
       .catch(() => {});
   }
 
+  /**
+   * Navigate to a MetaMask page that shows pending notifications.
+   * Tries notification.html first (no promotional popups), falls back
+   * to sidepanel.html if the confirmation doesn't appear.
+   */
+  private async navigateToConfirmation(
+    btnLocator: import("@playwright/test").Locator,
+  ) {
+    // Try notification.html first — it shows pending confirmations
+    // without the Transaction Shield promotional popup.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/notification.html`,
+    );
+    const found = await btnLocator
+      .first()
+      .waitFor({ state: "visible", timeout: 8_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (found) return;
+
+    // Fall back to sidepanel.html
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/sidepanel.html`,
+    );
+    await this.dismissPopups();
+    await btnLocator.first().waitFor({ state: "visible", timeout: 30_000 });
+  }
+
   async approve() {
     // MetaMask connection flow may have multiple steps:
     // 1. "Connect" button to approve account access
@@ -204,23 +232,21 @@ export class Metamask extends Wallet {
       .or(this.page.getByTestId("page-container-footer-next"))
       .or(this.page.getByRole("button", { name: /^confirm$/i }));
 
-    // Try the current page first (fast path).
-    if (await confirmBtn.first().isVisible().catch(() => false)) {
+    // Try the current page first — wait briefly for the notification to arrive
+    // via MetaMask's service worker, avoiding a full page navigation.
+    const fastVisible = await confirmBtn
+      .first()
+      .waitFor({ state: "visible", timeout: 3_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (fastVisible) {
       await confirmBtn.click();
       return;
     }
 
-    // Navigate to sidepanel.html to refresh notification state.
-    // In headless CI, sidepanel.html can go stale and show a blank page.
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/sidepanel.html`,
-    );
-
-    // Dismiss any promotional popups before waiting for confirm button.
-    await this.dismissPopups();
-
-    // Wait for the confirm button — the notification may not be registered yet.
-    await confirmBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+    // Navigate to a confirmation page.
+    await this.navigateToConfirmation(confirmBtn);
 
     // If a popup overlay is still blocking, click via JavaScript to bypass it.
     // JS element.click() fires directly on the element regardless of overlays.
@@ -266,22 +292,37 @@ export class Metamask extends Wallet {
       .or(this.page.getByTestId("page-container-footer-cancel"))
       .or(this.page.getByRole("button", { name: /cancel|reject/i }));
 
-    // Try the current page first (fast path).
-    if (await cancelBtn.first().isVisible().catch(() => false)) {
+    // Try the current page first — wait briefly for the notification to arrive.
+    const fastVisible = await cancelBtn
+      .first()
+      .waitFor({ state: "visible", timeout: 3_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (fastVisible) {
       await cancelBtn.first().click();
       return;
     }
 
-    // Navigate to sidepanel.html to refresh notification state.
+    // Navigate to notification.html first (no promotional popups),
+    // fall back to sidepanel.html if needed.
     await this.page.goto(
-      `chrome-extension://${this.extensionId}/sidepanel.html`,
+      `chrome-extension://${this.extensionId}/notification.html`,
     );
+    let found = await cancelBtn
+      .first()
+      .waitFor({ state: "visible", timeout: 8_000 })
+      .then(() => true)
+      .catch(() => false);
 
-    // Dismiss any promotional popups before waiting for cancel button.
-    await this.dismissPopups();
-
-    // Wait for the cancel button — the notification may not be registered yet.
-    await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+    if (!found) {
+      await this.page.goto(
+        `chrome-extension://${this.extensionId}/sidepanel.html`,
+      );
+      await this.dismissPopups();
+      await cancelBtn.first().waitFor({ state: "visible", timeout: 30_000 });
+      found = true;
+    }
 
     // If a popup overlay is still blocking, click via JavaScript to bypass it.
     const hasOverlay = await this.page

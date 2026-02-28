@@ -186,8 +186,8 @@ export class Metamask extends Wallet {
 
   /**
    * Wait for a target button while handling the Transaction Shield popup.
-   * Uses Promise.race so we react to whichever appears first: the popup or the button.
-   * If the popup appears, we dismiss it and then wait for the button.
+   * Navigates to the notification page and retries if the confirmation
+   * hasn't arrived yet (race condition with the dApp request).
    */
   private async waitAndClickButton(
     btnLocator: ReturnType<typeof this.page.getByTestId>,
@@ -198,31 +198,50 @@ export class Metamask extends Wallet {
       return;
     }
 
-    // Navigate to sidepanel.html to refresh notification state.
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/sidepanel.html`,
-    );
-
-    // Race between the target button appearing and the popup appearing.
-    // This avoids the issue where dismissPopups() returns early (popup not
-    // visible within 2s) and then the popup appears later, blocking the button.
+    const sidepanelUrl = `chrome-extension://${this.extensionId}/sidepanel.html`;
     const popup = this.page.getByText(/Transaction Shield|free trial/i);
-    const result = await Promise.race([
-      btnLocator
-        .first()
-        .waitFor({ state: "visible", timeout: 30_000 })
-        .then(() => "button" as const),
-      popup
-        .first()
-        .waitFor({ state: "visible", timeout: 30_000 })
-        .then(() => "popup" as const),
-    ]);
 
-    if (result === "popup") {
-      await this.dismissPopups();
-      await btnLocator.first().waitFor({ state: "visible", timeout: 30_000 });
+    // Retry loop: MetaMask's service worker may not have registered the
+    // pending approval yet when we navigate. Reload up to 3 times to give
+    // it time to surface the confirmation UI.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await this.page.goto(sidepanelUrl);
+
+      // Race between the target button, the popup, and a short timeout.
+      // The short timeout lets us retry navigation if the confirmation
+      // hasn't appeared yet (e.g., personal_sign takes time to register).
+      const result = await Promise.race([
+        btnLocator
+          .first()
+          .waitFor({ state: "visible", timeout: 10_000 })
+          .then(() => "button" as const),
+        popup
+          .first()
+          .waitFor({ state: "visible", timeout: 10_000 })
+          .then(() => "popup" as const),
+      ]).catch(() => "timeout" as const);
+
+      if (result === "button") {
+        await btnLocator.first().click();
+        return;
+      }
+
+      if (result === "popup") {
+        await this.dismissPopups();
+        // After dismissing, wait for the button to appear.
+        await btnLocator
+          .first()
+          .waitFor({ state: "visible", timeout: 30_000 });
+        await btnLocator.first().click();
+        return;
+      }
+
+      // "timeout" — confirmation not yet available, retry after a brief pause.
     }
 
+    // Final attempt: wait longer for the button.
+    await this.page.goto(sidepanelUrl);
+    await btnLocator.first().waitFor({ state: "visible", timeout: 30_000 });
     await btnLocator.first().click();
   }
 

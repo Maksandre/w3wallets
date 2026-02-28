@@ -197,24 +197,25 @@ export class Metamask extends Wallet {
    * Must be called on a chrome-extension:// page (e.g., home.html).
    */
   async disableShieldPopup() {
+    // Synchronous evaluate to avoid LavaMoat blocking setInterval
+    // (Playwright uses setInterval to poll async evaluate results, but
+    // LavaMoat scuttles setInterval on MetaMask extension pages).
     await this.page.evaluate(() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const storage = (globalThis as any).chrome;
-      return new Promise<void>((resolve) => {
-        storage.storage.local.get("data", (result: Record<string, unknown>) => {
-          const data = result.data as Record<string, unknown> | undefined;
-          if (!data) {
-            resolve();
-            return;
-          }
-          const appState =
-            (data.AppStateController as Record<string, unknown>) || {};
-          appState.showShieldEntryModalOnce = null;
-          data.AppStateController = appState;
-          storage.storage.local.set({ data }, () => resolve());
-        });
+      const chr = (window as any).chrome;
+      if (!chr?.storage?.local) return;
+      chr.storage.local.get("data", (result: Record<string, unknown>) => {
+        const data = result.data as Record<string, unknown> | undefined;
+        if (!data) return;
+        const appState =
+          (data.AppStateController as Record<string, unknown>) || {};
+        appState.showShieldEntryModalOnce = null;
+        data.AppStateController = appState;
+        chr.storage.local.set({ data });
       });
     });
+    // Wait for the async chrome.storage.local write to complete.
+    await this.page.waitForTimeout(1_000);
   }
 
   async approve() {

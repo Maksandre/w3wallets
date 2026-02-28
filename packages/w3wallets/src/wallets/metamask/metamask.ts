@@ -93,72 +93,32 @@ export class Metamask extends Wallet {
     // Use exact name match to avoid hitting confirmation queue nav buttons
     // ("Previous Confirmation" / "Next Confirmation").
 
-    const confirmBtn = this.page
+    // Navigate to sidepanel.html to ensure we have the latest notification state.
+    // In headless CI, sidepanel.html can go stale and show a blank page.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/sidepanel.html`,
+    );
+
+    await this.page
       .getByTestId("confirm-btn")
       .or(this.page.getByTestId("confirm-footer-button"))
       .or(this.page.getByTestId("page-container-footer-next"))
-      .or(this.page.getByRole("button", { name: /^confirm$/i }));
-
-    // Wait for the confirm button to appear. If the page is blank (e.g.,
-    // sidepanel.html fails to render in headless CI), fall back to home.html
-    // which reliably renders the confirmation UI.
-    const visible = await confirmBtn
-      .first()
-      .isVisible({ timeout: 5_000 })
-      .catch(() => false);
-
-    if (!visible) {
-      await this.page.goto(
-        `chrome-extension://${this.extensionId}/home.html`,
-      );
-      await confirmBtn
-        .first()
-        .waitFor({ state: "visible", timeout: 30_000 });
-    }
-
-    // Dismiss promotional popups (e.g., "Transaction Shield") that may overlay
-    // the confirmation UI before clicking.
-    const popupCloseBtn = this.page.locator('button[aria-label="Close"]');
-    if (
-      await popupCloseBtn.isVisible({ timeout: 1_000 }).catch(() => false)
-    ) {
-      await popupCloseBtn.click();
-    }
-
-    await confirmBtn.click();
+      .or(this.page.getByRole("button", { name: /^confirm$/i }))
+      .click();
   }
 
   async deny() {
+    // Navigate to sidepanel.html to ensure we have the latest notification state.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/sidepanel.html`,
+    );
+
     // Try different cancel/reject button selectors
     const cancelBtn = this.page
       .getByTestId("cancel-btn")
       .or(this.page.getByTestId("confirm-footer-cancel-button"))
       .or(this.page.getByTestId("page-container-footer-cancel"))
       .or(this.page.getByRole("button", { name: /cancel|reject/i }));
-
-    // If the page is blank (sidepanel.html fails in headless CI),
-    // fall back to home.html which reliably renders the confirmation UI.
-    const visible = await cancelBtn
-      .first()
-      .isVisible({ timeout: 5_000 })
-      .catch(() => false);
-
-    if (!visible) {
-      await this.page.goto(
-        `chrome-extension://${this.extensionId}/home.html`,
-      );
-      await cancelBtn
-        .first()
-        .waitFor({ state: "visible", timeout: 30_000 });
-    }
-
-    // Dismiss promotional popups that may overlay the UI.
-    const popupCloseBtn = this.page.locator('button[aria-label="Close"]');
-    if (
-      await popupCloseBtn.isVisible({ timeout: 1_000 }).catch(() => false)
-    ) {
-      await popupCloseBtn.click();
-    }
 
     await cancelBtn.first().click();
   }

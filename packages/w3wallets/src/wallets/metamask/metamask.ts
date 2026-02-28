@@ -93,12 +93,36 @@ export class Metamask extends Wallet {
     // Use exact name match to avoid hitting confirmation queue nav buttons
     // ("Previous Confirmation" / "Next Confirmation").
 
-    await this.page
+    const confirmBtn = this.page
       .getByTestId("confirm-btn")
       .or(this.page.getByTestId("confirm-footer-button"))
       .or(this.page.getByTestId("page-container-footer-next"))
-      .or(this.page.getByRole("button", { name: /^confirm$/i }))
-      .click();
+      .or(this.page.getByRole("button", { name: /^confirm$/i }));
+
+    // Wait for the confirm button to appear. If the page is blank (e.g.,
+    // sidepanel.html failed to render), reload once to recover.
+    const visible = await confirmBtn
+      .first()
+      .isVisible({ timeout: 5_000 })
+      .catch(() => false);
+
+    if (!visible) {
+      await this.page.reload();
+      await confirmBtn
+        .first()
+        .waitFor({ state: "visible", timeout: 30_000 });
+    }
+
+    // Dismiss promotional popups (e.g., "Transaction Shield") that may overlay
+    // the confirmation UI before clicking.
+    const popupCloseBtn = this.page.locator('button[aria-label="Close"]');
+    if (
+      await popupCloseBtn.isVisible({ timeout: 1_000 }).catch(() => false)
+    ) {
+      await popupCloseBtn.click();
+    }
+
+    await confirmBtn.click();
   }
 
   async deny() {

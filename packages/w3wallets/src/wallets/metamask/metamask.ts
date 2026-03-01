@@ -194,6 +194,9 @@ export class Metamask extends Wallet {
   ) {
     const popup = this.page.getByText(/Transaction Shield|free trial/i);
     const sidepanelUrl = `chrome-extension://${this.extensionId}/sidepanel.html`;
+    // MetaMask uses HashRouter, so routes appear as #/confirm-transaction/...
+    const confirmRoutePattern =
+      /#\/(confirm-transaction|connect|confirmation)\b/;
 
     // Helper: wait for button or popup, return what appeared first.
     const waitForButtonOrPopup = (timeout: number) =>
@@ -217,34 +220,40 @@ export class Metamask extends Wallet {
       await btnLocator.first().click();
     };
 
-    // Bring MetaMask page to front so its React router can receive
-    // service worker messages and navigate to the confirmation view.
-    await this.page.bringToFront();
+    // Check if already on a confirmation route (e.g., MetaMask already
+    // auto-navigated from a previous goto). If so, skip navigation.
+    const currentUrl = this.page.url();
+    const alreadyOnConfirmation = confirmRoutePattern.test(currentUrl);
 
-    // Navigate to sidepanel.html to trigger confirmation routing.
-    // MetaMask's sidepanel auto-navigates to pending approvals.
-    await this.page.goto(sidepanelUrl);
-
-    // Try up to 3 times with fresh navigations, because MetaMask's
-    // service worker may not have registered the pending approval yet.
-    for (let attempt = 0; attempt < 3; attempt++) {
-      if (attempt > 0) {
+    if (!alreadyOnConfirmation) {
+      // Navigate to sidepanel.html so MetaMask's ConfirmationHandler can
+      // auto-route to the pending approval. Wait for the URL to change
+      // to a confirmation route, which is more reliable than waiting for
+      // specific buttons that may not have rendered yet.
+      await this.page.goto(sidepanelUrl);
+      try {
+        await this.page.waitForURL(confirmRoutePattern, { timeout: 15_000 });
+      } catch {
+        // Retry: the service worker may not have synced the pending
+        // approval to the UI state store on the first load.
         await this.page.goto(sidepanelUrl);
+        await this.page
+          .waitForURL(confirmRoutePattern, { timeout: 15_000 })
+          .catch(() => {});
       }
+    }
 
-      const result = await waitForButtonOrPopup(
-        attempt === 0 ? 15_000 : 10_000,
-      );
+    // Now wait for the actual button or popup to appear.
+    const result = await waitForButtonOrPopup(30_000);
 
-      if (result === "button") {
-        await btnLocator.first().click();
-        return;
-      }
+    if (result === "button") {
+      await btnLocator.first().click();
+      return;
+    }
 
-      if (result === "popup") {
-        await handlePopupAndClick();
-        return;
-      }
+    if (result === "popup") {
+      await handlePopupAndClick();
+      return;
     }
 
     // All strategies exhausted — let Playwright's actionability checks

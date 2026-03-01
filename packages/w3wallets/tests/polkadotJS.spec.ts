@@ -12,10 +12,12 @@ test.beforeEach(async ({ polkadotJS, page }) => {
   // The dApp checks this on load — if the extension hasn't injected yet,
   // the button stays disabled. Wait for injection, reloading if needed.
   const connectBtn = page.getByRole("button", { name: "Polkadot.js" });
-  await expect(connectBtn).toBeEnabled({ timeout: 10_000 }).catch(async () => {
-    await page.reload();
-    await expect(connectBtn).toBeEnabled({ timeout: 30_000 });
-  });
+  await expect(connectBtn)
+    .toBeEnabled({ timeout: 10_000 })
+    .catch(async () => {
+      await page.reload();
+      await expect(connectBtn).toBeEnabled({ timeout: 30_000 });
+    });
 
   await connectBtn.click();
   await polkadotJS.selectAccount("Test");

@@ -92,12 +92,19 @@ export class Metamask extends Wallet {
    */
   async dismissPopups() {
     const popup = this.page.getByText(/Transaction Shield|free trial/i);
-    if (!(await popup.first().isVisible({ timeout: 2_000 }).catch(() => false))) {
+    if (
+      !(await popup
+        .first()
+        .isVisible({ timeout: 2_000 })
+        .catch(() => false))
+    ) {
       return;
     }
 
     // Strategy 1: data-testid close button
-    const shieldClose = this.page.getByTestId("shield-entry-modal-close-button");
+    const shieldClose = this.page.getByTestId(
+      "shield-entry-modal-close-button",
+    );
     if (await shieldClose.isVisible({ timeout: 1_000 }).catch(() => false)) {
       await shieldClose.click();
       if (await this.waitForPopupHidden(popup)) return;
@@ -263,9 +270,7 @@ export class Metamask extends Wallet {
     // Helper: handle popup then click, then wait for confirmation to complete.
     const handlePopupAndClick = async () => {
       await this.dismissPopups();
-      await btnLocator
-        .first()
-        .waitFor({ state: "visible", timeout: 30_000 });
+      await btnLocator.first().waitFor({ state: "visible", timeout: 30_000 });
       await btnLocator.first().click();
     };
 
@@ -362,9 +367,7 @@ export class Metamask extends Wallet {
     // Navigate to home.html to ensure the main wallet UI is visible.
     // Sidepanel may show notification overlays (e.g., Solana account removal)
     // that block access to the settings menu.
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/home.html`,
-    );
+    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
     const menuBtn = this.page.getByTestId("account-options-menu-button");
     await menuBtn.waitFor({ state: "visible", timeout: 30_000 });
     await menuBtn.click();
@@ -383,9 +386,7 @@ export class Metamask extends Wallet {
     const pwd = password ?? this.defaultPassword;
 
     // Navigate to home.html to show the lock screen reliably.
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/home.html`,
-    );
+    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
 
     const passwordInput = this.page.getByTestId("unlock-password");
     await passwordInput.fill(pwd);

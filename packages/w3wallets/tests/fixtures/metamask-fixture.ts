@@ -8,58 +8,6 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
 }>({
   metamask: async ({ metamask }, use) => {
     await metamask.unlock();
-
-    // After cache restore, MetaMask may re-show onboarding completion screens.
-    // Handle "Help improve MetaMask" (metametrics) and "Your wallet is ready!"
-    // screens before expecting the main wallet UI.
-    const metametricsBtn = metamask.page.getByTestId("metametrics-i-agree");
-    if (
-      await metametricsBtn.isVisible({ timeout: 3_000 }).catch(() => false)
-    ) {
-      await metametricsBtn.click();
-    }
-
-    const openWalletBtn = metamask.page.getByRole("button", {
-      name: /open wallet/i,
-    });
-    if (
-      await openWalletBtn.isVisible({ timeout: 3_000 }).catch(() => false)
-    ) {
-      await openWalletBtn.click();
-    }
-
-    // Navigate to home.html explicitly to ensure we reach the main wallet UI.
-    // After cache restore, MetaMask may show notification screens instead of
-    // the main UI. Navigating to home.html forces the wallet home view.
-    await metamask.page.goto(
-      `chrome-extension://${metamask.extensionId}/home.html`,
-    );
-
-    // After cache restore, MetaMask may have queued notifications
-    // (e.g., Solana/Tron "Remove account") that the ConfirmationHandler
-    // auto-navigates to, blocking the main wallet UI. Dismiss them.
-    const rejectAllBtn = metamask.page.getByText("Reject all");
-    if (await rejectAllBtn.isVisible({ timeout: 5_000 }).catch(() => false)) {
-      await rejectAllBtn.click();
-      // After rejecting, MetaMask navigates back to home. Wait for it.
-      await metamask.page.goto(
-        `chrome-extension://${metamask.extensionId}/home.html`,
-      );
-    }
-
-    // Wait for MetaMask main UI to be ready
-    await expect(
-      metamask.page.getByTestId("account-options-menu-button"),
-    ).toBeVisible({ timeout: 30_000 });
-
-    // Navigate to sidepanel and dismiss any promotional popups (e.g., Transaction Shield).
-    // The approve/deny methods use Promise.race to handle popups that appear after navigation,
-    // and dismissPopups() sets a storage flag to prevent the popup from reappearing.
-    await metamask.page.goto(
-      `chrome-extension://${metamask.extensionId}/sidepanel.html`,
-    );
-    await metamask.dismissPopups();
-
     await use(metamask);
   },
   ethereumPage: async ({ page, metamask }, use) => {

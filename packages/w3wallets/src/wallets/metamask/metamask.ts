@@ -1,4 +1,4 @@
-import { expect } from "@playwright/test";
+import { expect, type Locator } from "@playwright/test";
 import { Wallet } from "../../core/wallet";
 import { config } from "../../config";
 import type { NetworkSettings } from "./types";
@@ -91,97 +91,99 @@ export class Metamask extends Wallet {
    * that may overlay the confirmation UI.
    */
   async dismissPopups() {
-    // Detect the popup by its characteristic text content.
     const popup = this.page.getByText(/Transaction Shield|free trial/i);
     if (!(await popup.first().isVisible({ timeout: 2_000 }).catch(() => false))) {
       return;
     }
 
-    // Try the exact data-testid for the shield modal close button first.
+    // Strategy 1: data-testid close button
     const shieldClose = this.page.getByTestId("shield-entry-modal-close-button");
     if (await shieldClose.isVisible({ timeout: 1_000 }).catch(() => false)) {
       await shieldClose.click();
-      await popup
-        .first()
-        .waitFor({ state: "hidden", timeout: 3_000 })
-        .catch(() => {});
-      if (!(await popup.first().isVisible().catch(() => false))) {
-        return;
-      }
+      if (await this.waitForPopupHidden(popup)) return;
     }
 
-    // Try aria-label (lowercase "close" as MetaMask uses it).
+    // Strategy 2: aria-label close button
     const closeByAria = this.page.locator('button[aria-label="close"]').first();
     if (await closeByAria.isVisible({ timeout: 500 }).catch(() => false)) {
       await closeByAria.click();
-      await popup
-        .first()
-        .waitFor({ state: "hidden", timeout: 3_000 })
-        .catch(() => {});
-      if (!(await popup.first().isVisible().catch(() => false))) {
-        return;
-      }
+      if (await this.waitForPopupHidden(popup)) return;
     }
 
-    // Try pressing Escape
+    // Strategy 3: Escape key
     await this.page.keyboard.press("Escape");
-    await popup
-      .first()
-      .waitFor({ state: "hidden", timeout: 2_000 })
-      .catch(() => {});
-    if (!(await popup.first().isVisible().catch(() => false))) {
-      return;
-    }
+    await this.waitForPopupHidden(popup);
+  }
 
-    // Final fallback: use JavaScript to click the close button and hide the modal.
-    // Wrapped in try/catch because LavaMoat may block page.evaluate() on
-    // MetaMask extension pages by scuttling setInterval.
+  private async waitForPopupHidden(popup: Locator): Promise<boolean> {
     try {
-      await this.page.evaluate(() => {
-        // Click the close button by data-testid
-        const closeBtn = document.querySelector(
-          '[data-testid="shield-entry-modal-close-button"]',
-        ) as HTMLElement | null;
-        if (closeBtn) {
-          closeBtn.click();
-          return;
-        }
-
-        // Find and hide the modal overlay
-        let modal: HTMLElement | null = null;
-        const walk = document.createTreeWalker(
-          document.body,
-          NodeFilter.SHOW_TEXT,
-        );
-        while (walk.nextNode()) {
-          const text = walk.currentNode.textContent || "";
-          if (
-            text.includes("Transaction Shield") ||
-            text.includes("free trial")
-          ) {
-            let el = walk.currentNode.parentElement;
-            while (el && el !== document.body) {
-              const style = getComputedStyle(el);
-              if (
-                style.position === "fixed" ||
-                style.position === "absolute"
-              ) {
-                modal = el;
-              }
-              el = el.parentElement;
-            }
-            break;
-          }
-        }
-        if (modal) modal.style.display = "none";
-      });
+      await popup.first().waitFor({ state: "hidden", timeout: 3_000 });
+      return true;
     } catch {
-      // LavaMoat may block evaluate; continue without it
+      return false;
     }
-    await popup
-      .first()
-      .waitFor({ state: "hidden", timeout: 2_000 })
-      .catch(() => {});
+  }
+
+  /**
+   * After unlock, MetaMask may show onboarding screens, queued
+   * notifications, or go straight to the wallet UI. Race all possible
+   * states in a single wait to avoid sequential timeout penalties.
+   */
+  private async stabilizePostUnlock() {
+    const homeUrl = `chrome-extension://${this.extensionId}/home.html`;
+    const metametricsBtn = this.page.getByTestId("metametrics-i-agree");
+    const openWalletBtn = this.page.getByRole("button", {
+      name: /open wallet/i,
+    });
+    const rejectAllBtn = this.page.getByText("Reject all");
+    const readyIndicator = this.page.getByTestId("account-options-menu-button");
+
+    // Race: whichever post-unlock state appears first wins.
+    const state = await Promise.race([
+      metametricsBtn
+        .waitFor({ state: "visible", timeout: 30_000 })
+        .then(() => "metametrics" as const),
+      openWalletBtn
+        .waitFor({ state: "visible", timeout: 30_000 })
+        .then(() => "openWallet" as const),
+      rejectAllBtn
+        .waitFor({ state: "visible", timeout: 30_000 })
+        .then(() => "notifications" as const),
+      readyIndicator
+        .waitFor({ state: "visible", timeout: 30_000 })
+        .then(() => "ready" as const),
+    ]).catch(() => "timeout" as const);
+
+    if (state === "metametrics") {
+      await metametricsBtn.click();
+      // "Open wallet" typically follows metametrics
+      if (
+        await openWalletBtn.isVisible({ timeout: 3_000 }).catch(() => false)
+      ) {
+        await openWalletBtn.click();
+      }
+      await this.page.goto(homeUrl);
+      // Check for queued notifications after navigating
+      if (await rejectAllBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+        await rejectAllBtn.click();
+        await this.page.goto(homeUrl);
+      }
+      await expect(readyIndicator).toBeVisible({ timeout: 30_000 });
+    } else if (state === "openWallet") {
+      await openWalletBtn.click();
+      await this.page.goto(homeUrl);
+      if (await rejectAllBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+        await rejectAllBtn.click();
+        await this.page.goto(homeUrl);
+      }
+      await expect(readyIndicator).toBeVisible({ timeout: 30_000 });
+    } else if (state === "notifications") {
+      await rejectAllBtn.click();
+      await this.page.goto(homeUrl);
+      await expect(readyIndicator).toBeVisible({ timeout: 30_000 });
+    }
+    // "ready" and "timeout" — nothing to do (already on main UI, or
+    // navigate to home and let downstream calls handle it).
   }
 
   /**
@@ -189,9 +191,7 @@ export class Metamask extends Wallet {
    * Always navigates to sidepanel.html fresh so MetaMask's
    * ConfirmationHandler can route to the pending approval.
    */
-  private async waitAndClickButton(
-    btnLocator: ReturnType<typeof this.page.getByTestId>,
-  ) {
+  private async waitAndClickButton(btnLocator: Locator) {
     const popup = this.page.getByText(/Transaction Shield|free trial/i);
     const sidepanelUrl = `chrome-extension://${this.extensionId}/sidepanel.html`;
     // MetaMask uses HashRouter, so routes appear as #/confirm-transaction/...
@@ -230,10 +230,17 @@ export class Metamask extends Wallet {
     } catch {
       // Retry: the service worker may not have synced the pending
       // approval to the UI state store on the first load.
+      console.warn(
+        `[w3wallets] confirmation route not found, retrying. URL: ${this.page.url()}`,
+      );
       await this.page.goto(sidepanelUrl);
-      await this.page
-        .waitForURL(confirmRoutePattern, { timeout: 15_000 })
-        .catch(() => {});
+      try {
+        await this.page.waitForURL(confirmRoutePattern, { timeout: 15_000 });
+      } catch {
+        console.warn(
+          `[w3wallets] confirmation route not found after retry. URL: ${this.page.url()}`,
+        );
+      }
     }
 
     // Now wait for the actual button or popup to appear.
@@ -248,7 +255,11 @@ export class Metamask extends Wallet {
         .waitForURL((url) => !confirmRoutePattern.test(url.toString()), {
           timeout: 10_000,
         })
-        .catch(() => {});
+        .catch(() => {
+          console.warn(
+            `[w3wallets] still on confirmation route after click. URL: ${this.page.url()}`,
+          );
+        });
       return;
     }
 
@@ -258,12 +269,19 @@ export class Metamask extends Wallet {
         .waitForURL((url) => !confirmRoutePattern.test(url.toString()), {
           timeout: 10_000,
         })
-        .catch(() => {});
+        .catch(() => {
+          console.warn(
+            `[w3wallets] still on confirmation route after popup dismiss. URL: ${this.page.url()}`,
+          );
+        });
       return;
     }
 
     // All strategies exhausted — let Playwright's actionability checks
     // produce a clear error with the element state.
+    console.warn(
+      `[w3wallets] no button or popup found after 30s. URL: ${this.page.url()}`,
+    );
     await btnLocator.first().click({ timeout: 10_000 });
   }
 
@@ -298,14 +316,19 @@ export class Metamask extends Wallet {
     await this.page.goto(
       `chrome-extension://${this.extensionId}/home.html`,
     );
-    await this.page.getByTestId("account-options-menu-button").click();
+    const menuBtn = this.page.getByTestId("account-options-menu-button");
+    await menuBtn.waitFor({ state: "visible", timeout: 30_000 });
+    await menuBtn.click();
 
     // Click "Lock MetaMask" menu item
     await this.page.locator("text=Lock MetaMask").click();
   }
 
   /**
-   * Unlock MetaMask with password
+   * Unlock MetaMask with password.
+   * After unlocking, stabilizes the wallet UI by handling post-unlock
+   * screens (metametrics, onboarding completion), dismissing queued
+   * notifications, and navigating to the sidepanel ready state.
    */
   async unlock(password?: string) {
     const pwd = password ?? this.defaultPassword;
@@ -325,6 +348,21 @@ export class Metamask extends Wallet {
       state: "hidden",
       timeout: 30_000,
     });
+
+    // After cache restore, MetaMask may show onboarding screens,
+    // queued notifications, or go straight to the wallet UI.
+    // Race all possible post-unlock states to avoid sequential timeouts.
+    await this.stabilizePostUnlock();
+
+    // Navigate to sidepanel to dismiss promotional popups, then back
+    // to home.html so the wallet is left in a predictable state.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/sidepanel.html`,
+    );
+    await this.dismissPopups();
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/home.html`,
+    );
   }
 
   /**

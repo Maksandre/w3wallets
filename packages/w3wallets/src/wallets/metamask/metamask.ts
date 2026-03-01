@@ -194,9 +194,6 @@ export class Metamask extends Wallet {
   ) {
     const popup = this.page.getByText(/Transaction Shield|free trial/i);
     const sidepanelUrl = `chrome-extension://${this.extensionId}/sidepanel.html`;
-    // MetaMask uses HashRouter, so routes appear as #/confirm-transaction/...
-    const confirmRoutePattern =
-      /#\/(confirm-transaction|connect|confirmation)\b/;
 
     // Helper: wait for button or popup, return what appeared first.
     const waitForButtonOrPopup = (timeout: number) =>
@@ -220,40 +217,49 @@ export class Metamask extends Wallet {
       await btnLocator.first().click();
     };
 
-    // Check if already on a confirmation route (e.g., MetaMask already
-    // auto-navigated from a previous goto). If so, skip navigation.
-    const currentUrl = this.page.url();
-    const alreadyOnConfirmation = confirmRoutePattern.test(currentUrl);
+    // Bring MetaMask page to front so it can receive real-time state
+    // updates from the service worker (background pages may not process
+    // state broadcasts promptly in headless mode).
+    await this.page.bringToFront();
 
-    if (!alreadyOnConfirmation) {
-      // Navigate to sidepanel.html so MetaMask's ConfirmationHandler can
-      // auto-route to the pending approval. Wait for the URL to change
-      // to a confirmation route, which is more reliable than waiting for
-      // specific buttons that may not have rendered yet.
-      await this.page.goto(sidepanelUrl);
-      try {
-        await this.page.waitForURL(confirmRoutePattern, { timeout: 15_000 });
-      } catch {
-        // Retry: the service worker may not have synced the pending
-        // approval to the UI state store on the first load.
-        await this.page.goto(sidepanelUrl);
-        await this.page
-          .waitForURL(confirmRoutePattern, { timeout: 15_000 })
-          .catch(() => {});
-      }
-    }
+    // Strategy 1: Wait on the CURRENT page.
+    // MetaMask's React router auto-navigates to the confirmation view
+    // when a pending approval is registered. Navigating away with goto()
+    // can interrupt this internal routing and lose the confirmation.
+    const firstResult = await waitForButtonOrPopup(10_000);
 
-    // Now wait for the actual button or popup to appear.
-    const result = await waitForButtonOrPopup(30_000);
-
-    if (result === "button") {
+    if (firstResult === "button") {
       await btnLocator.first().click();
       return;
     }
 
-    if (result === "popup") {
+    if (firstResult === "popup") {
       await handlePopupAndClick();
       return;
+    }
+
+    // Strategy 2: Navigate to sidepanel.html and retry.
+    // This handles the case where the current page isn't a MetaMask
+    // extension page (e.g., the page is on the dApp), or the service
+    // worker hasn't registered the approval yet.
+    // We retry up to 3 times with fresh navigations, because MetaMask's
+    // service worker may not have registered the pending approval yet.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await this.page.goto(sidepanelUrl);
+
+      const result = await waitForButtonOrPopup(
+        attempt === 0 ? 15_000 : 10_000,
+      );
+
+      if (result === "button") {
+        await btnLocator.first().click();
+        return;
+      }
+
+      if (result === "popup") {
+        await handlePopupAndClick();
+        return;
+      }
     }
 
     // All strategies exhausted — let Playwright's actionability checks

@@ -135,10 +135,17 @@ export class Metamask extends Wallet {
     const openWalletBtn = this.page.getByRole("button", {
       name: /open wallet/i,
     });
-    const rejectAllBtn = this.page.getByText("Reject all");
     const readyIndicator = this.page.getByTestId("account-options-menu-button");
 
     // Race: whichever post-unlock state appears first wins.
+    // Includes confirmation-cancel-button to catch queued notifications
+    // (Solana/Tron account removal) that ConfirmationHandler auto-routes to.
+    // When there's only 1 notification, "Reject all" isn't rendered.
+    const rejectAllBtn = this.page.getByText("Reject all");
+    const notificationCancelBtn = this.page.getByTestId(
+      "confirmation-cancel-button",
+    );
+
     const state = await Promise.race([
       metametricsBtn
         .waitFor({ state: "visible", timeout: 30_000 })
@@ -148,7 +155,10 @@ export class Metamask extends Wallet {
         .then(() => "openWallet" as const),
       rejectAllBtn
         .waitFor({ state: "visible", timeout: 30_000 })
-        .then(() => "notifications" as const),
+        .then(() => "rejectAll" as const),
+      notificationCancelBtn
+        .waitFor({ state: "visible", timeout: 30_000 })
+        .then(() => "notification" as const),
       readyIndicator
         .waitFor({ state: "visible", timeout: 30_000 })
         .then(() => "ready" as const),
@@ -156,34 +166,73 @@ export class Metamask extends Wallet {
 
     if (state === "metametrics") {
       await metametricsBtn.click();
-      // "Open wallet" typically follows metametrics
       if (
         await openWalletBtn.isVisible({ timeout: 3_000 }).catch(() => false)
       ) {
         await openWalletBtn.click();
       }
-      await this.page.goto(homeUrl);
-      // Check for queued notifications after navigating
-      if (await rejectAllBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
-        await rejectAllBtn.click();
-        await this.page.goto(homeUrl);
-      }
-      await expect(readyIndicator).toBeVisible({ timeout: 30_000 });
-    } else if (state === "openWallet") {
-      await openWalletBtn.click();
-      await this.page.goto(homeUrl);
-      if (await rejectAllBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
-        await rejectAllBtn.click();
-        await this.page.goto(homeUrl);
-      }
-      await expect(readyIndicator).toBeVisible({ timeout: 30_000 });
-    } else if (state === "notifications") {
-      await rejectAllBtn.click();
-      await this.page.goto(homeUrl);
-      await expect(readyIndicator).toBeVisible({ timeout: 30_000 });
     }
-    // "ready" and "timeout" — nothing to do (already on main UI, or
-    // navigate to home and let downstream calls handle it).
+    if (state === "openWallet") {
+      await openWalletBtn.click();
+    }
+
+    // After handling onboarding screens, or if we landed on a notification,
+    // dismiss all queued notifications before proceeding.
+    if (state !== "ready") {
+      await this.dismissQueuedNotifications();
+    }
+  }
+
+  /**
+   * Dismiss all queued MetaMask notifications (e.g., Solana/Tron account
+   * removal). These use the templated confirmation flow at #/confirmation/...
+   * If multiple are queued, "Reject all" appears; if only one, just
+   * confirmation-cancel-button is available.
+   */
+  private async dismissQueuedNotifications() {
+    const homeUrl = `chrome-extension://${this.extensionId}/home.html`;
+    const readyIndicator = this.page.getByTestId("account-options-menu-button");
+    const rejectAllBtn = this.page.getByText("Reject all");
+    const notificationCancelBtn = this.page.getByTestId(
+      "confirmation-cancel-button",
+    );
+
+    // Navigate to home to trigger ConfirmationHandler evaluation.
+    await this.page.goto(homeUrl);
+
+    // Loop: dismiss notifications one at a time until the wallet UI appears.
+    for (let i = 0; i < 10; i++) {
+      const state = await Promise.race([
+        readyIndicator
+          .waitFor({ state: "visible", timeout: 5_000 })
+          .then(() => "ready" as const),
+        rejectAllBtn
+          .waitFor({ state: "visible", timeout: 5_000 })
+          .then(() => "rejectAll" as const),
+        notificationCancelBtn
+          .waitFor({ state: "visible", timeout: 5_000 })
+          .then(() => "notification" as const),
+      ]).catch(() => "timeout" as const);
+
+      if (state === "ready") return;
+
+      if (state === "rejectAll") {
+        await rejectAllBtn.click();
+        await this.page.goto(homeUrl);
+        continue;
+      }
+
+      if (state === "notification") {
+        await notificationCancelBtn.click();
+        await this.page.goto(homeUrl);
+        continue;
+      }
+
+      // Timeout — check if we're on a confirmation route we can't see
+      break;
+    }
+
+    await expect(readyIndicator).toBeVisible({ timeout: 30_000 });
   }
 
   /**
@@ -327,8 +376,8 @@ export class Metamask extends Wallet {
   /**
    * Unlock MetaMask with password.
    * After unlocking, stabilizes the wallet UI by handling post-unlock
-   * screens (metametrics, onboarding completion), dismissing queued
-   * notifications, and navigating to the sidepanel ready state.
+   * screens (metametrics, onboarding completion) and dismissing queued
+   * notifications. Ends on home.html with the wallet UI ready.
    */
   async unlock(password?: string) {
     const pwd = password ?? this.defaultPassword;
@@ -352,17 +401,8 @@ export class Metamask extends Wallet {
     // After cache restore, MetaMask may show onboarding screens,
     // queued notifications, or go straight to the wallet UI.
     // Race all possible post-unlock states to avoid sequential timeouts.
+    // Ends on home.html with the wallet UI ready.
     await this.stabilizePostUnlock();
-
-    // Navigate to sidepanel to dismiss promotional popups, then back
-    // to home.html so the wallet is left in a predictable state.
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/sidepanel.html`,
-    );
-    await this.dismissPopups();
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/home.html`,
-    );
   }
 
   /**

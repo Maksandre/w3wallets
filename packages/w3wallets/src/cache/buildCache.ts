@@ -18,8 +18,8 @@ async function waitForStorageStable(
   helperPage: Page,
   helperUrl: string,
 ): Promise<number | null> {
-  const TIMEOUT = 60000;
-  const POLL_INTERVAL = 5000;
+  const TIMEOUT = 120_000;
+  const POLL_INTERVAL = 5_000;
   const STABLE_CHECKS_REQUIRED = 6;
   const start = Date.now();
   let lastKeyCount = -1;
@@ -147,10 +147,17 @@ export async function buildCacheForSetup(
   const wallet = new config.WalletClass(page, extensionId);
   await config.setupFn(wallet, page);
 
+  // Navigate to home.html to trigger full UI initialization (token list
+  // fetches, network state, etc.) and wait for all network requests to settle.
+  // Without this, MetaMask's TokenListController won't fetch token data for
+  // each chain, resulting in missing storageService keys.
+  await page.goto(`chrome-extension://${extensionId}/home.html`);
+  await page.waitForLoadState("networkidle");
+
   // Wait for the extension to persist its state to chrome.storage.local.
   // MV3 extensions write to storage asynchronously after onboarding.
   // We inject a tiny helper page into the extension to read the key count,
-  // then poll until it stabilizes (no new keys for 2 consecutive checks).
+  // then poll until it stabilizes (no new keys for several consecutive checks).
   try {
     const extDir = path.join(process.cwd(), W3WALLETS_DIR, config.extensionDir);
     const helperJs = path.join(extDir, "_w3wallets_helper.js");

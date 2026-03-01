@@ -8,11 +8,6 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
 }>({
   metamask: async ({ metamask }, use) => {
     await metamask.unlock();
-    // Navigate to sidepanel (same as onboard() does at the end)
-    await metamask.page.goto(
-      `chrome-extension://${metamask.extensionId}/sidepanel.html`,
-    );
-
     await use(metamask);
   },
   ethereumPage: async ({ page, metamask }, use) => {

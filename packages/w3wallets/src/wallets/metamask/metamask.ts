@@ -186,7 +186,7 @@ export class Metamask extends Wallet {
 
   /**
    * Wait for a target button while handling the Transaction Shield popup.
-   * Navigates to the notification page and retries if the confirmation
+   * Navigates to the sidepanel and retries if the confirmation
    * hasn't arrived yet (race condition with the dApp request).
    */
   private async waitAndClickButton(
@@ -217,30 +217,20 @@ export class Metamask extends Wallet {
       await btnLocator.first().click();
     };
 
-    // Strategy 1: Wait on the CURRENT page.
-    // MetaMask's React router auto-navigates to the confirmation view
-    // when a pending approval is registered. Navigating away with goto()
-    // can interrupt this internal routing and lose the confirmation.
-    const firstResult = await waitForButtonOrPopup(10_000);
+    // Bring MetaMask page to front so its React router can receive
+    // service worker messages and navigate to the confirmation view.
+    await this.page.bringToFront();
 
-    if (firstResult === "button") {
-      await btnLocator.first().click();
-      return;
-    }
+    // Navigate to sidepanel.html to trigger confirmation routing.
+    // MetaMask's sidepanel auto-navigates to pending approvals.
+    await this.page.goto(sidepanelUrl);
 
-    if (firstResult === "popup") {
-      await handlePopupAndClick();
-      return;
-    }
-
-    // Strategy 2: Navigate to sidepanel.html and retry.
-    // This handles the case where the current page isn't a MetaMask
-    // extension page (e.g., the page is on the dApp), or the service
-    // worker hasn't registered the approval yet.
-    // We retry up to 3 times with fresh navigations, because MetaMask's
+    // Try up to 3 times with fresh navigations, because MetaMask's
     // service worker may not have registered the pending approval yet.
     for (let attempt = 0; attempt < 3; attempt++) {
-      await this.page.goto(sidepanelUrl);
+      if (attempt > 0) {
+        await this.page.goto(sidepanelUrl);
+      }
 
       const result = await waitForButtonOrPopup(
         attempt === 0 ? 15_000 : 10_000,
@@ -277,7 +267,8 @@ export class Metamask extends Wallet {
       .getByTestId("cancel-btn")
       .or(this.page.getByTestId("confirm-footer-cancel-button"))
       .or(this.page.getByTestId("page-container-footer-cancel"))
-      .or(this.page.getByRole("button", { name: /cancel|reject/i }));
+      .or(this.page.getByRole("button", { name: /^cancel$/i }))
+      .or(this.page.getByRole("button", { name: /^reject$/i }));
 
     await this.waitAndClickButton(cancelBtn);
   }

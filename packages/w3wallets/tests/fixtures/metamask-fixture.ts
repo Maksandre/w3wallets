@@ -35,6 +35,18 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
       `chrome-extension://${metamask.extensionId}/home.html`,
     );
 
+    // After cache restore, MetaMask may have queued notifications
+    // (e.g., Solana/Tron "Remove account") that the ConfirmationHandler
+    // auto-navigates to, blocking the main wallet UI. Dismiss them.
+    const rejectAllBtn = metamask.page.getByText("Reject all");
+    if (await rejectAllBtn.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await rejectAllBtn.click();
+      // After rejecting, MetaMask navigates back to home. Wait for it.
+      await metamask.page.goto(
+        `chrome-extension://${metamask.extensionId}/home.html`,
+      );
+    }
+
     // Wait for MetaMask main UI to be ready
     await expect(
       metamask.page.getByTestId("account-options-menu-button"),
@@ -47,13 +59,6 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
       `chrome-extension://${metamask.extensionId}/sidepanel.html`,
     );
     await metamask.dismissPopups();
-
-    // Dismiss any queued notifications (e.g., Tron account removal)
-    // that MetaMask may show on first load after cache restore
-    const rejectAllBtn = metamask.page.getByText("Reject all");
-    if (await rejectAllBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await rejectAllBtn.click();
-    }
 
     await use(metamask);
   },

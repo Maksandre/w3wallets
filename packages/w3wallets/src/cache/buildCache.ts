@@ -1,15 +1,65 @@
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import { chromium } from "@playwright/test";
+import { chromium, type Page } from "@playwright/test";
 import { CACHE_DIR } from "./constants";
 import { isCachedConfig } from "./types";
 import type { CachedWalletConfig } from "./types";
+import { sleep, getExtensionId } from "../core/utils";
 
 const W3WALLETS_DIR = ".w3wallets";
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+/**
+ * Poll chrome.storage.local via a helper page until the key count stops changing.
+ * Waits for at least 1 key to appear, then requires the count to remain the same
+ * for {@link STABLE_CHECKS_REQUIRED} consecutive polls before returning.
+ */
+async function waitForStorageStable(
+  helperPage: Page,
+  helperUrl: string,
+): Promise<number | null> {
+  const TIMEOUT = 120_000;
+  const POLL_INTERVAL = 5_000;
+  const STABLE_CHECKS_REQUIRED = 6;
+  const start = Date.now();
+  let lastKeyCount = -1;
+  let stableCount = 0;
+
+  while (Date.now() - start < TIMEOUT) {
+    await sleep(POLL_INTERVAL);
+
+    await helperPage.goto(helperUrl);
+    await helperPage.waitForFunction(
+      () => document.title.startsWith("done:"),
+      null,
+      { timeout: 10000 },
+    );
+
+    const title = await helperPage.title();
+    const keyCount = parseInt(title.split(":")[1]!, 10);
+
+    // Skip until extension has written at least one key
+    if (keyCount === 0) continue;
+
+    if (keyCount === lastKeyCount) {
+      stableCount++;
+    } else {
+      stableCount = 1;
+      lastKeyCount = keyCount;
+    }
+
+    if (stableCount >= STABLE_CHECKS_REQUIRED) {
+      console.log(`  Storage stabilized at ${keyCount} keys`);
+      return keyCount;
+    }
+
+    console.log(
+      `  Waiting for storage to stabilize: ${keyCount} keys (${stableCount}/${STABLE_CHECKS_REQUIRED})`,
+    );
+  }
+
+  console.log(`  Storage stabilization timed out after ${TIMEOUT / 1000}s`);
+  return null;
 }
 
 export interface BuildOptions {
@@ -76,52 +126,46 @@ export async function buildCacheForSetup(
     ],
   });
 
-  // Wait for service worker
-  while (context.serviceWorkers().length < 1) {
-    await sleep(1000);
+  // Derive extension ID from manifest key or path (same algorithm Chrome uses).
+  const extensionId = getExtensionId(extPath);
+
+  // Wait for the extension service worker to register (MV3).
+  if (context.serviceWorkers().length < 1) {
+    await Promise.race([
+      context.waitForEvent("serviceworker", { timeout: 30000 }),
+      (async () => {
+        while (context.serviceWorkers().length < 1) {
+          await sleep(500);
+        }
+      })(),
+    ]);
   }
 
-  // Derive extension ID
-  const worker = context.serviceWorkers()[0]!;
-  const extensionId = worker.url().split("/")[2]!;
-
-  // Create wallet instance and run setup
+  // Create wallet instance and run setup.
+  // The setupFn (via wallet.onboard) handles navigation and waiting for the UI.
   const page = await context.newPage();
   const wallet = new config.WalletClass(page, extensionId);
   await config.setupFn(wallet, page);
 
-  // Force MV3 extensions to persist chrome.storage.session data to chrome.storage.local.
-  // MV3 extensions like MetaMask use chrome.storage.session (memory-only) for vault data.
-  // We copy it to chrome.storage.local so it survives browser restart from cache.
-  // Use a helper HTML page injected into the extension to bypass LavaMoat's scuttling.
+  // Navigate to home.html to trigger full UI initialization (token list
+  // fetches, network state, etc.) and wait for all network requests to settle.
+  // Without this, MetaMask's TokenListController won't fetch token data for
+  // each chain, resulting in missing storageService keys.
+  await page.goto(`chrome-extension://${extensionId}/home.html`);
+  await page.waitForLoadState("networkidle");
+
+  // Wait for the extension to persist its state to chrome.storage.local.
+  // MV3 extensions write to storage asynchronously after onboarding.
+  // We inject a tiny helper page into the extension to read the key count,
+  // then poll until it stabilizes (no new keys for several consecutive checks).
   try {
-    const extDir = path.join(
-      process.cwd(),
-      W3WALLETS_DIR,
-      config.extensionDir,
-    );
+    const extDir = path.join(process.cwd(), W3WALLETS_DIR, config.extensionDir);
     const helperJs = path.join(extDir, "_w3wallets_helper.js");
     const helperHtml = path.join(extDir, "_w3wallets_helper.html");
     fs.writeFileSync(
       helperJs,
-      `chrome.storage.session.get(null, (sessionData) => {
-        const keys = Object.keys(sessionData);
-        if (keys.length === 0) {
-          document.title = "done:0";
-          return;
-        }
-        // Copy session data to local, and switch storageKind to "data"
-        // so MetaMask reads everything from chrome.storage.local on restart.
-        chrome.storage.local.set(sessionData, () => {
-          chrome.storage.local.get("meta", (result) => {
-            const meta = result.meta || {};
-            // "single" means all data is in chrome.storage.local
-            meta.storageKind = "data";
-            chrome.storage.local.set({ meta }, () => {
-              document.title = "done:" + keys.length;
-            });
-          });
-        });
+      `chrome.storage.local.get(null, (data) => {
+        document.title = "done:" + Object.keys(data).length;
       });`,
     );
     fs.writeFileSync(
@@ -130,29 +174,21 @@ export async function buildCacheForSetup(
     );
 
     const helperPage = await context.newPage();
-    await helperPage.goto(
-      `chrome-extension://${extensionId}/_w3wallets_helper.html`,
-    );
-    await helperPage.waitForFunction(
-      () => document.title.startsWith("done:"),
-      null,
-      { timeout: 10000 },
-    );
-    const title = await helperPage.title();
-    const count = title.split(":")[1];
-    console.log(
-      `  Persisted ${count} session storage keys to local storage`,
-    );
-    await helperPage.close();
+    const helperUrl = `chrome-extension://${extensionId}/_w3wallets_helper.html`;
 
-    // Clean up helper files
+    await waitForStorageStable(helperPage, helperUrl);
+
+    await helperPage.close();
     fs.unlinkSync(helperJs);
     fs.unlinkSync(helperHtml);
   } catch (err) {
-    console.log(`  Note: could not persist session storage: ${err}`);
+    console.log(`  Note: could not verify persistence: ${err}`);
   }
 
-  await sleep(2000);
+  // Allow Chrome to flush extension storage (LevelDB) to disk.
+  // The persist check above verifies data is in chrome.storage.local (memory),
+  // but the actual disk flush happens asynchronously by the browser.
+  await sleep(5000);
   await context.close();
 
   // Write metadata for cache discovery at test time

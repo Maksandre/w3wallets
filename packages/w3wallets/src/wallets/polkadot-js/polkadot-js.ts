@@ -41,13 +41,11 @@ export class PolkadotJS extends Wallet {
   }
 
   async selectAccount(accountId: string) {
-    const cb = this.page
+    await this.page
       .locator(".accountWichCheckbox")
       .filter({ hasText: accountId })
       .locator(".accountTree-checkbox")
-      .locator("span");
-
-    await cb.check().catch(() => cb.check());
+      .click();
   }
 
   async enterPassword(password?: string) {

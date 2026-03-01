@@ -1,7 +1,7 @@
 {
   "name": "w3wallets",
   "description": "browser wallets for playwright",
-  "version": "1.0.0-beta.4",
+  "version": "1.0.0-beta.5",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/Maksandre/w3wallets",
@@ -31,6 +31,7 @@
   "bin": "./src/scripts/download.js",
   "scripts": {
     "download-wallets": "npx w3wallets pjs mm",
+    "cache-wallets": "npx w3wallets cache --force ./tests/wallets-cache/",
     "test": "npx playwright test --project=local",
     "test:ci": "npx playwright test --project=ci",
     "build": "tsup",

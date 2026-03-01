@@ -195,20 +195,33 @@ export class Metamask extends Wallet {
     const popup = this.page.getByText(/Transaction Shield|free trial/i);
     const sidepanelUrl = `chrome-extension://${this.extensionId}/sidepanel.html`;
 
+    // Helper: wait for button or popup, return what appeared first.
+    const waitForButtonOrPopup = (timeout: number) =>
+      Promise.race([
+        btnLocator
+          .first()
+          .waitFor({ state: "visible", timeout })
+          .then(() => "button" as const),
+        popup
+          .first()
+          .waitFor({ state: "visible", timeout })
+          .then(() => "popup" as const),
+      ]).catch(() => "timeout" as const);
+
+    // Helper: handle popup then click.
+    const handlePopupAndClick = async () => {
+      await this.dismissPopups();
+      await btnLocator
+        .first()
+        .waitFor({ state: "visible", timeout: 30_000 });
+      await btnLocator.first().click();
+    };
+
     // Strategy 1: Wait on the CURRENT page.
     // MetaMask's React router auto-navigates to the confirmation view
     // when a pending approval is registered. Navigating away with goto()
     // can interrupt this internal routing and lose the confirmation.
-    const firstResult = await Promise.race([
-      btnLocator
-        .first()
-        .waitFor({ state: "visible", timeout: 10_000 })
-        .then(() => "button" as const),
-      popup
-        .first()
-        .waitFor({ state: "visible", timeout: 10_000 })
-        .then(() => "popup" as const),
-    ]).catch(() => "timeout" as const);
+    const firstResult = await waitForButtonOrPopup(10_000);
 
     if (firstResult === "button") {
       await btnLocator.first().click();
@@ -216,39 +229,37 @@ export class Metamask extends Wallet {
     }
 
     if (firstResult === "popup") {
-      await this.dismissPopups();
-      await btnLocator
-        .first()
-        .waitFor({ state: "visible", timeout: 30_000 });
-      await btnLocator.first().click();
+      await handlePopupAndClick();
       return;
     }
 
-    // Strategy 2: Navigate to sidepanel.html as a fallback.
+    // Strategy 2: Navigate to sidepanel.html and retry.
     // This handles the case where the current page isn't a MetaMask
     // extension page (e.g., the page is on the dApp), or the service
     // worker hasn't registered the approval yet.
-    await this.page.goto(sidepanelUrl);
+    // We retry up to 3 times with fresh navigations, because MetaMask's
+    // service worker may not have registered the pending approval yet.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await this.page.goto(sidepanelUrl);
 
-    const secondResult = await Promise.race([
-      btnLocator
-        .first()
-        .waitFor({ state: "visible", timeout: 30_000 })
-        .then(() => "button" as const),
-      popup
-        .first()
-        .waitFor({ state: "visible", timeout: 30_000 })
-        .then(() => "popup" as const),
-    ]).catch(() => "timeout" as const);
+      const result = await waitForButtonOrPopup(
+        attempt === 0 ? 15_000 : 10_000,
+      );
 
-    if (secondResult === "popup") {
-      await this.dismissPopups();
-      await btnLocator
-        .first()
-        .waitFor({ state: "visible", timeout: 30_000 });
+      if (result === "button") {
+        await btnLocator.first().click();
+        return;
+      }
+
+      if (result === "popup") {
+        await handlePopupAndClick();
+        return;
+      }
     }
 
-    await btnLocator.first().click();
+    // All strategies exhausted — let Playwright's actionability checks
+    // produce a clear error with the element state.
+    await btnLocator.first().click({ timeout: 10_000 });
   }
 
   async approve() {

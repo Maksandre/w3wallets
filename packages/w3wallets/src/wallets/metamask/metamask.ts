@@ -372,8 +372,8 @@ export class Metamask extends Wallet {
     await menuBtn.waitFor({ state: "visible", timeout: 30_000 });
     await menuBtn.click();
 
-    // Click "Lock MetaMask" menu item
-    await this.page.locator("text=Lock MetaMask").click();
+    // Click "Log out" menu item (formerly "Lock MetaMask")
+    await this.page.locator("text=Log out").click();
   }
 
   /**

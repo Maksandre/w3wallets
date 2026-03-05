@@ -76,4 +76,6 @@ Thumbs.db
 # Generated files
 *.d.ts
 
+# ai tools
 CLAUDE.local.md
+.qa

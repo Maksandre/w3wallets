@@ -1,5 +1,4 @@
 import { expect, type Locator } from "@playwright/test";
-import { expect, type Locator } from "@playwright/test";
 import { Wallet } from "../../core/wallet";
 import { config } from "../../config";
 import type { NetworkSettings } from "./types";
@@ -51,14 +50,6 @@ export class Metamask extends Wallet {
       .getByRole("button", { name: "Import using Secret Recovery Phrase" })
       .click();
 
-    // Step 3: Type mnemonic into the SRP input.
-    // MetaMask 13.18+ uses an SRP input that starts as a textarea and
-    // transitions to individual word fields after the first Space/Enter.
-    // We click the textarea to focus it, type the first word, then press
-    // Space to trigger the word field creation. Subsequent words are typed
-    // into the focused word field that MetaMask creates.
-    const srpTextarea = this.page.getByTestId("srp-input-import__srp-note");
-    await srpTextarea.click();
     // Step 3: Type mnemonic into the SRP input.
     // MetaMask 13.18+ uses an SRP input that starts as a textarea and
     // transitions to individual word fields after the first Space/Enter.
@@ -423,9 +414,6 @@ export class Metamask extends Wallet {
       .or(this.page.getByRole("button", { name: /^confirm$/i }));
 
     await this.waitAndClickButton(confirmBtn);
-      .or(this.page.getByRole("button", { name: /^confirm$/i }));
-
-    await this.waitAndClickButton(confirmBtn);
   }
 
   async deny() {
@@ -436,10 +424,7 @@ export class Metamask extends Wallet {
       .or(this.page.getByTestId("page-container-footer-cancel"))
       .or(this.page.getByRole("button", { name: /^cancel$/i }))
       .or(this.page.getByRole("button", { name: /^reject$/i }));
-      .or(this.page.getByRole("button", { name: /^cancel$/i }))
-      .or(this.page.getByRole("button", { name: /^reject$/i }));
 
-    await this.waitAndClickButton(cancelBtn);
     await this.waitAndClickButton(cancelBtn);
   }
 

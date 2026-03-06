@@ -2,7 +2,6 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import { chromium, type Page } from "@playwright/test";
-import { chromium, type Page } from "@playwright/test";
 import { CACHE_DIR } from "./constants";
 import { isCachedConfig } from "./types";
 import type { CachedWalletConfig } from "./types";
@@ -190,13 +189,10 @@ export async function buildCacheForSetup(
   // then poll until it stabilizes (no new keys for several consecutive checks).
   try {
     const extDir = path.join(process.cwd(), W3WALLETS_DIR, config.extensionDir);
-    const extDir = path.join(process.cwd(), W3WALLETS_DIR, config.extensionDir);
     const helperJs = path.join(extDir, "_w3wallets_helper.js");
     const helperHtml = path.join(extDir, "_w3wallets_helper.html");
     fs.writeFileSync(
       helperJs,
-      `chrome.storage.local.get(null, (data) => {
-        document.title = "done:" + Object.keys(data).length;
       `chrome.storage.local.get(null, (data) => {
         document.title = "done:" + Object.keys(data).length;
       });`,
@@ -211,15 +207,10 @@ export async function buildCacheForSetup(
 
     await waitForStorageStable(helperPage, helperUrl);
 
-    const helperUrl = `chrome-extension://${extensionId}/_w3wallets_helper.html`;
-
-    await waitForStorageStable(helperPage, helperUrl);
-
     await helperPage.close();
     fs.unlinkSync(helperJs);
     fs.unlinkSync(helperHtml);
   } catch (err) {
-    console.log(`  Note: could not verify persistence: ${err}`);
     console.log(`  Note: could not verify persistence: ${err}`);
   }
 

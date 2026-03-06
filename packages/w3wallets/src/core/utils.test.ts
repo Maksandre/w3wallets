@@ -6,10 +6,7 @@ import { getExtensionId, sleep } from "./utils";
 
 function makeTempExtension(manifest: Record<string, unknown>): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "w3wallets-test-"));
-  fs.writeFileSync(
-    path.join(dir, "manifest.json"),
-    JSON.stringify(manifest),
-  );
+  fs.writeFileSync(path.join(dir, "manifest.json"), JSON.stringify(manifest));
   return dir;
 }
 

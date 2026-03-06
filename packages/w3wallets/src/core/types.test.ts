@@ -6,7 +6,6 @@ describe("createWallet", () => {
     const config = {
       name: "test" as const,
       extensionDir: "test-ext",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       WalletClass: class {
         constructor(
           public page: any,
@@ -24,7 +23,6 @@ describe("createWallet", () => {
     const config = {
       name: "myWallet" as const,
       extensionDir: "my-ext",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       WalletClass: class {
         constructor(
           public page: any,

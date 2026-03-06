@@ -39,7 +39,7 @@
     "check-format": "prettier --check .",
     "check-exports": "attw --pack .",
     "format": "prettier --write .",
-    "lint": "tsc",
+    "lint": "tsc && eslint .",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "ci": "yarn test:unit && yarn lint && yarn clean && yarn build && yarn check-format && yarn check-exports",
@@ -49,13 +49,17 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.17.2",
     "@changesets/cli": "^2.27.11",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "1.58.1",
     "@types/node": "^22.10.5",
     "dotenv": "^16.4.7",
+    "eslint": "^10.0.2",
+    "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.4.2",
     "standard-version": "^9.5.0",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
+    "typescript-eslint": "^8.56.1",
     "vitest": "^3.0.0"
   },
   "peerDependencies": {

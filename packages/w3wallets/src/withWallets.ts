@@ -103,7 +103,7 @@ export function withWallets<const T extends readonly WalletConfig[]>(
 
   const fixtures: Record<string, unknown> = {
     context: async (
-      _deps: Record<string, never>,
+      {}: Record<string, never>,
       use: (ctx: BrowserContext) => Promise<void>,
       testInfo: { testId: string; project: { use: { headless?: boolean } } },
     ) => {

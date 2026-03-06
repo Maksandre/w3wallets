@@ -1,4 +1,5 @@
 import { expect, type Locator } from "@playwright/test";
+import { expect, type Locator } from "@playwright/test";
 import { Wallet } from "../../core/wallet";
 import { config } from "../../config";
 import type { NetworkSettings } from "./types";
@@ -58,6 +59,14 @@ export class Metamask extends Wallet {
     // into the focused word field that MetaMask creates.
     const srpTextarea = this.page.getByTestId("srp-input-import__srp-note");
     await srpTextarea.click();
+    // Step 3: Type mnemonic into the SRP input.
+    // MetaMask 13.18+ uses an SRP input that starts as a textarea and
+    // transitions to individual word fields after the first Space/Enter.
+    // We click the textarea to focus it, type the first word, then press
+    // Space to trigger the word field creation. Subsequent words are typed
+    // into the focused word field that MetaMask creates.
+    const srpTextarea = this.page.getByTestId("srp-input-import__srp-note");
+    await srpTextarea.click();
 
     const words = mnemonic.split(" ");
     for (let i = 0; i < words.length; i++) {
@@ -71,7 +80,10 @@ export class Metamask extends Wallet {
 
     // Step 4: Wait for Continue button to be enabled and click.
     // MetaMask validates the full mnemonic (BIP39 checksum) before enabling.
+    // Step 4: Wait for Continue button to be enabled and click.
+    // MetaMask validates the full mnemonic (BIP39 checksum) before enabling.
     const continueBtn = this.page.getByTestId("import-srp-confirm");
+    await expect(continueBtn).toBeEnabled({ timeout: config.expectTimeout });
     await expect(continueBtn).toBeEnabled({ timeout: config.expectTimeout });
     await continueBtn.click();
 
@@ -96,6 +108,9 @@ export class Metamask extends Wallet {
     });
     await openWalletBtn.click();
 
+    // Step 10: Navigate to home page to trigger full UI initialization
+    // (token list fetches, network state, etc.), then to sidepanel.
+    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
     // Step 10: Navigate to home page to trigger full UI initialization
     // (token list fetches, network state, etc.), then to sidepanel.
     await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
@@ -408,6 +423,9 @@ export class Metamask extends Wallet {
       .or(this.page.getByRole("button", { name: /^confirm$/i }));
 
     await this.waitAndClickButton(confirmBtn);
+      .or(this.page.getByRole("button", { name: /^confirm$/i }));
+
+    await this.waitAndClickButton(confirmBtn);
   }
 
   async deny() {
@@ -418,7 +436,10 @@ export class Metamask extends Wallet {
       .or(this.page.getByTestId("page-container-footer-cancel"))
       .or(this.page.getByRole("button", { name: /^cancel$/i }))
       .or(this.page.getByRole("button", { name: /^reject$/i }));
+      .or(this.page.getByRole("button", { name: /^cancel$/i }))
+      .or(this.page.getByRole("button", { name: /^reject$/i }));
 
+    await this.waitAndClickButton(cancelBtn);
     await this.waitAndClickButton(cancelBtn);
   }
 
@@ -444,10 +465,17 @@ export class Metamask extends Wallet {
    * After unlocking, stabilizes the wallet UI by handling post-unlock
    * screens (metametrics, onboarding completion) and dismissing queued
    * notifications. Ends on home.html with the wallet UI ready.
+   * Unlock MetaMask with password.
+   * After unlocking, stabilizes the wallet UI by handling post-unlock
+   * screens (metametrics, onboarding completion) and dismissing queued
+   * notifications. Ends on home.html with the wallet UI ready.
    */
   async unlock(password?: string) {
     debug("metamask.unlock: starting");
     const pwd = password ?? this.defaultPassword;
+
+    // Navigate to home.html to show the lock screen reliably.
+    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
 
     // Navigate to home.html to show the lock screen reliably.
     await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);

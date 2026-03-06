@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import { chromium, type Page } from "@playwright/test";
+import { chromium, type Page } from "@playwright/test";
 import { CACHE_DIR } from "./constants";
 import { isCachedConfig } from "./types";
 import type { CachedWalletConfig } from "./types";
@@ -159,6 +160,8 @@ export async function buildCacheForSetup(
 
   // Create wallet instance and run setup.
   // The setupFn (via wallet.onboard) handles navigation and waiting for the UI.
+  // Create wallet instance and run setup.
+  // The setupFn (via wallet.onboard) handles navigation and waiting for the UI.
   const page = await context.newPage();
   const wallet = new config.WalletClass(page, extensionId);
   await config.setupFn(wallet, page);
@@ -174,12 +177,26 @@ export async function buildCacheForSetup(
   // MV3 extensions write to storage asynchronously after onboarding.
   // We inject a tiny helper page into the extension to read the key count,
   // then poll until it stabilizes (no new keys for several consecutive checks).
+  // Navigate to home.html to trigger full UI initialization (token list
+  // fetches, network state, etc.) and wait for all network requests to settle.
+  // Without this, MetaMask's TokenListController won't fetch token data for
+  // each chain, resulting in missing storageService keys.
+  await page.goto(`chrome-extension://${extensionId}/home.html`);
+  await page.waitForLoadState("networkidle");
+
+  // Wait for the extension to persist its state to chrome.storage.local.
+  // MV3 extensions write to storage asynchronously after onboarding.
+  // We inject a tiny helper page into the extension to read the key count,
+  // then poll until it stabilizes (no new keys for several consecutive checks).
   try {
+    const extDir = path.join(process.cwd(), W3WALLETS_DIR, config.extensionDir);
     const extDir = path.join(process.cwd(), W3WALLETS_DIR, config.extensionDir);
     const helperJs = path.join(extDir, "_w3wallets_helper.js");
     const helperHtml = path.join(extDir, "_w3wallets_helper.html");
     fs.writeFileSync(
       helperJs,
+      `chrome.storage.local.get(null, (data) => {
+        document.title = "done:" + Object.keys(data).length;
       `chrome.storage.local.get(null, (data) => {
         document.title = "done:" + Object.keys(data).length;
       });`,
@@ -194,10 +211,15 @@ export async function buildCacheForSetup(
 
     await waitForStorageStable(helperPage, helperUrl);
 
+    const helperUrl = `chrome-extension://${extensionId}/_w3wallets_helper.html`;
+
+    await waitForStorageStable(helperPage, helperUrl);
+
     await helperPage.close();
     fs.unlinkSync(helperJs);
     fs.unlinkSync(helperHtml);
   } catch (err) {
+    console.log(`  Note: could not verify persistence: ${err}`);
     console.log(`  Note: could not verify persistence: ${err}`);
   }
 

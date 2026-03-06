@@ -40,7 +40,9 @@
     "check-exports": "attw --pack .",
     "format": "prettier --write .",
     "lint": "tsc",
-    "ci": "yarn lint && yarn clean && yarn build && yarn check-format && yarn check-exports",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "ci": "yarn test:unit && yarn lint && yarn clean && yarn build && yarn check-format && yarn check-exports",
     "changeset": "npx changeset",
     "local-release": "changeset version && changeset publish"
   },
@@ -53,7 +55,8 @@
     "prettier": "^3.4.2",
     "standard-version": "^9.5.0",
     "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
   },
   "peerDependencies": {
     "@playwright/test": "^1.57.0"

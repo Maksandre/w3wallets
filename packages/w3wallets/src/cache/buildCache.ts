@@ -6,6 +6,16 @@ import { CACHE_DIR } from "./constants";
 import { isCachedConfig } from "./types";
 import type { CachedWalletConfig } from "./types";
 import { sleep, getExtensionId } from "../core/utils";
+import {
+  SERVICE_WORKER_TIMEOUT,
+  SERVICE_WORKER_POLL_INTERVAL,
+  STORAGE_STABILIZE_TIMEOUT,
+  STORAGE_POLL_INTERVAL,
+  STORAGE_STABLE_CHECKS,
+  HELPER_PAGE_TIMEOUT,
+  LEVELDB_FLUSH_DELAY,
+} from "../timeouts";
+import { debug } from "../debug";
 
 const W3WALLETS_DIR = ".w3wallets";
 
@@ -18,9 +28,9 @@ async function waitForStorageStable(
   helperPage: Page,
   helperUrl: string,
 ): Promise<number | null> {
-  const TIMEOUT = 120_000;
-  const POLL_INTERVAL = 5_000;
-  const STABLE_CHECKS_REQUIRED = 6;
+  const TIMEOUT = STORAGE_STABILIZE_TIMEOUT;
+  const POLL_INTERVAL = STORAGE_POLL_INTERVAL;
+  const STABLE_CHECKS_REQUIRED = STORAGE_STABLE_CHECKS;
   const start = Date.now();
   let lastKeyCount = -1;
   let stableCount = 0;
@@ -32,7 +42,7 @@ async function waitForStorageStable(
     await helperPage.waitForFunction(
       () => document.title.startsWith("done:"),
       null,
-      { timeout: 10000 },
+      { timeout: HELPER_PAGE_TIMEOUT },
     );
 
     const title = await helperPage.title();
@@ -47,6 +57,9 @@ async function waitForStorageStable(
       stableCount = 1;
       lastKeyCount = keyCount;
     }
+    debug(
+      `Storage poll: ${keyCount} keys (stable ${stableCount}/${STABLE_CHECKS_REQUIRED})`,
+    );
 
     if (stableCount >= STABLE_CHECKS_REQUIRED) {
       console.log(`  Storage stabilized at ${keyCount} keys`);
@@ -92,7 +105,8 @@ export async function buildCacheForSetup(
     return;
   }
 
-  // Import the compiled setup file
+  // Import the compiled setup file (must use require for dynamic CJS imports)
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const compiled = require(path.resolve(compiledFilePath));
   const config: CachedWalletConfig = compiled.default ?? compiled;
 
@@ -132,10 +146,12 @@ export async function buildCacheForSetup(
   // Wait for the extension service worker to register (MV3).
   if (context.serviceWorkers().length < 1) {
     await Promise.race([
-      context.waitForEvent("serviceworker", { timeout: 30000 }),
+      context.waitForEvent("serviceworker", {
+        timeout: SERVICE_WORKER_TIMEOUT,
+      }),
       (async () => {
         while (context.serviceWorkers().length < 1) {
-          await sleep(500);
+          await sleep(SERVICE_WORKER_POLL_INTERVAL);
         }
       })(),
     ]);
@@ -143,10 +159,23 @@ export async function buildCacheForSetup(
 
   // Create wallet instance and run setup.
   // The setupFn (via wallet.onboard) handles navigation and waiting for the UI.
+  // Create wallet instance and run setup.
+  // The setupFn (via wallet.onboard) handles navigation and waiting for the UI.
   const page = await context.newPage();
   const wallet = new config.WalletClass(page, extensionId);
   await config.setupFn(wallet, page);
 
+  // Navigate to home.html to trigger full UI initialization (token list
+  // fetches, network state, etc.) and wait for all network requests to settle.
+  // Without this, MetaMask's TokenListController won't fetch token data for
+  // each chain, resulting in missing storageService keys.
+  await page.goto(`chrome-extension://${extensionId}/home.html`);
+  await page.waitForLoadState("networkidle");
+
+  // Wait for the extension to persist its state to chrome.storage.local.
+  // MV3 extensions write to storage asynchronously after onboarding.
+  // We inject a tiny helper page into the extension to read the key count,
+  // then poll until it stabilizes (no new keys for several consecutive checks).
   // Navigate to home.html to trigger full UI initialization (token list
   // fetches, network state, etc.) and wait for all network requests to settle.
   // Without this, MetaMask's TokenListController won't fetch token data for
@@ -188,7 +217,7 @@ export async function buildCacheForSetup(
   // Allow Chrome to flush extension storage (LevelDB) to disk.
   // The persist check above verifies data is in chrome.storage.local (memory),
   // but the actual disk flush happens asynchronously by the browser.
-  await sleep(5000);
+  await sleep(LEVELDB_FLUSH_DELAY);
   await context.close();
 
   // Write metadata for cache discovery at test time
@@ -258,6 +287,7 @@ export async function buildAllCaches(
     format: ["cjs"],
     clean: true,
     silent: true,
+    external: ["@playwright/test"],
   });
 
   // Run each setup

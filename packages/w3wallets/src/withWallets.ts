@@ -1,10 +1,10 @@
 import path from "path";
 import fs from "fs";
 import {
-  test as base,
   type BrowserContext,
   chromium,
   type Page,
+  test as base,
 } from "@playwright/test";
 import type {
   IWallet,
@@ -14,10 +14,45 @@ import type {
 import { isCachedConfig } from "./cache/types";
 import { findCacheDir } from "./cache/buildCache";
 import { CACHE_DIR } from "./cache/constants";
-import { sleep, getExtensionId } from "./core/utils";
+import { getExtensionId, sleep } from "./core/utils";
+import {
+  SERVICE_WORKER_POLL_INTERVAL,
+  SERVICE_WORKER_TIMEOUT,
+} from "./timeouts";
+import { debug } from "./debug";
 
 // TODO: with new CLI this directory can be overwritten with -o argument
 const W3WALLETS_DIR = ".w3wallets";
+
+const MIN_PLAYWRIGHT_VERSION = "1.57.0";
+
+function checkPlaywrightVersion(): void {
+  try {
+    const pkgPath = require.resolve("@playwright/test/package.json");
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { version } = require(pkgPath) as { version: string };
+    const [minMajor, minMinor, minPatch] =
+      MIN_PLAYWRIGHT_VERSION.split(".").map(Number);
+    const [curMajor, curMinor, curPatch] = version.split(".").map(Number);
+
+    const isBelow =
+      curMajor! < minMajor! ||
+      (curMajor === minMajor && curMinor! < minMinor!) ||
+      (curMajor === minMajor && curMinor === minMinor && curPatch! < minPatch!);
+
+    if (isBelow) {
+      throw new Error(
+        `w3wallets requires @playwright/test >= ${MIN_PLAYWRIGHT_VERSION}, but found ${version}.\n` +
+          `  Upgrade: npm install -D @playwright/test@latest`,
+      );
+    }
+  } catch (err) {
+    // Re-throw our own version error, swallow resolution errors
+    if (err instanceof Error && err.message.startsWith("w3wallets requires")) {
+      throw err;
+    }
+  }
+}
 
 /**
  * Extends Playwright test with wallet fixtures.
@@ -37,6 +72,8 @@ export function withWallets<const T extends readonly WalletConfig[]>(
   test: typeof base,
   ...wallets: T
 ) {
+  checkPlaywrightVersion();
+
   // Check for mixed cached/non-cached wallets
   const cachedCount = wallets.filter((w) => isCachedConfig(w)).length;
   if (cachedCount > 0 && cachedCount < wallets.length) {
@@ -47,6 +84,7 @@ export function withWallets<const T extends readonly WalletConfig[]>(
   }
 
   const useCachedContext = cachedCount > 0;
+  debug(`withWallets: ${wallets.length} wallet(s), cached=${useCachedContext}`);
 
   // Validate and build extension paths + IDs
   const extensionInfo = wallets.map((w) => {
@@ -65,6 +103,7 @@ export function withWallets<const T extends readonly WalletConfig[]>(
 
   const fixtures: Record<string, unknown> = {
     context: async (
+      // eslint-disable-next-line no-empty-pattern
       {}: Record<string, never>,
       use: (ctx: BrowserContext) => Promise<void>,
       testInfo: { testId: string; project: { use: { headless?: boolean } } },
@@ -85,14 +124,16 @@ export function withWallets<const T extends readonly WalletConfig[]>(
         const cacheDir = findCacheDir(wallet.name);
         if (!cacheDir) {
           throw new Error(
-            `Cache not found for wallet "${wallet.name}". ` +
-              `Searched in: ${path.join(process.cwd(), CACHE_DIR)}\n` +
-              `Run 'npx w3wallets cache' to build the cache first.`,
+            `Cache not found for wallet "${wallet.name}".\n` +
+              `  Searched: ${path.join(process.cwd(), CACHE_DIR)}/\n` +
+              `  Rebuild:  npx w3wallets cache --force <your-cache-dir>\n` +
+              `  Ensure your *.cache.ts setup file exports prepareWallet(...).`,
           );
         }
         fs.cpSync(cacheDir, userDataDir, { recursive: true });
       }
 
+      debug(`Launching persistent context: ${userDataDir}`);
       const context = await chromium.launchPersistentContext(userDataDir, {
         headless: testInfo.project.use.headless ?? true,
         channel: "chromium",
@@ -104,13 +145,34 @@ export function withWallets<const T extends readonly WalletConfig[]>(
 
       // Wait for all extension service workers to initialize.
       // Use event-based waiting with a polling fallback.
+      debug(`Waiting for ${extensionPaths.length} service worker(s)...`);
+      const swDeadline = Date.now() + SERVICE_WORKER_TIMEOUT;
       while (context.serviceWorkers().length < extensionPaths.length) {
+        if (Date.now() > swDeadline) {
+          const found = context.serviceWorkers().length;
+          throw new Error(
+            `Service worker initialization timed out after ${
+              SERVICE_WORKER_TIMEOUT / 1000
+            }s.\n` +
+              `  Expected: ${extensionPaths.length} extension(s), found: ${found} service worker(s).\n` +
+              `  Extension paths: ${extensionPaths
+                .map((p) => path.relative(process.cwd(), p))
+                .join(", ")}\n` +
+              `  Suggestions:\n` +
+              `    - Check extension path exists and contains manifest.json\n` +
+              `    - Try headed mode to see what's happening: headless: false\n` +
+              `    - Ensure extension is compatible with the installed Chromium version`,
+          );
+        }
         await Promise.race([
-          context.waitForEvent("serviceworker", { timeout: 30000 }),
-          sleep(500),
+          context.waitForEvent("serviceworker", {
+            timeout: SERVICE_WORKER_TIMEOUT,
+          }),
+          sleep(SERVICE_WORKER_POLL_INTERVAL),
         ]);
       }
 
+      debug(`All ${extensionPaths.length} service worker(s) detected`);
       await use(context);
       await context.close();
     },
@@ -126,6 +188,7 @@ export function withWallets<const T extends readonly WalletConfig[]>(
       use: (instance: IWallet) => Promise<void>,
     ) => {
       if (isCachedConfig(wallet)) {
+        debug(`Initializing cached wallet: ${wallet.name} (ID: ${info.id})`);
         // Cached wallet: find existing extension page instead of creating new one
         const instance = await findCachedExtension(
           context,
@@ -136,6 +199,7 @@ export function withWallets<const T extends readonly WalletConfig[]>(
         );
         await use(instance);
       } else {
+        debug(`Initializing fresh wallet: ${wallet.name} (ID: ${info.id})`);
         const instance = await initializeExtension(
           context,
           wallet.WalletClass,
@@ -167,10 +231,14 @@ function ensureWalletExtensionExists(
   walletPath: string,
   walletName: string,
 ): void {
-  if (!fs.existsSync(path.join(walletPath, "manifest.json"))) {
+  const manifestPath = path.join(walletPath, "manifest.json");
+  if (!fs.existsSync(manifestPath)) {
     const cliAlias = walletName.toLowerCase();
     throw new Error(
-      `Cannot find ${walletName}. Please download it via 'npx w3wallets ${cliAlias}'.`,
+      `Cannot find ${walletName} extension.\n` +
+        `  Checked: ${manifestPath}\n` +
+        `  Download it: npx w3wallets ${cliAlias}\n` +
+        `  Custom dir:  npx w3wallets -o <dir> ${cliAlias}`,
     );
   }
 }
@@ -198,9 +266,10 @@ async function findCachedExtension<T extends IWallet>(
       .filter(Boolean);
 
     throw new Error(
-      `Service worker for ${walletName} (ID: ${expectedExtensionId}) not found in cached context. ` +
-        `Available extension IDs: [${availableIds.join(", ")}]. ` +
-        `Try rebuilding the cache with 'npx w3wallets cache --force'.`,
+      `Service worker for ${walletName} (ID: ${expectedExtensionId}) not found in cached context.\n` +
+        `  Available IDs: [${availableIds.join(", ")}]\n` +
+        `  The cache may be stale. Rebuild: npx w3wallets cache --force\n` +
+        `  Also check extension path: ${W3WALLETS_DIR}/${walletName}/`,
     );
   }
 

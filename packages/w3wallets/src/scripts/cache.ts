@@ -13,8 +13,7 @@ function parseArgs(args: string[]): CacheOptions {
     directory: "./wallets-cache/",
   };
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]!;
+  for (const arg of args) {
     if (arg === "-f" || arg === "--force") {
       options.force = true;
     } else if (arg === "--headed") {

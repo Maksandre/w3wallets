@@ -78,6 +78,7 @@ const CLI_OPTIONS = {
   output: ".w3wallets",
   force: false,
   debug: false,
+  dryRun: false,
   targets: [], // aliases or extension IDs
 };
 
@@ -99,6 +100,7 @@ OPTIONS:
   -l, --list      List available wallet aliases
   -o, --output    Output directory (default: .w3wallets)
   -f, --force     Force re-download even if already exists
+  -n, --dry-run   Show what would be done without downloading
   --debug         Save raw .crx file for debugging
 
 EXAMPLES:
@@ -194,6 +196,8 @@ function parseArgs(args) {
       CLI_OPTIONS.output = args[i];
     } else if (arg === "-f" || arg === "--force") {
       CLI_OPTIONS.force = true;
+    } else if (arg === "-n" || arg === "--dry-run") {
+      CLI_OPTIONS.dryRun = true;
     } else if (arg === "--debug") {
       CLI_OPTIONS.debug = true;
     } else if (arg.startsWith("-")) {
@@ -276,6 +280,40 @@ if (CLI_OPTIONS.targets.length === 0) {
 // 3. Main: download and extract each requested extension
 // ---------------------------------------------------------------------
 (async function main() {
+  // Handle --dry-run mode
+  if (CLI_OPTIONS.dryRun) {
+    for (const target of CLI_OPTIONS.targets) {
+      const { id, name, dirName } = target;
+      const outDir = path.join(CLI_OPTIONS.output, dirName);
+      const manifestPath = path.join(outDir, "manifest.json");
+      const exists = fs.existsSync(manifestPath);
+
+      const downloadUrl =
+        "https://clients2.google.com/service/update2/crx" +
+        "?response=redirect" +
+        "&prod=chrome" +
+        "&prodversion=9999" +
+        "&acceptformat=crx2,crx3" +
+        `&x=id%3D${id}%26uc`;
+
+      console.log(`\n=== ${name} (${id}) ===`);
+      console.log(`  Output: ${outDir}`);
+      if (exists && !CLI_OPTIONS.force) {
+        console.log(
+          `  Status: already exists (would skip, use --force to override)`,
+        );
+      } else if (exists && CLI_OPTIONS.force) {
+        console.log(
+          `  Status: already exists (would re-download with --force)`,
+        );
+      } else {
+        console.log(`  Status: not downloaded (would download)`);
+      }
+      console.log(`  URL: ${downloadUrl}`);
+    }
+    return;
+  }
+
   for (const target of CLI_OPTIONS.targets) {
     const { id, name, dirName } = target;
     const outDir = path.join(CLI_OPTIONS.output, dirName);

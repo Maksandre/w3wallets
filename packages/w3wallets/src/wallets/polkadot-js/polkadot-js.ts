@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import { Wallet } from "../../core/wallet";
 import { config } from "../../config";
+import { debug } from "../../debug";
 
 export class PolkadotJS extends Wallet {
   private defaultPassword = "11111111";
@@ -13,6 +14,7 @@ export class PolkadotJS extends Wallet {
   }
 
   async onboard(seed: string, password?: string, name?: string) {
+    debug("polkadotJS.onboard: starting");
     await this.gotoOnboardPage();
     await this.page
       .getByRole("button", { name: "Understood, let me continue" })
@@ -34,6 +36,7 @@ export class PolkadotJS extends Wallet {
     await this.page
       .getByRole("button", { name: "Add the account with the supplied seed" })
       .click();
+    debug("polkadotJS.onboard: complete");
   }
 
   async selectAllAccounts() {
@@ -55,6 +58,7 @@ export class PolkadotJS extends Wallet {
   }
 
   async approve() {
+    debug("polkadotJS.approve: starting");
     const connect = this.page.getByRole("button", { name: "Connect" });
     const signTransaction = this.page.getByRole("button", {
       name: "Sign the transaction",
@@ -64,6 +68,7 @@ export class PolkadotJS extends Wallet {
   }
 
   async deny() {
+    debug("polkadotJS.deny: starting");
     const reject = this.page.getByRole("button", { name: "Reject" });
     const cancel = this.page.getByRole("link", { name: "Cancel" });
     await reject.or(cancel).click();

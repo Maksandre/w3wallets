@@ -10,6 +10,9 @@ export { createWallet } from "./core/types";
 // Configuration
 export { config } from "./config";
 
+// Debug
+export { debug } from "./debug";
+
 // Cache
 export { prepareWallet, isCachedConfig } from "./cache";
 export type { SetupFn, CachedWalletConfig } from "./cache";

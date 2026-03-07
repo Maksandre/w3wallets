@@ -9,6 +9,8 @@ export default tseslint.config(
       "node_modules/",
       ".w3wallets/",
       "src/scripts/download.js",
+      "playwright-report",
+      "test-results",
     ],
   },
   eslint.configs.recommended,

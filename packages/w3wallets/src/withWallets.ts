@@ -1,10 +1,10 @@
 import path from "path";
 import fs from "fs";
 import {
-  test as base,
   type BrowserContext,
   chromium,
   type Page,
+  test as base,
 } from "@playwright/test";
 import type {
   IWallet,
@@ -14,10 +14,10 @@ import type {
 import { isCachedConfig } from "./cache/types";
 import { findCacheDir } from "./cache/buildCache";
 import { CACHE_DIR } from "./cache/constants";
-import { sleep, getExtensionId } from "./core/utils";
+import { getExtensionId, sleep } from "./core/utils";
 import {
-  SERVICE_WORKER_TIMEOUT,
   SERVICE_WORKER_POLL_INTERVAL,
+  SERVICE_WORKER_TIMEOUT,
 } from "./timeouts";
 import { debug } from "./debug";
 
@@ -103,7 +103,7 @@ export function withWallets<const T extends readonly WalletConfig[]>(
 
   const fixtures: Record<string, unknown> = {
     context: async (
-      {}: Record<string, never>,
+      _: Record<string, never>,
       use: (ctx: BrowserContext) => Promise<void>,
       testInfo: { testId: string; project: { use: { headless?: boolean } } },
     ) => {
@@ -150,9 +150,13 @@ export function withWallets<const T extends readonly WalletConfig[]>(
         if (Date.now() > swDeadline) {
           const found = context.serviceWorkers().length;
           throw new Error(
-            `Service worker initialization timed out after ${SERVICE_WORKER_TIMEOUT / 1000}s.\n` +
+            `Service worker initialization timed out after ${
+              SERVICE_WORKER_TIMEOUT / 1000
+            }s.\n` +
               `  Expected: ${extensionPaths.length} extension(s), found: ${found} service worker(s).\n` +
-              `  Extension paths: ${extensionPaths.map((p) => path.relative(process.cwd(), p)).join(", ")}\n` +
+              `  Extension paths: ${extensionPaths
+                .map((p) => path.relative(process.cwd(), p))
+                .join(", ")}\n` +
               `  Suggestions:\n` +
               `    - Check extension path exists and contains manifest.json\n` +
               `    - Try headed mode to see what's happening: headless: false\n` +

@@ -287,6 +287,7 @@ export async function buildAllCaches(
     format: ["cjs"],
     clean: true,
     silent: true,
+    external: ["@playwright/test"],
   });
 
   // Run each setup

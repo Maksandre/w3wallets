@@ -484,7 +484,10 @@ export class Metamask extends Wallet {
     // Click the network picker button
     await this.page.getByTestId("sort-by-networks").click();
     if (networkType === "Custom") {
-      await this.page.getByRole("tab", { name: "Custom" }).click();
+      // force: true bypasses the search input overlay that intercepts pointer events
+      await this.page
+        .getByRole("tab", { name: "Custom" })
+        .click({ force: true });
     }
     await this.page.getByText(networkName).click();
 
@@ -546,8 +549,12 @@ export class Metamask extends Wallet {
     await this.page.getByRole("button", { name: "Add URL" }).click();
     await this.page.getByRole("button", { name: "Save" }).click();
 
-    // Close the network list modal that stays open after saving
-    await this.page.keyboard.press("Escape");
+    // After saving, MetaMask may show confirmation dialogs or switch networks.
+    // Navigate back to home to ensure a clean UI state.
+    await this.page.goto(
+      `chrome-extension://${this.extensionId}/home.html`,
+    );
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async enableTestNetworks() {
@@ -556,9 +563,12 @@ export class Metamask extends Wallet {
       .getByTestId("account-options-menu-button")
       .click({ force: true });
     await this.page.getByTestId("global-menu-networks").click();
-    await this.page
-      .locator("text=Show test networks >> xpath=following-sibling::label")
-      .click();
+    // Wait for the toggle to appear before clicking
+    const toggle = this.page.locator(
+      "text=Show test networks >> xpath=following-sibling::label",
+    );
+    await expect(toggle).toBeVisible({ timeout: config.expectTimeout });
+    await toggle.click();
     await this.page.keyboard.press("Escape");
   }
 

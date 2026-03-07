@@ -17,3 +17,4 @@ test.spec.ts
 
 # playwright
 .playwright-cli
+.claude/skills/

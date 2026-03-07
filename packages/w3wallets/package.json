@@ -28,7 +28,7 @@
   "files": [
     "dist"
   ],
-  "bin": "./dist/scripts/download.js",
+  "bin": "./src/scripts/download.js",
   "scripts": {
     "download-wallets": "npx w3wallets pjs mm",
     "cache-wallets": "npx w3wallets cache --force ./tests/wallets-cache/",

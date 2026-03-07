@@ -16,8 +16,6 @@ export const POPUP_HIDDEN_TIMEOUT = 3_000;
 export const POST_UNLOCK_TIMEOUT = 30_000;
 /** MetaMask queued notification check timeout */
 export const NOTIFICATION_CHECK_TIMEOUT = 5_000;
-/** MetaMask confirmation route wait */
-export const CONFIRMATION_ROUTE_TIMEOUT = 15_000;
 /** MetaMask post-click navigation wait */
 export const POST_CLICK_TIMEOUT = 10_000;
 /** MetaMask button/popup race timeout */
@@ -28,6 +26,12 @@ export const LAST_RESORT_CLICK_TIMEOUT = 10_000;
 export const LOCK_SCREEN_TIMEOUT = 30_000;
 /** MetaMask menu button visible timeout */
 export const MENU_BUTTON_TIMEOUT = 30_000;
+/** MetaMask onboard page visible timeout (fresh install needs longer) */
+export const ONBOARD_VISIBLE_TIMEOUT = 30_000;
+/** MetaMask confirmation route retry (per attempt) */
+export const ROUTE_RETRY_TIMEOUT = 5_000;
+/** MetaMask confirmation route max retry attempts */
+export const MAX_ROUTE_ATTEMPTS = 5;
 
 /** Delay between mnemonic word keypresses */
 export const MNEMONIC_KEY_DELAY = 5;

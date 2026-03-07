@@ -10,12 +10,14 @@ import {
   POPUP_HIDDEN_TIMEOUT,
   POST_UNLOCK_TIMEOUT,
   NOTIFICATION_CHECK_TIMEOUT,
-  CONFIRMATION_ROUTE_TIMEOUT,
   POST_CLICK_TIMEOUT,
   BUTTON_OR_POPUP_TIMEOUT,
   LAST_RESORT_CLICK_TIMEOUT,
   LOCK_SCREEN_TIMEOUT,
   MENU_BUTTON_TIMEOUT,
+  ONBOARD_VISIBLE_TIMEOUT,
+  ROUTE_RETRY_TIMEOUT,
+  MAX_ROUTE_ATTEMPTS,
   MNEMONIC_KEY_DELAY,
   MNEMONIC_WORD_DELAY,
 } from "../../timeouts";
@@ -27,7 +29,7 @@ export class Metamask extends Wallet {
     await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
     await expect(
       this.page.getByRole("button", { name: "I have an existing wallet" }),
-    ).toBeVisible({ timeout: config.expectTimeout });
+    ).toBeVisible({ timeout: ONBOARD_VISIBLE_TIMEOUT });
   }
 
   /**
@@ -71,10 +73,7 @@ export class Metamask extends Wallet {
 
     // Step 4: Wait for Continue button to be enabled and click.
     // MetaMask validates the full mnemonic (BIP39 checksum) before enabling.
-    // Step 4: Wait for Continue button to be enabled and click.
-    // MetaMask validates the full mnemonic (BIP39 checksum) before enabling.
     const continueBtn = this.page.getByTestId("import-srp-confirm");
-    await expect(continueBtn).toBeEnabled({ timeout: config.expectTimeout });
     await expect(continueBtn).toBeEnabled({ timeout: config.expectTimeout });
     await continueBtn.click();
 
@@ -99,9 +98,6 @@ export class Metamask extends Wallet {
     });
     await openWalletBtn.click();
 
-    // Step 10: Navigate to home page to trigger full UI initialization
-    // (token list fetches, network state, etc.), then to sidepanel.
-    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
     // Step 10: Navigate to home page to trigger full UI initialization
     // (token list fetches, network state, etc.), then to sidepanel.
     await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
@@ -328,31 +324,29 @@ export class Metamask extends Wallet {
       await btnLocator.first().click();
     };
 
-    // Always navigate to sidepanel.html fresh. This resets the
-    // ConfirmationHandler so it re-evaluates pending approvals.
-    // Without this, a stale confirmation URL from a previous approval
-    // can cause us to click a leftover button that does nothing.
-    await this.page.goto(sidepanelUrl);
-    try {
-      await this.page.waitForURL(confirmRoutePattern, {
-        timeout: CONFIRMATION_ROUTE_TIMEOUT,
-      });
-    } catch {
-      // Retry: the service worker may not have synced the pending
-      // approval to the UI state store on the first load.
-      console.warn(
-        `[w3wallets] confirmation route not found, retrying. URL: ${this.page.url()}`,
-      );
+    // Navigate to sidepanel.html fresh and wait for the confirmation route.
+    // MetaMask's ConfirmationHandler re-evaluates pending approvals on each
+    // navigation. Retry multiple times with shorter intervals — the service
+    // worker may not have synced the pending approval on the first load.
+    let routeFound = false;
+    for (let attempt = 0; attempt < MAX_ROUTE_ATTEMPTS; attempt++) {
       await this.page.goto(sidepanelUrl);
       try {
         await this.page.waitForURL(confirmRoutePattern, {
-          timeout: CONFIRMATION_ROUTE_TIMEOUT,
+          timeout: ROUTE_RETRY_TIMEOUT,
         });
+        routeFound = true;
+        break;
       } catch {
-        console.warn(
-          `[w3wallets] confirmation route not found after retry. URL: ${this.page.url()}`,
+        debug(
+          `metamask.waitAndClickButton: route attempt ${attempt + 1}/${MAX_ROUTE_ATTEMPTS} failed. URL: ${this.page.url()}`,
         );
       }
+    }
+    if (!routeFound) {
+      console.warn(
+        `[w3wallets] confirmation route not found after ${MAX_ROUTE_ATTEMPTS} attempts. URL: ${this.page.url()}`,
+      );
     }
 
     // Now wait for the actual button or popup to appear.
@@ -439,7 +433,8 @@ export class Metamask extends Wallet {
     await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
     const menuBtn = this.page.getByTestId("account-options-menu-button");
     await menuBtn.waitFor({ state: "visible", timeout: MENU_BUTTON_TIMEOUT });
-    await menuBtn.click();
+    // force: true bypasses the notification badge that can overlay this button
+    await menuBtn.click({ force: true });
 
     // Click "Log out" menu item (formerly "Lock MetaMask")
     await this.page.locator("text=Log out").click();
@@ -450,17 +445,10 @@ export class Metamask extends Wallet {
    * After unlocking, stabilizes the wallet UI by handling post-unlock
    * screens (metametrics, onboarding completion) and dismissing queued
    * notifications. Ends on home.html with the wallet UI ready.
-   * Unlock MetaMask with password.
-   * After unlocking, stabilizes the wallet UI by handling post-unlock
-   * screens (metametrics, onboarding completion) and dismissing queued
-   * notifications. Ends on home.html with the wallet UI ready.
    */
   async unlock(password?: string) {
     debug("metamask.unlock: starting");
     const pwd = password ?? this.defaultPassword;
-
-    // Navigate to home.html to show the lock screen reliably.
-    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
 
     // Navigate to home.html to show the lock screen reliably.
     await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
@@ -534,7 +522,10 @@ export class Metamask extends Wallet {
   }
 
   async addCustomNetwork(settings: NetworkSettings) {
-    await this.page.getByTestId("account-options-menu-button").click();
+    // force: true bypasses the notification badge that can overlay this button
+    await this.page
+      .getByTestId("account-options-menu-button")
+      .click({ force: true });
     await this.page.getByTestId("global-menu-networks").click();
     await this.page
       .getByRole("button", { name: "Add a custom network" })
@@ -554,10 +545,16 @@ export class Metamask extends Wallet {
     await this.page.getByTestId("rpc-url-input-test").fill(settings.rpc);
     await this.page.getByRole("button", { name: "Add URL" }).click();
     await this.page.getByRole("button", { name: "Save" }).click();
+
+    // Close the network list modal that stays open after saving
+    await this.page.keyboard.press("Escape");
   }
 
   async enableTestNetworks() {
-    await this.page.getByTestId("account-options-menu-button").click();
+    // force: true bypasses the notification badge that can overlay this button
+    await this.page
+      .getByTestId("account-options-menu-button")
+      .click({ force: true });
     await this.page.getByTestId("global-menu-networks").click();
     await this.page
       .locator("text=Show test networks >> xpath=following-sibling::label")

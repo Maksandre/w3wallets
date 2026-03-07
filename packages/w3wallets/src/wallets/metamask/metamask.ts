@@ -551,9 +551,7 @@ export class Metamask extends Wallet {
 
     // After saving, MetaMask may show confirmation dialogs or switch networks.
     // Navigate back to home to ensure a clean UI state.
-    await this.page.goto(
-      `chrome-extension://${this.extensionId}/home.html`,
-    );
+    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
     await this.page.waitForLoadState("domcontentloaded");
   }
 

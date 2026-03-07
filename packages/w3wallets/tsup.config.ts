@@ -7,6 +7,7 @@ export default defineConfig([
     dts: true,
     outDir: "dist",
     clean: true,
+    external: ["tsup", "esbuild", "fsevents"],
   },
   {
     entryPoints: ["src/scripts/cache.ts"],

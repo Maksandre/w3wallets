@@ -31,12 +31,11 @@ function checkPlaywrightVersion(): void {
     const pkgPath = require.resolve("@playwright/test/package.json");
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { version } = require(pkgPath) as { version: string };
-    const [minMajor, minMinor, minPatch] =
-      MIN_PLAYWRIGHT_VERSION.split(".").map(Number);
+    const [minMajor, minMinor, minPatch] = MIN_PLAYWRIGHT_VERSION.split(".")
+      .map(Number);
     const [curMajor, curMinor, curPatch] = version.split(".").map(Number);
 
-    const isBelow =
-      curMajor! < minMajor! ||
+    const isBelow = curMajor! < minMajor! ||
       (curMajor === minMajor && curMinor! < minMinor!) ||
       (curMajor === minMajor && curMinor === minMinor && curPatch! < minPatch!);
 
@@ -103,7 +102,8 @@ export function withWallets<const T extends readonly WalletConfig[]>(
 
   const fixtures: Record<string, unknown> = {
     context: async (
-      _: Record<string, never>,
+      // eslint-disable-next-line no-empty-pattern
+      {}: Record<string, never>,
       use: (ctx: BrowserContext) => Promise<void>,
       testInfo: { testId: string; project: { use: { headless?: boolean } } },
     ) => {
@@ -154,9 +154,11 @@ export function withWallets<const T extends readonly WalletConfig[]>(
               SERVICE_WORKER_TIMEOUT / 1000
             }s.\n` +
               `  Expected: ${extensionPaths.length} extension(s), found: ${found} service worker(s).\n` +
-              `  Extension paths: ${extensionPaths
-                .map((p) => path.relative(process.cwd(), p))
-                .join(", ")}\n` +
+              `  Extension paths: ${
+                extensionPaths
+                  .map((p) => path.relative(process.cwd(), p))
+                  .join(", ")
+              }\n` +
               `  Suggestions:\n` +
               `    - Check extension path exists and contains manifest.json\n` +
               `    - Try headed mode to see what's happening: headless: false\n` +

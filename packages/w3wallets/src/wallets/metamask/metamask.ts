@@ -83,7 +83,8 @@ export class Metamask extends Wallet {
     await passwordInputs.nth(1).fill(pwd);
 
     // Step 6: Check the terms checkbox
-    await this.page.getByRole("checkbox").click();
+    // The visible div overlays the actual checkbox input, so force is required.
+    await this.page.getByRole("checkbox").click({ force: true });
 
     // Step 7: Click "Create password"
     await this.page.getByRole("button", { name: "Create password" }).click();

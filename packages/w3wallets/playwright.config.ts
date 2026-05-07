@@ -5,6 +5,7 @@ import config from "./tests/utils/config";
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  globalSetup: "./tests/global-setup",
   testDir: "./tests",
   /* Run tests in files in parallel */
   fullyParallel: false,

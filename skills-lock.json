@@ -2,9 +2,10 @@
   "version": 1,
   "skills": {
     "playwright-cli": {
-      "source": "Maksandre/w3wallets",
+      "source": "microsoft/playwright-cli",
       "sourceType": "github",
-      "computedHash": "7075ab30f588019197a2f1518bb4c9d33d69d33352af079b5f9c60303ad3886e"
+      "skillPath": "skills/playwright-cli/SKILL.md",
+      "computedHash": "d2ea99c86b1c7c4a2800f7f1594c20b46da237a9f4fe199f6dd93d89b27faaf0"
     }
   }
 }

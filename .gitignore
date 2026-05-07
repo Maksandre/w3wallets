@@ -79,3 +79,8 @@ Thumbs.db
 # ai tools
 CLAUDE.local.md
 .qa
+.claude/skills/
+.agents/skills/
+
+# QA runtime data (logs, PIDs, anvil state)
+.run/

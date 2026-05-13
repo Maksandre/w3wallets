@@ -568,17 +568,27 @@ export class Metamask extends Wallet {
     );
     await expect(toggle).toBeVisible({ timeout: config.expectTimeout });
     await toggle.click();
-    await this.page.keyboard.press("Escape");
+    // The Networks panel is now a route (#/networks?drawerOpen=true) that
+    // does not close on Escape. Navigate back to home so subsequent
+    // home-page selectors (e.g. sort-by-networks) become actionable.
+    await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
   }
 
   async importAccount(privateKey: string) {
     debug("metamask.importAccount: starting");
     await this.page.getByTestId("account-menu-icon").click();
     await this.page.getByTestId("account-list-add-wallet-button").click();
-    await this.page.getByTestId("add-wallet-modal-import-account").click();
+    await this.page.getByTestId("choose-wallet-type-import-account").click();
     await this.page.locator("#private-key-box").fill(privateKey);
     await this.page.getByTestId("import-account-confirm-button").click();
-    await this.page.getByRole("button", { name: "Back" }).click();
+    // After confirm, MetaMask lands on the wallet-type chooser. Step back
+    // to the account list, then click the new imported account cell
+    // (keyring-prefixed testid) to select it and return to home.
+    await this.page.getByTestId("back-button").click();
+    await this.page
+      .locator('[data-testid^="multichain-account-cell-keyring:"]')
+      .first()
+      .click();
   }
 
   async accountNameIs(accountName: string) {

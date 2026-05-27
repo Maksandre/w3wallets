@@ -89,17 +89,39 @@ export class Metamask extends Wallet {
     // Step 7: Click "Create password"
     await this.page.getByRole("button", { name: "Create password" }).click();
 
-    // Step 8: Handle "Help improve MetaMask" screen
+    // Step 8: Decline passkey/biometrics setup if shown (MetaMask 13.32+
+    // inserts an "Unlock with Biometrics" screen between password
+    // creation and the metametrics consent step). Race against the
+    // metametrics screen so we work on older builds too.
+    const passkeyMaybeLater = this.page.getByTestId(
+      "passkey-maybe-later-button",
+    );
     const metametricsBtn = this.page.getByTestId("metametrics-i-agree");
+
+    const postPasswordState = await Promise.race([
+      passkeyMaybeLater
+        .waitFor({ state: "visible", timeout: ONBOARD_VISIBLE_TIMEOUT })
+        .then(() => "passkey" as const),
+      metametricsBtn
+        .waitFor({ state: "visible", timeout: ONBOARD_VISIBLE_TIMEOUT })
+        .then(() => "metametrics" as const),
+    ]);
+    if (postPasswordState === "passkey") {
+      await passkeyMaybeLater.click();
+    }
+
+    // Step 9: Handle "Help improve MetaMask" screen
+    await metametricsBtn.waitFor({
+      state: "visible",
+      timeout: ONBOARD_VISIBLE_TIMEOUT,
+    });
     await metametricsBtn.click();
 
-    // Step 9: Handle "Your wallet is ready!" screen
-    const openWalletBtn = this.page.getByRole("button", {
-      name: /open wallet/i,
-    });
+    // Step 10: Handle "Your wallet is ready!" screen
+    const openWalletBtn = this.page.getByTestId("onboarding-complete-done");
     await openWalletBtn.click();
 
-    // Step 10: Navigate to home page to trigger full UI initialization
+    // Step 11: Navigate to home page to trigger full UI initialization
     // (token list fetches, network state, etc.), then to sidepanel.
     await this.page.goto(`chrome-extension://${this.extensionId}/home.html`);
     await this.page.goto(
@@ -171,22 +193,27 @@ export class Metamask extends Wallet {
    */
   private async stabilizePostUnlock() {
     debug("metamask.stabilizePostUnlock: racing post-unlock states");
+    const passkeyMaybeLater = this.page.getByTestId(
+      "passkey-maybe-later-button",
+    );
     const metametricsBtn = this.page.getByTestId("metametrics-i-agree");
-    const openWalletBtn = this.page.getByRole("button", {
-      name: /open wallet/i,
-    });
+    const openWalletBtn = this.page.getByTestId("onboarding-complete-done");
     const readyIndicator = this.page.getByTestId("account-options-menu-button");
 
     // Race: whichever post-unlock state appears first wins.
     // Includes confirmation-cancel-button to catch queued notifications
     // (Solana/Tron account removal) that ConfirmationHandler auto-routes to.
     // When there's only 1 notification, "Reject all" isn't rendered.
+    // MetaMask 13.32+ also re-shows the passkey setup screen after unlock.
     const rejectAllBtn = this.page.getByText("Reject all");
     const notificationCancelBtn = this.page.getByTestId(
       "confirmation-cancel-button",
     );
 
     const state = await Promise.race([
+      passkeyMaybeLater
+        .waitFor({ state: "visible", timeout: POST_UNLOCK_TIMEOUT })
+        .then(() => "passkey" as const),
       metametricsBtn
         .waitFor({ state: "visible", timeout: POST_UNLOCK_TIMEOUT })
         .then(() => "metametrics" as const),
@@ -210,10 +237,29 @@ export class Metamask extends Wallet {
       debug(
         `metamask.stabilizePostUnlock: timeout after ${POST_UNLOCK_TIMEOUT}ms. ` +
           `URL: ${this.page.url()}. ` +
-          `Checked: metametrics-i-agree, open-wallet button, Reject all, confirmation-cancel-button, account-options-menu-button`,
+          `Checked: passkey-maybe-later-button, metametrics-i-agree, onboarding-complete-done, Reject all, confirmation-cancel-button, account-options-menu-button`,
       );
     }
 
+    // Onboarding screens may appear in sequence: passkey → metametrics
+    // → completion. Step through any that are present.
+    if (state === "passkey") {
+      await passkeyMaybeLater.click();
+      if (
+        await metametricsBtn
+          .isVisible({ timeout: POST_UNLOCK_TIMEOUT })
+          .catch(() => false)
+      ) {
+        await metametricsBtn.click();
+      }
+      if (
+        await openWalletBtn
+          .isVisible({ timeout: POPUP_HIDDEN_TIMEOUT })
+          .catch(() => false)
+      ) {
+        await openWalletBtn.click();
+      }
+    }
     if (state === "metametrics") {
       await metametricsBtn.click();
       if (
@@ -437,8 +483,9 @@ export class Metamask extends Wallet {
     // force: true bypasses the notification badge that can overlay this button
     await menuBtn.click({ force: true });
 
-    // Click "Log out" menu item (formerly "Lock MetaMask")
-    await this.page.locator("text=Log out").click();
+    // Click the Lock menu item (testid stable across the
+    // "Lock MetaMask" → "Log out" → "Lock" renames).
+    await this.page.getByTestId("global-menu-lock").click();
   }
 
   /**

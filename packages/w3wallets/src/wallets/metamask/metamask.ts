@@ -187,12 +187,38 @@ export class Metamask extends Wallet {
   }
 
   /**
+   * MetaMask's MV3 service worker can fail to come up on cold-start
+   * (especially in fresh-extension CI runs), showing an error screen
+   * with a "Restart MetaMask" button. Detect and click it so the
+   * normal post-unlock flow can proceed.
+   */
+  private async recoverFromStartupError() {
+    const restartBtn = this.page.getByRole("button", {
+      name: "Restart MetaMask",
+    });
+    if (
+      !(await restartBtn
+        .isVisible({ timeout: POPUP_VISIBILITY_TIMEOUT })
+        .catch(() => false))
+    ) {
+      return;
+    }
+    debug("metamask.recoverFromStartupError: clicking Restart MetaMask");
+    await restartBtn.click();
+    await restartBtn.waitFor({
+      state: "hidden",
+      timeout: POST_UNLOCK_TIMEOUT,
+    });
+  }
+
+  /**
    * After unlock, MetaMask may show onboarding screens, queued
    * notifications, or go straight to the wallet UI. Race all possible
    * states in a single wait to avoid sequential timeout penalties.
    */
   private async stabilizePostUnlock() {
     debug("metamask.stabilizePostUnlock: racing post-unlock states");
+    await this.recoverFromStartupError();
     const passkeyMaybeLater = this.page.getByTestId(
       "passkey-maybe-later-button",
     );
@@ -297,6 +323,7 @@ export class Metamask extends Wallet {
 
     // Navigate to home to trigger ConfirmationHandler evaluation.
     await this.page.goto(homeUrl);
+    await this.recoverFromStartupError();
 
     // Loop: dismiss notifications one at a time until the wallet UI appears.
     for (let i = 0; i < 10; i++) {
@@ -377,8 +404,8 @@ export class Metamask extends Wallet {
     // worker may not have synced the pending approval on the first load.
     let routeFound = false;
     for (let attempt = 0; attempt < MAX_ROUTE_ATTEMPTS; attempt++) {
-      await this.page.goto(sidepanelUrl);
       try {
+        await this.page.goto(sidepanelUrl, { timeout: ROUTE_RETRY_TIMEOUT });
         await this.page.waitForURL(confirmRoutePattern, {
           timeout: ROUTE_RETRY_TIMEOUT,
         });

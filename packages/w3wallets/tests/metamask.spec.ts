@@ -84,11 +84,14 @@ metamaskTest.describe("Metamask: inside", async () => {
   metamaskTest(
     "Can add a custom network and switch account",
     async ({ metamask }) => {
+      // Use the local anvil node: MetaMask validates the RPC (fetches its
+      // chain ID) before enabling Save, so an external RPC would make this
+      // test dependent on third-party uptime.
       await metamask.addCustomNetwork({
-        chainId: 123420001114,
-        currencySymbol: "CAMP",
-        name: "Basecamp",
-        rpc: "https://rpc-campnetwork.xyz",
+        chainId: 31337,
+        currencySymbol: "ETH",
+        name: "Anvil",
+        rpc: "http://localhost:8545",
       });
     },
   );
@@ -97,10 +100,10 @@ metamaskTest.describe("Metamask: inside", async () => {
     "Can add a custom network and an existing network",
     async ({ metamask }) => {
       await metamask.addCustomNetwork({
-        chainId: 123420001114,
-        currencySymbol: "CAMP",
-        name: "Basecamp",
-        rpc: "https://rpc-campnetwork.xyz",
+        chainId: 31337,
+        currencySymbol: "ETH",
+        name: "Anvil",
+        rpc: "http://localhost:8545",
       });
       await metamask.enableTestNetworks();
       await metamask.switchNetwork("MegaETH Testnet", "Custom");

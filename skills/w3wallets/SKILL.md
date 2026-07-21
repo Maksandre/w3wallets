@@ -85,7 +85,7 @@ Each fixture provides a wallet instance with its own extension page. The `contex
 | `deny()` | Reject the pending transaction/connection |
 | `lock()` | Lock the wallet |
 | `unlock(password?)` | Unlock the wallet (handles post-unlock screens) |
-| `switchNetwork(name, category?)` | Switch to a network ("Popular" or "Custom") |
+| `switchNetwork(name, category?)` | Switch to a network by name (`category` is deprecated and ignored) |
 | `switchAccount(name)` | Switch to an account by name |
 | `addNetwork(settings)` | Add a custom network via settings page |
 | `addCustomNetwork(settings)` | Add a custom network via the networks modal |
@@ -145,7 +145,7 @@ await metamask.deny();
 
 ```ts
 await metamask.switchNetwork("Sepolia");
-await metamask.switchNetwork("My Custom Network", "Custom");
+await metamask.switchNetwork("My Custom Network");
 ```
 
 ## Caching

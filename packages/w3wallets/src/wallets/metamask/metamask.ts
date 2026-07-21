@@ -550,24 +550,25 @@ export class Metamask extends Wallet {
   /**
    * Switch to an existing network in MetaMask
    * @param networkName - Name of the network to switch to (e.g., "Ethereum Mainnet", "Sepolia")
+   * @param _networkType - Deprecated: MetaMask 13.40 merged the Default/Custom
+   * tabs into a single "Select network" list, so the type is no longer needed.
+   * Kept for backward compatibility.
    */
   async switchNetwork(
     networkName: string,
-    networkType: "Popular" | "Custom" = "Popular",
+    _networkType: "Popular" | "Custom" = "Popular",
   ) {
-    debug(`metamask.switchNetwork: ${networkName} (${networkType})`);
+    debug(`metamask.switchNetwork: ${networkName}`);
     // Click the network picker button
     await this.page.getByTestId("sort-by-networks").click();
-    if (networkType === "Custom") {
-      // force: true bypasses the search input overlay that intercepts pointer events
-      await this.page
-        .getByRole("tab", { name: "Custom" })
-        .click({ force: true });
-    }
-    await this.page.getByText(networkName).click();
 
-    // Wait for the network list to appear and click the desired network
-    await expect(this.page.getByTestId("sort-by-networks")).toHaveText(
+    // Each row in the "Select network" modal carries its network name as
+    // data-testid, which avoids clashing with same-named token rows behind
+    // the modal.
+    await this.page.getByTestId(networkName).click();
+
+    // The picker button shows "Network: <name>" once a single network is selected
+    await expect(this.page.getByTestId("sort-by-networks")).toContainText(
       networkName,
       { timeout: config.expectTimeout },
     );

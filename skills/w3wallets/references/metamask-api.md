@@ -70,11 +70,11 @@ await metamask.unlock("CustomPassword!");
 Switch to an existing network.
 
 - `networkName` — display name (e.g., `"Ethereum Mainnet"`, `"Sepolia"`)
-- `networkType` — `"Popular"` (default) or `"Custom"` tab
+- `networkType` — deprecated and ignored. MetaMask 13.40 merged the Popular/Custom tabs into a single "Select network" list, so all networks (default, test, custom) are selected by name. Kept for backward compatibility.
 
 ```ts
 await metamask.switchNetwork("Sepolia");
-await metamask.switchNetwork("My Local Network", "Custom");
+await metamask.switchNetwork("My Local Network");
 ```
 
 ### `switchAccount(accountName: string)`

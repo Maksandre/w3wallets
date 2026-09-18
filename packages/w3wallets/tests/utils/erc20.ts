@@ -12,6 +12,10 @@ import config from "./config";
 
 const TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3" as const;
 const DECIMALS = 18;
+// Keep test setup transactions off the account controlled by MetaMask. Sending
+// setup transactions from that account makes MetaMask's cached nonce stale.
+const ANVIL_OPERATOR_PRIVATE_KEY =
+  "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 
 const TEST_TOKEN_ABI = [
   {
@@ -70,8 +74,8 @@ export function getTestWalletAddress(): Address {
   return account.address;
 }
 
-function getWalletClient(privateKey?: string) {
-  const key = privateKey ?? config.account1.privateKey;
+function getWalletClient(privateKey: string) {
+  const key = privateKey;
   const account = privateKeyToAccount(key as `0x${string}`);
   return createWalletClient({
     account,
@@ -85,7 +89,9 @@ export async function mintTokens(
   amount: bigint,
   privateKey?: string,
 ): Promise<void> {
-  const walletClient = getWalletClient(privateKey);
+  const walletClient = getWalletClient(
+    privateKey ?? ANVIL_OPERATOR_PRIVATE_KEY,
+  );
 
   const hash = await walletClient.writeContract({
     address: TOKEN_ADDRESS,
@@ -101,7 +107,9 @@ export async function burnAllTokens(
   target: Address,
   privateKey?: string,
 ): Promise<void> {
-  const walletClient = getWalletClient(privateKey);
+  const walletClient = getWalletClient(
+    privateKey ?? ANVIL_OPERATOR_PRIVATE_KEY,
+  );
 
   const hash = await walletClient.writeContract({
     address: TOKEN_ADDRESS,
@@ -118,7 +126,9 @@ export async function approveTokens(
   amount: string,
   privateKey?: string,
 ): Promise<void> {
-  const walletClient = getWalletClient(privateKey);
+  const walletClient = getWalletClient(
+    privateKey ?? config.account1.privateKey,
+  );
   const parsedAmount = parseUnits(amount, DECIMALS);
 
   const hash = await walletClient.writeContract({

@@ -1,10 +1,5 @@
 import { metamaskTest, expect } from "./fixtures/metamask-fixture";
-import {
-  burnAllTokens,
-  approveTokens,
-  getTestWalletAddress,
-  mintTokens,
-} from "./utils/erc20";
+import { burnAllTokens, getTestWalletAddress, mintTokens } from "./utils/erc20";
 
 // Test addresses from the first two Ethereum accounts
 const RECIPIENT_ADDRESS = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"; // Second account from mnemonic
@@ -14,10 +9,11 @@ metamaskTest.describe("Metamask: ERC-20", () => {
   metamaskTest.beforeEach(async () => {
     const testWalletAddress = getTestWalletAddress();
 
-    // Reset test state: burn all tokens and clear approvals
+    // Reset balances through the dedicated setup account. Allowances are set by
+    // each test that needs them, so clearing them from the MetaMask account here
+    // would consume its nonce behind MetaMask's back.
     await burnAllTokens(testWalletAddress);
     await burnAllTokens(RECIPIENT_ADDRESS);
-    await approveTokens(SPENDER_ADDRESS, "0");
   });
 
   metamaskTest(

@@ -656,14 +656,34 @@ export class Metamask extends Wallet {
     await this.page.getByTestId("choose-wallet-type-import-account").click();
     await this.page.locator("#private-key-box").fill(privateKey);
     await this.page.getByTestId("import-account-confirm-button").click();
-    // After confirm, MetaMask lands on the wallet-type chooser. Step back
-    // to the account list, then click the new imported account cell
-    // (keyring-prefixed testid) to select it and return to home.
-    await this.page.getByTestId("back-button").click();
-    await this.page
-      .locator('[data-testid^="multichain-account-cell-keyring:"]')
-      .first()
-      .click();
+
+    // MetaMask versions differ after import: older builds return to the
+    // wallet-type chooser, while newer builds select the imported account
+    // and navigate directly home. Race both valid states so neither path
+    // incurs the other path's full timeout.
+    const accountMenu = this.page.getByTestId("account-menu-icon");
+    const backButton = this.page.getByTestId("back-button");
+    const postImportState = await Promise.race([
+      accountMenu
+        .waitFor({ state: "visible", timeout: config.expectTimeout })
+        .then(() => "home" as const),
+      backButton
+        .waitFor({ state: "visible", timeout: config.expectTimeout })
+        .then(() => "chooser" as const),
+    ]);
+
+    if (postImportState === "chooser") {
+      await backButton.click();
+      await this.page
+        .locator('[data-testid^="multichain-account-cell-keyring:"]')
+        .filter({ hasText: "Imported Account" })
+        .first()
+        .click();
+    }
+
+    await expect(accountMenu).toContainText("Imported Account", {
+      timeout: config.expectTimeout,
+    });
   }
 
   async accountNameIs(accountName: string) {

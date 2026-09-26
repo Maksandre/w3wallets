@@ -19,7 +19,6 @@ export class EthereumPage {
       // Wallet Connection Section
       connectionStatus: this.page.getByTestId("connection-status"),
       accountAddress: this.page.getByTestId("account-address"),
-      connectButton: this.page.getByTestId("connect-button"),
       disconnectButton: this.page.getByTestId("disconnect-button"),
       metaMaskConnector: this.page.getByRole("button", { name: "MetaMask" }),
 

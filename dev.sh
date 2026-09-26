@@ -59,11 +59,11 @@ yarn start &
 FRONTEND_PID=$!
 cd ../..
 
-echo "Waiting for Next.js to be ready..."
+echo "Waiting for the dApp to be ready..."
 until curl --silent --fail http://localhost:3001 > /dev/null; do
   sleep 2
 done
-echo "Next.js is ready!"
+echo "dApp is ready!"
 
 echo ""
 echo "================================================"

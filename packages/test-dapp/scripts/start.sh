@@ -42,9 +42,9 @@ echo ""
 echo "Deploying contracts..."
 forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
 
-# Build and start Next.js production server
-echo "Building Next.js..."
-next build
+# Build and serve the production bundle on :3001
+echo "Building dApp..."
+yarn build
 
-echo "Starting Next.js..."
-next start -p 3001
+echo "Starting dApp..."
+yarn start

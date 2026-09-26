@@ -1,6 +1,6 @@
 [profile.default]
 src = "contracts"
-out = "src/config/abi"
+out = "out"
 libs = ["node_modules", "lib"]
 
 remappings = [

@@ -19,8 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.58.1-noble
-    env:
-      NEXT_PUBLIC_WC_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WC_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,11 +41,11 @@ jobs:
       - name: 🌐 Start UI
         run: |
           yarn start:dapp &
-          echo "Waiting for Next.js to be ready..."
+          echo "Waiting for the dApp to be ready..."
           until curl --silent --fail http://localhost:3001 > /dev/null; do
             sleep 2
           done
-          echo "Next.js is ready!"
+          echo "dApp is ready!"
 
       - name: 👝 Download wallets
         run: yarn download-wallets

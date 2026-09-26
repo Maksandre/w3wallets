@@ -1,7 +1,7 @@
 export interface PolkadotConnector {
+  /** Key the extension registers under in `window.injectedWeb3`. */
   uid: string;
   name: string;
-  installed?: boolean;
 }
 
 export const polkadotConnectors: PolkadotConnector[] = [
@@ -12,11 +12,9 @@ export const polkadotConnectors: PolkadotConnector[] = [
   { uid: "novawallet", name: "Nova" },
 ];
 
-export function getInstalledConnectors(): PolkadotConnector[] {
-  if (typeof window === "undefined") return polkadotConnectors;
-
-  return polkadotConnectors.map((wallet) => ({
-    ...wallet,
-    installed: !!window.injectedWeb3?.[wallet.uid],
-  }));
+declare global {
+  interface Window {
+    /** Injected by Polkadot extensions (Polkadot.js, Talisman, ...). */
+    injectedWeb3?: Record<string, unknown>;
+  }
 }

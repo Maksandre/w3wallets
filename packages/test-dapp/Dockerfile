@@ -2,7 +2,7 @@
 FROM ghcr.io/foundry-rs/foundry:latest AS foundry
 
 # Use full node image - has everything we need
-FROM node:20
+FROM node:24
 
 # Copy Foundry binaries
 COPY --from=foundry /usr/local/bin/forge /usr/local/bin/forge
@@ -34,4 +34,4 @@ RUN forge build && yarn build
 
 EXPOSE 3001
 
-CMD ["yarn", "start"]
+CMD ["yarn", "start", "--host", "0.0.0.0"]

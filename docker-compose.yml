@@ -20,6 +20,4 @@ services:
     depends_on:
       anvil:
         condition: service_healthy
-    environment:
-      - NEXT_PUBLIC_RPC_URL=http://localhost:8545
     entrypoint: ["/bin/bash", "/app/packages/test-dapp/docker-entrypoint.sh"]

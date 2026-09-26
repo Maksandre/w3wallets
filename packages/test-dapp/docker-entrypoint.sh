@@ -21,14 +21,14 @@ echo "Contracts deployed!"
 
 # Start the frontend
 echo "Starting frontend..."
-yarn start &
+yarn start --host 0.0.0.0 &
 FRONTEND_PID=$!
 
-echo "Waiting for Next.js to be ready..."
+echo "Waiting for the dApp to be ready..."
 until curl --silent --fail http://localhost:3001 > /dev/null; do
   sleep 2
 done
-echo "Next.js is ready!"
+echo "dApp is ready!"
 
 # Keep the container running
 wait $FRONTEND_PID

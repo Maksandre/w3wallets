@@ -88,7 +88,7 @@ Key points:
 .w3wallets/
   cache/
     <hash>/                 # browser profile (hash of cache file path)
-      .meta.json            # { "name": "metamask" }
+      .meta.json            # { "name": "metamask", "extensionVersion": "13.49.0.0" }
       Default/              # Chromium profile data
       ...
     .dist/                  # compiled cache setup files (temporary)
@@ -101,6 +101,11 @@ If tests fail after updating w3wallets or the wallet extension, rebuild the cach
 ```bash
 npx w3wallets cache <directory> --force
 ```
+
+`withWallets` fails fast with `Stale cache: ... was built with metamask X, but the installed extension is Y` when the extension was re-downloaded after the cache was built. Caches built before w3wallets recorded `extensionVersion` skip this check.
+
+### Multiple caches found for wallet
+Each `*.cache.ts` file gets its own `.w3wallets/cache/<hash>/` (hash of the file's absolute path). A renamed or moved setup file, or another checkout, leaves an old profile behind with the same wallet name. `withWallets` refuses to guess and lists every match. Delete the stale directories, or remove `.w3wallets/cache/` and rebuild. Only one cache per wallet name is supported.
 
 ### Missing extension
 The extension must be downloaded before building the cache:

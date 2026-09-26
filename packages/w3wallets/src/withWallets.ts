@@ -12,7 +12,10 @@ import type {
   WalletFixturesFromConfigs,
 } from "./core/types";
 import { isCachedConfig } from "./cache/types";
-import { findCacheDir } from "./cache/buildCache";
+import {
+  assertCacheMatchesExtension,
+  findCacheDir,
+} from "./cache/buildCache";
 import { CACHE_DIR } from "./cache/constants";
 import { getExtensionId, sleep } from "./core/utils";
 import {
@@ -130,6 +133,7 @@ export function withWallets<const T extends readonly WalletConfig[]>(
               `  Ensure your *.cache.ts setup file exports prepareWallet(...).`,
           );
         }
+        assertCacheMatchesExtension(cacheDir, extensionInfo[0]!.path);
         fs.cpSync(cacheDir, userDataDir, { recursive: true });
       }
 

@@ -145,6 +145,8 @@ OPTIONS:
 
 The cached profiles are stored in `.w3wallets/cache/`. The `.w3wallets` directory should already be in `.gitignore`.
 
+Only one cache per wallet name is supported. If `.w3wallets/cache/` holds several profiles for the same wallet (e.g. after renaming a setup file), `withWallets` throws and lists them — delete the stale ones. It also throws if the cache was built with a different extension version than the one installed; rebuild with `--force`.
+
 #### 3. Use cached wallets in tests
 
 Import the setup and pass it to `withWallets`:

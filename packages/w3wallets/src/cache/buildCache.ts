@@ -221,36 +221,95 @@ export async function buildCacheForSetup(
   await context.close();
 
   // Write metadata for cache discovery at test time
-  fs.writeFileSync(
-    path.join(cacheDir, ".meta.json"),
-    JSON.stringify({ name: config.name }),
-  );
+  writeCacheMeta(cacheDir, config.name, extPath);
 
   console.log(`  Cached: ${cacheDir}`);
 }
 
+interface CacheMeta {
+  name: string;
+  /** manifest.json version of the extension the profile was built with */
+  extensionVersion?: string;
+}
+
+function readExtensionVersion(extPath: string): string {
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(extPath, "manifest.json"), "utf-8"),
+  );
+  return manifest.version;
+}
+
+function readCacheMeta(cacheDir: string): CacheMeta | null {
+  try {
+    return JSON.parse(
+      fs.readFileSync(path.join(cacheDir, ".meta.json"), "utf-8"),
+    );
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Write .meta.json so tests can find the cache and detect a stale extension.
+ */
+export function writeCacheMeta(
+  cacheDir: string,
+  walletName: string,
+  extPath: string,
+): void {
+  const meta: CacheMeta = {
+    name: walletName,
+    extensionVersion: readExtensionVersion(extPath),
+  };
+  fs.writeFileSync(path.join(cacheDir, ".meta.json"), JSON.stringify(meta));
+}
+
+/**
+ * Throw if the cached profile was built with a different extension version
+ * than the one installed now. A profile from another version fails later in
+ * obscure ways (e.g. unlock() timing out), so fail early with a rebuild hint.
+ * Caches built before versions were recorded are accepted.
+ */
+export function assertCacheMatchesExtension(
+  cacheDir: string,
+  extPath: string,
+): void {
+  const meta = readCacheMeta(cacheDir);
+  if (!meta?.extensionVersion) return;
+
+  const installed = readExtensionVersion(extPath);
+  if (meta.extensionVersion !== installed) {
+    throw new Error(
+      `Stale cache: ${cacheDir} was built with ${meta.name} ${meta.extensionVersion}, ` +
+        `but the installed extension is ${installed}.\n` +
+        `  Rebuild: npx w3wallets cache --force <your-cache-dir>`,
+    );
+  }
+}
+
 /**
  * Find the cache directory for a wallet by scanning .meta.json files.
+ * Throws if several caches match, since picking one would be arbitrary.
  */
 export function findCacheDir(walletName: string): string | null {
   const cacheRoot = path.join(process.cwd(), CACHE_DIR);
   if (!fs.existsSync(cacheRoot)) return null;
 
-  const entries = fs.readdirSync(cacheRoot, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory() || entry.name.startsWith(".")) continue;
-    const metaPath = path.join(cacheRoot, entry.name, ".meta.json");
-    if (!fs.existsSync(metaPath)) continue;
-    try {
-      const meta = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
-      if (meta.name === walletName) {
-        return path.join(cacheRoot, entry.name);
-      }
-    } catch {
-      continue;
-    }
+  const matches = fs
+    .readdirSync(cacheRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
+    .map((entry) => path.join(cacheRoot, entry.name))
+    .filter((dir) => readCacheMeta(dir)?.name === walletName);
+
+  if (matches.length > 1) {
+    throw new Error(
+      `Multiple caches found for wallet "${walletName}":\n` +
+        matches.map((dir) => `  - ${dir}`).join("\n") +
+        `\n  Delete the stale ones, or remove ${cacheRoot} and rebuild: ` +
+        `npx w3wallets cache --force <your-cache-dir>`,
+    );
   }
-  return null;
+  return matches[0] ?? null;
 }
 
 export async function buildAllCaches(

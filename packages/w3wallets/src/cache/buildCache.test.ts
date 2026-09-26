@@ -2,7 +2,12 @@ import { describe, it, expect, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { hashFilePath, findCacheDir } from "./buildCache";
+import {
+  hashFilePath,
+  findCacheDir,
+  writeCacheMeta,
+  assertCacheMatchesExtension,
+} from "./buildCache";
 
 describe("hashFilePath", () => {
   it("returns first 20 hex chars of SHA256", () => {
@@ -123,5 +128,91 @@ describe("findCacheDir", () => {
     );
 
     expect(findCacheDir("polkadotjs")).toBe(dir2);
+  });
+
+  it("throws when several caches match the same wallet name", () => {
+    // A stale profile left by an old setup file must not be picked silently
+    // over the fresh one — readdir order decides which one wins.
+    setup();
+    const cacheRoot = path.join(tmpDir, ".w3wallets", "cache");
+    for (const dir of ["aaa", "bbb"]) {
+      fs.mkdirSync(path.join(cacheRoot, dir), { recursive: true });
+      fs.writeFileSync(
+        path.join(cacheRoot, dir, ".meta.json"),
+        JSON.stringify({ name: "metamask" }),
+      );
+    }
+
+    expect(() => findCacheDir("metamask")).toThrow(
+      /Multiple caches found for wallet "metamask"[\s\S]*aaa[\s\S]*bbb/,
+    );
+  });
+});
+
+describe("cache metadata", () => {
+  let tmpDir: string;
+
+  function setup() {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "w3wallets-meta-test-"));
+    const extPath = path.join(tmpDir, "ext");
+    const cacheDir = path.join(tmpDir, "cache");
+    fs.mkdirSync(extPath);
+    fs.mkdirSync(cacheDir);
+    return { extPath, cacheDir };
+  }
+
+  function writeManifest(extPath: string, version: string) {
+    fs.writeFileSync(
+      path.join(extPath, "manifest.json"),
+      JSON.stringify({ version }),
+    );
+  }
+
+  function readMeta(cacheDir: string) {
+    return JSON.parse(
+      fs.readFileSync(path.join(cacheDir, ".meta.json"), "utf-8"),
+    );
+  }
+
+  it("records the wallet name and extension version", () => {
+    const { extPath, cacheDir } = setup();
+    writeManifest(extPath, "13.49.0.0");
+
+    writeCacheMeta(cacheDir, "metamask", extPath);
+
+    expect(readMeta(cacheDir)).toEqual({
+      name: "metamask",
+      extensionVersion: "13.49.0.0",
+    });
+  });
+
+  it("accepts a cache built with the installed extension version", () => {
+    const { extPath, cacheDir } = setup();
+    writeManifest(extPath, "13.49.0.0");
+    writeCacheMeta(cacheDir, "metamask", extPath);
+
+    expect(() => assertCacheMatchesExtension(cacheDir, extPath)).not.toThrow();
+  });
+
+  it("rejects a cache built with a different extension version", () => {
+    const { extPath, cacheDir } = setup();
+    writeManifest(extPath, "13.44.0");
+    writeCacheMeta(cacheDir, "metamask", extPath);
+    writeManifest(extPath, "13.49.0.0");
+
+    expect(() => assertCacheMatchesExtension(cacheDir, extPath)).toThrow(
+      /built with metamask 13\.44\.0.*installed extension is 13\.49\.0\.0[\s\S]*--force/,
+    );
+  });
+
+  it("accepts a legacy cache without a recorded version", () => {
+    const { extPath, cacheDir } = setup();
+    writeManifest(extPath, "13.49.0.0");
+    fs.writeFileSync(
+      path.join(cacheDir, ".meta.json"),
+      JSON.stringify({ name: "metamask" }),
+    );
+
+    expect(() => assertCacheMatchesExtension(cacheDir, extPath)).not.toThrow();
   });
 });

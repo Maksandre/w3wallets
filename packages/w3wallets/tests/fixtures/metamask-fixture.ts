@@ -23,6 +23,24 @@ const metamaskTest = withWallets(base, cachedMetamask).extend<{
     // Wait for connection to be established
     await expect(page.getByTestId("connection-status")).toHaveText("connected");
 
+    // MetaMask 13.55+ permits a chain added via wallet_addEthereumChain
+    // without attaching any accounts to it, so every signature or
+    // transaction on Anvil is rejected with 4100 (unauthorized).
+    // Re-requesting eth_accounts grants the account on all permitted
+    // chains, including the newly added Anvil network.
+    const accountsRegranted = page.evaluate(() =>
+      (
+        window as unknown as {
+          ethereum: { request(args: unknown): Promise<unknown> };
+        }
+      ).ethereum.request({
+        method: "wallet_requestPermissions",
+        params: [{ eth_accounts: {} }],
+      }),
+    );
+    await metamask.approve();
+    await accountsRegranted;
+
     // Show page
     await page.bringToFront();
 
